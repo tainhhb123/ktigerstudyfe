@@ -22,6 +22,9 @@ import Home from "./pages/Dashboard/Home";
 import UserInformation from "./pages/Tables/UserInforPage";
 import StudenProcessTables from "./pages/Tables/StudenProcessTables";
 
+import FlashCard from "./pages/FlashCard/FlashCard";
+
+
 
 export default function App() {
   return (
@@ -46,6 +49,9 @@ export default function App() {
 
             <Route path="/userinfo-table" element={<UserInformation />} />
             <Route path="/studentprocess-table" element={<StudenProcessTables />} />
+
+            {/* FlashCardFlashCard */}
+            <Route path="/flashcard" element={<FlashCard />} />
 
 
             {/* Ui Elements */}
