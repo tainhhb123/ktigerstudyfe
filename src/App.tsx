@@ -67,6 +67,12 @@ export default function App() {
             <Route path="/bar-chart" element={<BarChart />} />
           </Route>
 
+
+
+          
+            {/* FlashCardFlashCard */}
+          <Route path="/flashcard" element={<FlashCard />} />
+
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
