@@ -1,6 +1,7 @@
 //src/components/learning-path/LevelBadge.tsx
 import { useEffect, useRef, useState } from "react";
 
+
 export default function LevelBadge({ level }: { level: number }) {
   const badgeRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);

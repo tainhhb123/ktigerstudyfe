@@ -1,4 +1,4 @@
-//src/pages/Lesson.tsx
+//src/pages/Learn/Lesson.tsx
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import LearningPath from "../../components/learning-path/LearningPath";

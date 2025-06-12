@@ -35,6 +35,8 @@ import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 import Level from "./pages/Learn/Level";
 import Lesson from "./pages/Learn/Lesson";
+import LessonDetail from "./pages/Learn/LessonDetail";
+
 
 export default function App() {
   return (
@@ -80,7 +82,8 @@ export default function App() {
         <Route path="learn/*" element={<AppLayout />}>
           <Route index element={<LearnHome />} />                
           <Route path="level" element={<Level />} />            
-          <Route path="lesson" element={<Lesson />} />          
+          <Route path="lesson" element={<Lesson />} />         
+          <Route path="lesson-detail" element={<LessonDetail />} />
         </Route>
 
 
