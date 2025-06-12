@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, matchPath } from "react-router-dom";
 import {
   ChevronDownIcon,
   GridIcon,
@@ -59,9 +59,22 @@ const AppSidebar: React.FC = () => {
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const isActive = useCallback(
-    (path: string) => location.pathname === path,
+    (path: string) => {
+      if (path === "/documents") {
+        return location.pathname === "/documents";
+      }
+
+      // Thư viện: kích hoạt nếu bắt đầu bằng /documents/library
+      if (path === "/documents/Library") {
+        return location.pathname.startsWith("/documents/Library");
+      }
+
+      return location.pathname === path;
+    },
     [location.pathname]
   );
+
+
 
   useEffect(() => {
     let matched = false;

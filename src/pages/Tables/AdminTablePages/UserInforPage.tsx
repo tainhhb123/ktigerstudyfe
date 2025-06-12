@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
-import UserInfoTable from "../../components/tables/BasicTables/UserInfoTable";
+import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
+import ComponentCard from "../../../components/common/ComponentCard";
+import PageMeta from "../../../components/common/PageMeta";
+import UserInfoTable from "../../../components/tables/AdminTables/UserInfoTable";
 
 export default function UserInformation() {
   // State để lưu từ khóa tìm kiếm

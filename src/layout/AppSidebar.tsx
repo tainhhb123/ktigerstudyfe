@@ -17,7 +17,6 @@ import {
   UserIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
-import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
   name: string;
@@ -32,7 +31,7 @@ const navItems: NavItem[] = [
     icon: <UserIcon />,
     name: "Quản lí học viên ",
     subItems: [{ name: "Quản lí thông tin học viên", path: "/userinfo-table", pro: false },
-              { name: "Quản lí tiến trình học tập học viên ", path: "/studentprocess-table", pro: false },
+              { name: "Quản lí tiến trình học tập học viên ", path: "/studentprocess", pro: false },
               { name: "Quản lí tài liệu học viên ", path: "/", pro: false },
               { name: "Quản lí báo cáo", path: "/", pro: false },
     ],
@@ -388,7 +387,6 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
       </div>
     </aside>
   );

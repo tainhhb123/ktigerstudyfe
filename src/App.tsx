@@ -11,7 +11,7 @@ import Calendar from "./pages/Calendar";
 import Blank from "./pages/Blank";
 import FormElements from "./pages/Forms/FormElements";
 import BasicTables from "./pages/Tables/BasicTables";
-import UserInformation from "./pages/Tables/UserInforPage";
+import UserInformation from "./pages/Tables/AdminTablePages/UserInforPage";
 import StudenProcessTables from "./pages/Tables/StudenProcessTables";
 import Alerts from "./pages/UiElements/Alerts";
 import Avatars from "./pages/UiElements/Avatars";
@@ -21,13 +21,17 @@ import Images from "./pages/UiElements/Images";
 import Videos from "./pages/UiElements/Videos";
 import LineChart from "./pages/Charts/LineChart";
 import BarChart from "./pages/Charts/BarChart";
+import StudenProcess from "./pages/Tables/AdminTablePages/StudentProgressPage";
 
 // Document pages & layout
 import AppLayoutDocument from "./layout/document/AppLayoutDocument";
 import HomeDocument from "./pages/document/Dashboard/Home";
 import DocumentDe from "./pages/document/Dashboard/DocumentDe";
+import FlashCardsFull from "./pages/document/documentdetail/FlashCardsFull";
 import FlashCard from "./pages/document/FlashCard";
+import Library from "./pages/document/Library";
 import MyClass from "./pages/document/mylibrary/MyClass";
+import CourseOverview from "./pages/document/mylibrary/CourseOverview";
 
 // Auth & misc
 import SignIn from "./pages/AuthPages/SignIn";
@@ -54,6 +58,8 @@ export default function App() {
           <Route path="basic-tables" element={<BasicTables />} />
           <Route path="userinfo-table" element={<UserInformation />} />
           <Route path="studentprocess-table" element={<StudenProcessTables />} />
+          <Route path="studentprocess" element={<StudenProcess />} />
+
           <Route path="alerts" element={<Alerts />} />
           <Route path="avatars" element={<Avatars />} />
           <Route path="badge" element={<Badges />} />
@@ -69,10 +75,13 @@ export default function App() {
           <Route index element={<HomeDocument />} />
           <Route path="document-de" element={<DocumentDe />} />
           <Route path="flashcard" element={<FlashCard />} />
-          <Route path="library">
+          <Route path="flashcardsfull" element={<FlashCardsFull />} />
+          {/* <Route path="/study" element={<StudyPage />} />
+        <Route path="/quiz" element={<QuizPage />} /> */}
+          <Route path="Library/*" element={<Library />}>
             <Route index element={<Navigate to="lop-hoc" replace />} />
-            <Route path="lop-hoc" element={<MyClass />} />
-            <Route path="tai-lieu" element={<MyClass />} />
+            <Route index path="lop-hoc" element={<MyClass />} />
+            <Route path="tai-lieu" element={<CourseOverview />} />
             <Route path="tailieuyeuthich" element={<MyClass />} />
             <Route path="lophocthamgia" element={<MyClass />} />
           </Route>
@@ -80,10 +89,16 @@ export default function App() {
 
               // === Learn Layout ===
         <Route path="learn/*" element={<AppLayout />}>
+<<<<<<< HEAD
           <Route index element={<LearnHome />} />                
           <Route path="level" element={<Level />} />            
           <Route path="lesson" element={<Lesson />} />         
           <Route path="lesson-detail" element={<LessonDetail />} />
+=======
+          <Route index element={<LearnHome />} />
+          <Route path="level" element={<Level />} />
+          <Route path="lesson" element={<Lesson />} />
+>>>>>>> 685e274fdbb66089c3c6e5d752b9788f2964549a
         </Route>
 
 
