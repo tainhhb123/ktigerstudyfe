@@ -18,7 +18,8 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import UserInformationTable from "./pages/Tables/UserInformationTable";
+
+import UserInformation from "./pages/Tables/UserInforPage";
 import StudenProcessTables from "./pages/Tables/StudenProcessTables";
 
 
@@ -42,7 +43,8 @@ export default function App() {
 
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />
-            <Route path="/userinfo-table" element={<UserInformationTable />} />
+
+            <Route path="/userinfo-table" element={<UserInformation />} />
             <Route path="/studentprocess-table" element={<StudenProcessTables />} />
 
 
