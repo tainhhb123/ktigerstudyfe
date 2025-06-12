@@ -1,100 +1,95 @@
-import React, { useState, useEffect } from "react";
-import FlashcardPlayer from "../../components/flashcard/FlashcardPlayer";
-import VocabularyList from "../../components/flashcard/VocabularyList";
-import AuthorCard from "../../components/flashcard/AuthorCard";
-import FunctionBar from "../../components/flashcard/FunctionBar";
+//sd
+import React, { useState } from 'react';
+import './FlashCard.css';
 
-// Dummy data (Trong thực tế sẽ fetch từ API)
-const initialVocabularies = [
-  { id: 1, term: "대인 관계", meaning: "quan hệ đối nhân xử thế(ĐỐI NHÂN QUAN HỆ)" },
-  { id: 2, term: "마음이 넓다", meaning: "Tấm lòng rộng lượng" },
-  { id: 3, term: "친절하다", meaning: "thân thiện, tử tế(Thân Thiết)" },
-  { id: 4, term: "성격이 좋다", meaning: "tính cách tốt" },
-  { id: 5, term: "화가 나다", meaning: "tức giận" },
-];
-
-const author = {
-  avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-  name: "Maiminh2010",
-  role: "선생님",
-  createdAt: "11달 전 생성함",
+type FlashCardType = {
+  term: string;
+  def: string;
+  img: File | null;
 };
 
-export default function FlashCard() {
-  // `setVocabularies` vẫn cần thiết nếu bạn có chức năng xáo trộn sau này
-  const [vocabularies] = useState(initialVocabularies);
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+const FlashCard: React.FC = () => {
+  const [title, setTitle] = useState('');
+  const [desc, setDesc] = useState('');
+  const [cards, setCards] = useState<FlashCardType[]>([
+    { term: '', def: '', img: null },
+  ]);
 
-  const currentFlashcard = vocabularies[currentCardIndex];
-
-  const goToNextCard = () => {
-    setCurrentCardIndex((prevIndex) => (prevIndex + 1) % vocabularies.length);
+  const addCard = () => {
+    setCards([...cards, { term: '', def: '', img: null }]);
   };
 
-  const goToPreviousCard = () => {
-    setCurrentCardIndex((prevIndex) =>
-      prevIndex === 0 ? vocabularies.length - 1 : prevIndex - 1
+  const updateCard = (index: number, key: keyof FlashCardType, value: string | File | null) => {
+    setCards((prev) =>
+      prev.map((card, i) => (i === index ? { ...card, [key]: value } : card))
     );
   };
 
-
-
-  useEffect(() => {
-    // Đây là nơi bạn sẽ fetch dữ liệu thực tế từ backend nếu cần
-    // Ví dụ:
-    // fetch('/api/vocabularies')
-    //   .then(response => response.json())
-    //   .then(data => setVocabularies(data))
-    //   .catch(error => console.error('Error fetching vocabularies:', error));
-  }, []);
+  const deleteCard = (index: number) => {
+    setCards(cards.filter((_, idx) => idx !== index));
+  };
 
   return (
-    // Thay đổi nền tổng thể từ màu tối sang màu trắng/xám nhạt
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center px-2 py-4">
-      {/* Tiêu đề lớn */}
-      <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 text-center">
-        THTH Trung Cấp 3 Bài 2 대인 관계
-      </h1>
-
-      {/* Đánh giá */}
-      <div className="mb-2">
-        <span className="text-gray-600 text-sm flex items-center gap-2">
-          <button className="flex items-center gap-1 text-gray-600 hover:text-gray-800 transition-colors duration-200">
-            <span>⭐</span>
-            <span>첫 번째 평점 남기기</span>
-          </button>
-        </span>
+    <div className="container">
+      <div className="header">
+        <input
+          className="title-input"
+          placeholder='Nhập tiêu đề, ví dụ "Sinh học - Chương 22: Tiến hóa"'
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <textarea
+          className="desc-input"
+          placeholder="Thêm mô tả..."
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+        />
       </div>
 
-      <FunctionBar/>
-
-      {/* Flashcard Player (center) */}
-      <div className="w-full max-w-3xl mt-6">
-        {vocabularies.length > 0 ? (
-          <FlashcardPlayer
-            flashcard={currentFlashcard}
-            onNext={goToNextCard}
-            onPrevious={goToPreviousCard}
-            currentIndex={currentCardIndex}
-            totalCards={vocabularies.length}
-          />
-        ) : (
-          // Thay đổi màu chữ khi đang tải để phù hợp với nền sáng
-          <p className="text-gray-700 text-center text-lg">Đang tải từ vựng...</p>
-        )}
+      <div className="button-group-wrapper">
+        <div className="button-group">
+          <button className="btn secondary">+ Nhập</button>
+          <button className="btn locked">+ Thêm sơ đồ</button>
+          <button className="btn secondary">✨ Tạo từ ghi chú</button>
+        </div>
+        <button className="btn settingBtn" >
+          ⚙️
+        </button>
       </div>
 
-      {/* Info người đăng */}
-      <div className="w-full max-w-3xl mt-2">
-        {/* AuthorCard đã tự có nền trắng, không cần thay đổi gì thêm ở đây */}
-        <AuthorCard {...author} />
+
+      <div className="card-list">
+        {cards.map((card, i) => (
+          <div className="card" key={i}>
+            <div className="card-index">{i + 1}</div>
+            <input
+              className="card-input term"
+              placeholder="Thuật ngữ"
+              value={card.term}
+              onChange={(e) => updateCard(i, 'term', e.target.value)}
+            />
+            <input
+              className="card-input def"
+              placeholder="Định nghĩa"
+              value={card.def}
+              onChange={(e) => updateCard(i, 'def', e.target.value)}
+            />
+            <button className="img-btn" onClick={() => alert('Upload hình ảnh')}>
+              🖼️ Hình ảnh
+            </button>
+            <button className="delete-btn" onClick={() => deleteCard(i)}>🗑️</button>
+          </div>
+        ))}
       </div>
 
-      {/* Danh sách từ vựng phía dưới */}
-      <div className="w-full max-w-3xl mt-8">
-        {/* VocabularyList đã tự có nền trắng và chữ đen, không cần thay đổi gì thêm ở đây */}
-        <VocabularyList vocabularies={vocabularies} />
+      <div className="footer">
+        <button className="btn secondary" onClick={addCard}>Thêm thẻ</button>
+        <button className="btn primary" onClick={() => alert('Tạo & ôn luyện')}>
+          Tạo và ôn luyện
+        </button>
       </div>
     </div>
   );
-}
+};
+
+export default FlashCard;
