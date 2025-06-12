@@ -4,11 +4,11 @@ import { FileWithPath } from "file-selector";
 export { FileWithPath };
 export default function Dropzone(
   props: DropzoneProps & React.RefAttributes<DropzoneRef>
-): JSX.Element;
+): React.ReactElement;
 export function useDropzone(options?: DropzoneOptions): DropzoneState;
 
 export interface DropzoneProps extends DropzoneOptions {
-  children?(state: DropzoneState): JSX.Element;
+  children?(state: DropzoneState): React.ReactElement;
 }
 
 export enum ErrorCode {
@@ -63,7 +63,8 @@ export type DropEvent =
   | React.DragEvent<HTMLElement>
   | React.ChangeEvent<HTMLInputElement>
   | DragEvent
-  | Event;
+  | Event
+  | Array<FileSystemFileHandle>;
 
 export type DropzoneState = DropzoneRef & {
   isFocused: boolean;
