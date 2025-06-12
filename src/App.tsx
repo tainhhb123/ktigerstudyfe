@@ -3,8 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 
 // Dashboard pages & layout
-import AppLayout from "./layout/AppLayout";
+import AppLayout from "./layout/learn/AppLayout";
 import Home from "./pages/Dashboard/Home";
+import LearnHome from "./pages/Learn/LearnHome";
 import UserProfiles from "./pages/UserProfiles";
 import Calendar from "./pages/Calendar";
 import Blank from "./pages/Blank";
@@ -32,6 +33,8 @@ import MyClass from "./pages/document/mylibrary/MyClass";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
+import Level from "./pages/Learn/Level";
+import Lesson from "./pages/Learn/Lesson";
 
 export default function App() {
   return (
@@ -72,6 +75,14 @@ export default function App() {
             <Route path="lophocthamgia" element={<MyClass />} />
           </Route>
         </Route>
+
+              // === Learn Layout ===
+        <Route path="learn/*" element={<AppLayout />}>
+          <Route index element={<LearnHome />} />                
+          <Route path="level" element={<Level />} />            
+          <Route path="lesson" element={<Lesson />} />          
+        </Route>
+
 
         {/* === Auth & Fallback === */}
         <Route path="signin" element={<SignIn />} />
