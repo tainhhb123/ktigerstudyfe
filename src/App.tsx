@@ -33,6 +33,8 @@ import AppLayoutDocument from "./layout/document/AppLayoutDocument";
 // Common
 import { ScrollToTop } from "./components/common/ScrollToTop";
 
+
+
 export default function App() {
   return (
     <Router>
@@ -63,9 +65,14 @@ export default function App() {
           <Route path="images" element={<Images />} />
           <Route path="videos" element={<Videos />} />
 
+
           {/* Charts */}
           <Route path="line-chart" element={<LineChart />} />
           <Route path="bar-chart" element={<BarChart />} />
+
+          {/* FlashCardFlashCard */}
+          <Route path="/flashcard" element={<FlashCard />} />
+
 
           {/* Document Layout */}
           <Route path="documents" element={<AppLayoutDocument />}>
