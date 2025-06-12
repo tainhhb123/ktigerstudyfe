@@ -16,7 +16,7 @@ export default function Home() {
             Tài liệu gợi ý cho bạn
           </p>
           <Link
-            to="/tailieu"
+            to="/documents/tailieu"
             className="text-sm font-medium text-indigo-600 hover:underline"
           >
             Xem thêm

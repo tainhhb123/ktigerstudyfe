@@ -3,10 +3,10 @@ import { Link, useLocation } from "react-router-dom";
 import PageMeta from "../../../components/document/common/PageMeta";
 
 const tabs = [
-    { label: "Tài liệu", path: "/Library/tai-lieu" },
-    { label: "Tài liệu yêu thích", path: "/Library/tailieuyeuthich" },
-    { label: "Lớp học của tôi", path: "/Library/lop-hoc" },
-    { label: "Lớp học tham gia", path: "/Library/lophocthamgia" },
+    { label: "Tài liệu", path: "/documents/Library/tai-lieu" },
+    { label: "Tài liệu yêu thích", path: "/documents/Library/tailieuyeuthich" },
+    { label: "Lớp học của tôi", path: "/documents/Library/lop-hoc" },
+    { label: "Lớp học tham gia", path: "/documents/Library/lophocthamgia" },
 ];
 
 export default function MyClass(): JSX.Element {

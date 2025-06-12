@@ -25,6 +25,7 @@ import BarChart from "./pages/Charts/BarChart";
 import AppLayoutDocument from "./layout/document/AppLayoutDocument";
 import HomeDocument from "./pages/document/Dashboard/Home";
 import DocumentDe from "./pages/document/Dashboard/DocumentDe";
+import FlashCardsFull from "./pages/document/documentdetail/FlashCardsFull";
 import FlashCard from "./pages/document/FlashCard";
 import MyClass from "./pages/document/mylibrary/MyClass";
 
@@ -64,7 +65,10 @@ export default function App() {
           <Route index element={<HomeDocument />} />
           <Route path="document-de" element={<DocumentDe />} />
           <Route path="flashcard" element={<FlashCard />} />
-          <Route path="library">
+          <Route path="flashcardsfull" element={<FlashCardsFull />} />
+          {/* <Route path="/study" element={<StudyPage />} />
+        <Route path="/quiz" element={<QuizPage />} /> */}
+          <Route path="library" element={<MyClass />}>
             <Route index element={<Navigate to="lop-hoc" replace />} />
             <Route path="lop-hoc" element={<MyClass />} />
             <Route path="tai-lieu" element={<MyClass />} />
