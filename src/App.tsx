@@ -11,7 +11,7 @@ import Calendar from "./pages/Calendar";
 import Blank from "./pages/Blank";
 import FormElements from "./pages/Forms/FormElements";
 import BasicTables from "./pages/Tables/BasicTables";
-import UserInformation from "./pages/Tables/UserInforPage";
+import UserInformation from "./pages/Tables/AdminTablePages/UserInforPage";
 import StudenProcessTables from "./pages/Tables/StudenProcessTables";
 import Alerts from "./pages/UiElements/Alerts";
 import Avatars from "./pages/UiElements/Avatars";
@@ -21,6 +21,7 @@ import Images from "./pages/UiElements/Images";
 import Videos from "./pages/UiElements/Videos";
 import LineChart from "./pages/Charts/LineChart";
 import BarChart from "./pages/Charts/BarChart";
+import StudenProcess from "./pages/Tables/AdminTablePages/StudentProgressPage";
 
 // Document pages & layout
 import AppLayoutDocument from "./layout/document/AppLayoutDocument";
@@ -55,6 +56,8 @@ export default function App() {
           <Route path="basic-tables" element={<BasicTables />} />
           <Route path="userinfo-table" element={<UserInformation />} />
           <Route path="studentprocess-table" element={<StudenProcessTables />} />
+          <Route path="studentprocess" element={<StudenProcess />} />
+
           <Route path="alerts" element={<Alerts />} />
           <Route path="avatars" element={<Avatars />} />
           <Route path="badge" element={<Badges />} />

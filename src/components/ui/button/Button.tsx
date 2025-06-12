@@ -1,14 +1,14 @@
-import { ReactNode } from "react";
+// src/components/ui/button/Button.tsx
+import React, { ReactNode, ButtonHTMLAttributes } from "react";
 
-interface ButtonProps {
-  children: ReactNode; // Button text or content
-  size?: "sm" | "md"; // Button size
-  variant?: "primary" | "outline"; // Button variant
-  startIcon?: ReactNode; // Icon before the text
-  endIcon?: ReactNode; // Icon after the text
-  onClick?: () => void; // Click handler
-  disabled?: boolean; // Disabled state
-  className?: string; // Disabled state
+export interface ButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement> {
+  children: ReactNode;                 // Nội dung button
+  size?: "sm" | "md";                  // Kích thước
+  variant?: "primary" | "outline";     // Kiểu button
+  startIcon?: ReactNode;               // Icon trước text
+  endIcon?: ReactNode;                 // Icon sau text
+  className?: string;                  // Class mở rộng
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -17,18 +17,17 @@ const Button: React.FC<ButtonProps> = ({
   variant = "primary",
   startIcon,
   endIcon,
-  onClick,
   className = "",
-  disabled = false,
+  ...rest // bao gồm type, disabled, onClick, v.v.
 }) => {
-  // Size Classes
-  const sizeClasses = {
+  // Classes theo size
+  const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {
     sm: "px-4 py-3 text-sm",
     md: "px-5 py-3.5 text-sm",
   };
 
-  // Variant Classes
-  const variantClasses = {
+  // Classes theo variant
+  const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
     primary:
       "bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600 disabled:bg-brand-300",
     outline:
@@ -37,13 +36,14 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-lg transition ${className} ${
-        sizeClasses[size]
-      } ${variantClasses[variant]} ${
-        disabled ? "cursor-not-allowed opacity-50" : ""
-      }`}
-      onClick={onClick}
-      disabled={disabled}
+      {...rest}
+      className={[
+        "inline-flex items-center justify-center gap-2 rounded-lg transition",
+        sizeClasses[size],
+        variantClasses[variant],
+        className,
+        rest.disabled ? "cursor-not-allowed opacity-50" : ""
+      ].join(" ")}
     >
       {startIcon && <span className="flex items-center">{startIcon}</span>}
       {children}

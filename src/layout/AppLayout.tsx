@@ -4,7 +4,6 @@ import { Outlet } from "react-router-dom";
 import AppHeader from "./AppHeader";
 import AppSidebar from "./AppSidebar";
 import Backdrop from "./Backdrop";
-import SidebarWidget from "./SidebarWidget";
 
 // Dashboard layout content that reads sidebar state
 function DashboardLayoutContent() {
@@ -26,7 +25,6 @@ function DashboardLayoutContent() {
         </main>
       </div>
 
-      <SidebarWidget />
     </div>
   );
 }
