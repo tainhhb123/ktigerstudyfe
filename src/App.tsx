@@ -28,7 +28,9 @@ import HomeDocument from "./pages/document/Dashboard/Home";
 import DocumentDe from "./pages/document/Dashboard/DocumentDe";
 import FlashCardsFull from "./pages/document/documentdetail/FlashCardsFull";
 import FlashCard from "./pages/document/FlashCard";
+import Library from "./pages/document/Library";
 import MyClass from "./pages/document/mylibrary/MyClass";
+import CourseOverview from "./pages/document/mylibrary/CourseOverview";
 
 // Auth & misc
 import SignIn from "./pages/AuthPages/SignIn";
@@ -71,10 +73,10 @@ export default function App() {
           <Route path="flashcardsfull" element={<FlashCardsFull />} />
           {/* <Route path="/study" element={<StudyPage />} />
         <Route path="/quiz" element={<QuizPage />} /> */}
-          <Route path="library" element={<MyClass />}>
+          <Route path="Library/*" element={<Library />}>
             <Route index element={<Navigate to="lop-hoc" replace />} />
-            <Route path="lop-hoc" element={<MyClass />} />
-            <Route path="tai-lieu" element={<MyClass />} />
+            <Route index path="lop-hoc" element={<MyClass />} />
+            <Route path="tai-lieu" element={<CourseOverview />} />
             <Route path="tailieuyeuthich" element={<MyClass />} />
             <Route path="lophocthamgia" element={<MyClass />} />
           </Route>
@@ -82,9 +84,9 @@ export default function App() {
 
               // === Learn Layout ===
         <Route path="learn/*" element={<AppLayout />}>
-          <Route index element={<LearnHome />} />                
-          <Route path="level" element={<Level />} />            
-          <Route path="lesson" element={<Lesson />} />          
+          <Route index element={<LearnHome />} />
+          <Route path="level" element={<Level />} />
+          <Route path="lesson" element={<Lesson />} />
         </Route>
 
 

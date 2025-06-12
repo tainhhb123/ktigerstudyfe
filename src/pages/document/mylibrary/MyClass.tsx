@@ -19,24 +19,46 @@ export default function MyClass(): JSX.Element {
                 description="Bạn chưa tham gia hoặc tạo lớp học nào"
             />
 
-            <div className="px-4 py-8 md:px-8">
-                {/* Tiêu đề */}
-                <h1 className="text-2xl font-bold text-gray-900">Thư viện của bạn</h1>
+            <div className="">
 
-                {/* Tabs điều hướng */}
-                <div className="flex space-x-6 mt-6 border-b border-gray-200">
-                    {tabs.map((tab) => (
-                        <Link
-                            key={tab.path}
-                            to={tab.path}
-                            className={`pb-2 text-sm font-medium transition ${location.pathname === tab.path
-                                ? "text-indigo-600 border-b-2 border-indigo-600"
-                                : "text-gray-600 hover:text-indigo-500"
-                                }`}
+                {/* Header Tabs */}
+                <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center justify-between">
+                    <nav className="flex space-x-4 text-sm font-medium text-gray-700">
+                        {tabs.map((tab) => (
+                            <a
+                                key={tab.path}
+                                href={tab.path}
+                                className={`py-2 px-4 rounded-lg transition-colors duration-200 ${location.pathname === tab.path
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "hover:bg-gray-100 hover:text-gray-900"
+                                    }`}
+                            >
+                                {tab.label}
+                            </a>
+                        ))}
+                    </nav>
+
+                    {/* Search Bar */}
+                    <div className="relative flex items-center w-80">
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm thẻ ghi nhớ"
+                            className="w-full py-2 pl-4 pr-10 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        />
+                        <svg
+                            className="absolute right-3 text-gray-400 h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                         >
-                            {tab.label}
-                        </Link>
-                    ))}
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            ></path>
+                        </svg>
+                    </div>
                 </div>
 
                 {/* Nội dung chính */}
