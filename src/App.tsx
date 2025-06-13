@@ -33,6 +33,7 @@ import FlashCard from "./pages/document/FlashCard";
 import Library from "./pages/document/Library";
 import MyClass from "./pages/document/mylibrary/MyClass";
 import CourseOverview from "./pages/document/mylibrary/CourseOverview";
+import ParticipateClass from "./pages/document/mylibrary/ParticipateClass";
 
 // Auth & misc
 import SignIn from "./pages/AuthPages/SignIn";
@@ -84,16 +85,16 @@ export default function App() {
             <Route index path="lop-hoc" element={<MyClass />} />
             <Route path="tai-lieu" element={<CourseOverview />} />
             <Route path="tailieuyeuthich" element={<MyClass />} />
-            <Route path="lophocthamgia" element={<MyClass />} />
+            <Route path="lophocthamgia" element={<ParticipateClass />} />
           </Route>
         </Route>
 
               // === Learn Layout ===
         <Route path="learn/*" element={<LearnAppLayout />}>
 
-          <Route index element={<LearnHome />} />                
-          <Route path="level" element={<Level />} />            
-          <Route path="lesson" element={<Lesson />} />         
+          <Route index element={<LearnHome />} />
+          <Route path="level" element={<Level />} />
+          <Route path="lesson" element={<Lesson />} />
           <Route path="lesson-detail" element={<LessonDetail />} />
 
         </Route>
