@@ -96,6 +96,7 @@ export default function App() {
           <Route path="lesson" element={<Lesson />} />         
           <Route path="lesson-detail" element={<LessonDetail />} />
 
+
         </Route>
 
 
