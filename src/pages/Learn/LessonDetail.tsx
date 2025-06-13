@@ -19,27 +19,37 @@ export default function LessonDetail() {
   if (!lessonId) return <div>Không có bài học nào.</div>;
 
   return (
-    <div className="max-w-3xl mx-auto py-6 px-4">
-      {/* Navigation tabs */}
-      <div className="flex justify-around bg-white shadow-md rounded-xl p-2 mb-6">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            className={`flex flex-col items-center px-4 py-2 transition ${
-            activeTab === tab.key ? "text-blue-600 font-bold" : "text-gray-500"
-            }`}
-            onClick={() => setActiveTab(tab.key)}
-          >
-            <div className="text-2xl">{tab.icon}</div>
-            <div className="text-sm">{tab.label}</div>
-          </button>
-        ))}
+    <div className="min-h-screen bg-white">
+      {/* Tabs cố định phía trên */}
+      <div className="fixed top-19 left-78 right-7 z-50 bg-white shadow-md">
+
+        <div className="flex justify-around border-b border-gray-200 w-full">
+
+
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              className={`flex-1 flex flex-col items-center py-3 transition text-sm font-medium
+                ${
+                  activeTab === tab.key
+                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                    : "text-gray-500 hover:bg-gray-100"
+                }`}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              <div className="text-xl">{tab.icon}</div>
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Nội dung tương ứng */}
-      {activeTab === "vocab" && <Vocabulary lessonId={lessonId} />}
-      {activeTab === "grammar" && <Grammar lessonId={lessonId} />}
-      {activeTab === "exercise" && <Exercise lessonId={lessonId} />}
+      <div className="max-w-3xl mx-auto pt-24 px-4">
+        {activeTab === "vocab" && <Vocabulary lessonId={lessonId} />}
+        {activeTab === "grammar" && <Grammar lessonId={lessonId} />}
+        {activeTab === "exercise" && <Exercise lessonId={lessonId} />}
+      </div>
     </div>
   );
 }

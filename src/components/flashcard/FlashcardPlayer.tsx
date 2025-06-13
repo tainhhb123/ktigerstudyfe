@@ -1,3 +1,4 @@
+//src/components/flashcard/FlashcardPlayer.tsx
 import React, { useState, useEffect } from "react";
 
 interface Flashcard {

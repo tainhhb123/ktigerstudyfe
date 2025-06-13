@@ -1,4 +1,4 @@
-// src/pages/Learn/Lesson.tsx
+//src/services/VocabularyApi.ts
 import axios from "axios";
 
 export const getVocabularyByLessonId = async (lessonId: string | number) => {

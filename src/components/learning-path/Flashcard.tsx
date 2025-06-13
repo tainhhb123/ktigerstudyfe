@@ -22,6 +22,7 @@ interface Flashcard {
   id: number;
   term: string;
   meaning: string;
+  example?: string; 
 }
 interface Props {
   lessonId: string;
@@ -43,14 +44,16 @@ export default function FlashCard({ lessonId }: Props) {
   };
 
     useEffect(() => {
+    console.log("lessonId:", lessonId);
     getVocabularyByLessonId(lessonId)
         .then((data) => {
         const mapped = data.map((vocab: Vocabulary) => ({
             id: vocab.vocabId,
             term: vocab.word,
             meaning: vocab.meaning,
+            example: vocab.example 
         }));
-        setVocabularies(mapped); // mapped là kiểu đúng Flashcard
+        setVocabularies(mapped); 
         })
         .catch((error) => console.error("Error fetching vocabularies:", error));
     }, [lessonId]);

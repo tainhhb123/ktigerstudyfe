@@ -8,7 +8,8 @@ import { getLessonsByLevelId} from "../../services/LessonApi";
 function StickyRoadmapHeader({ section, title, onGuide, bgColorClass }: { section: string, title: string, onGuide: () => void,  bgColorClass: string; }) {
   return (
     <div className={`sticky top-[75px] z-50 w-full`}>
-      <div className={`${bgColorClass} px-4 py-3 rounded-b-xl shadow-md flex items-center justify-between transition-colors duration-500`}>
+      <div className={`${bgColorClass} px-6 py-5 rounded-b-2xl shadow-lg flex items-center justify-between transition-colors duration-500 text-xl font-semibold`}>
+
         <div className="font-bold text-white">{section}</div>
         <button
           className="bg-white text-xs px-4 py-2 rounded font-bold"
@@ -53,7 +54,7 @@ export default function Lesson() {
         const el = document.getElementById(`lesson-${lessons[i].lessonId}`);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= 400) {
+          if (rect.top <= 500) {
             setCurrent(lessons[i]);
             break;
           }

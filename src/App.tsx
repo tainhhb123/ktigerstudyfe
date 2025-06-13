@@ -90,7 +90,6 @@ export default function App() {
 
               // === Learn Layout ===
         <Route path="learn/*" element={<LearnAppLayout />}>
-
           <Route index element={<LearnHome />} />                
           <Route path="level" element={<Level />} />            
           <Route path="lesson" element={<Lesson />} />         
