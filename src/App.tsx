@@ -3,7 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 
 // Dashboard pages & layout
-import AppLayout from "./layout/learn/AppLayout";
+import AppLayout from "./layout/admin/AdminAppLayout";
+import LearnAppLayout from "./layout/learn/AppLayout";
+
 import Home from "./pages/Dashboard/Home";
 import LearnHome from "./pages/Learn/LearnHome";
 import UserProfiles from "./pages/UserProfiles";
@@ -49,7 +51,7 @@ export default function App() {
 
       <Routes>
         {/* === Dashboard Layout === */}
-        <Route element={<AppLayout />}>
+        <Route path="admin/*" element={<AppLayout />}>
           <Route index element={<Home />} />
           <Route path="profile" element={<UserProfiles />} />
           <Route path="calendar" element={<Calendar />} />
@@ -88,17 +90,12 @@ export default function App() {
         </Route>
 
               // === Learn Layout ===
-        <Route path="learn/*" element={<AppLayout />}>
-<<<<<<< HEAD
+        <Route path="learn/*" element={<LearnAppLayout />}>
           <Route index element={<LearnHome />} />                
           <Route path="level" element={<Level />} />            
           <Route path="lesson" element={<Lesson />} />         
           <Route path="lesson-detail" element={<LessonDetail />} />
-=======
-          <Route index element={<LearnHome />} />
-          <Route path="level" element={<Level />} />
-          <Route path="lesson" element={<Lesson />} />
->>>>>>> 685e274fdbb66089c3c6e5d752b9788f2964549a
+
         </Route>
 
 

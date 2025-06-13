@@ -13,6 +13,7 @@ interface SignInResponse {
   email: string;
   fullName: string;
   token: string;
+  role: "ADMIN" | "USER";    // ← thêm role
 }
 
 const SignInForm: React.FC = () => {
@@ -40,17 +41,23 @@ const SignInForm: React.FC = () => {
         "http://localhost:8080/api/auth/signin",
         { email, password }
       );
-      const { token } = res.data;
+      const { token, role } = res.data;   // ← lấy thêm role
 
       // Lưu token
       if (keepLoggedIn) {
         localStorage.setItem("authToken", token);
+        localStorage.setItem("userRole", role);
       } else {
         sessionStorage.setItem("authToken", token);
+        sessionStorage.setItem("userRole", role);
       }
 
-      // Điều hướng về dashboard
-      navigate("/");
+      // Điều hướng theo role
+      if (role === "ADMIN") {
+        navigate("/admin");
+      } else {
+        navigate("/learn");
+      }
     } catch (err) {
       const axiosErr = err as AxiosError<{ message: string }>;
       setError(
