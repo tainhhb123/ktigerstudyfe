@@ -3,8 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 
 // Dashboard pages & layout
-import AppLayout from "./layout/AppLayout";
+import AppLayout from "./layout/admin/AdminAppLayout";
 import LearnAppLayout from "./layout/learn/AppLayout";
+
 import Home from "./pages/Dashboard/Home";
 import LearnHome from "./pages/Learn/LearnHome";
 import UserProfiles from "./pages/UserProfiles";
@@ -33,6 +34,7 @@ import FlashCard from "./pages/document/FlashCard";
 import Library from "./pages/document/Library";
 import MyClass from "./pages/document/mylibrary/MyClass";
 import CourseOverview from "./pages/document/mylibrary/CourseOverview";
+import ParticipateClass from "./pages/document/mylibrary/ParticipateClass";
 
 // Auth & misc
 import SignIn from "./pages/AuthPages/SignIn";
@@ -50,7 +52,7 @@ export default function App() {
 
       <Routes>
         {/* === Dashboard Layout === */}
-        <Route element={<AppLayout />}>
+        <Route path="admin/*" element={<AppLayout />}>
           <Route index element={<Home />} />
           <Route path="profile" element={<UserProfiles />} />
           <Route path="calendar" element={<Calendar />} />
@@ -84,16 +86,17 @@ export default function App() {
             <Route index path="lop-hoc" element={<MyClass />} />
             <Route path="tai-lieu" element={<CourseOverview />} />
             <Route path="tailieuyeuthich" element={<MyClass />} />
-            <Route path="lophocthamgia" element={<MyClass />} />
+            <Route path="lophocthamgia" element={<ParticipateClass />} />
           </Route>
         </Route>
 
               // === Learn Layout ===
         <Route path="learn/*" element={<LearnAppLayout />}>
-          <Route index element={<LearnHome />} />                
-          <Route path="level" element={<Level />} />            
-          <Route path="lesson" element={<Lesson />} />         
+          <Route index element={<LearnHome />} />
+          <Route path="level" element={<Level />} />
+          <Route path="lesson" element={<Lesson />} />
           <Route path="lesson-detail" element={<LessonDetail />} />
+
 
         </Route>
 

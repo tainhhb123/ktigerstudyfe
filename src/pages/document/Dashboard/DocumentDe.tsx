@@ -20,9 +20,13 @@ const author = {
     createdAt: "11달 전 생성함",
 };
 
+// Hàm shuffle danh sách
+const shuffleArray = (array: any[]) => {
+    return [...array].sort(() => Math.random() - 0.5);
+};
+
 export default function FlashCard() {
-    // `setVocabularies` vẫn cần thiết nếu bạn có chức năng xáo trộn sau này
-    const [vocabularies] = useState(initialVocabularies);
+    const [vocabularies, setVocabularies] = useState(initialVocabularies);
     const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
     const currentFlashcard = vocabularies[currentCardIndex];
@@ -37,19 +41,18 @@ export default function FlashCard() {
         );
     };
 
-
+    const handleShuffle = () => {
+        const shuffled = shuffleArray(vocabularies);
+        setVocabularies(shuffled);
+        setCurrentCardIndex(0); // reset về thẻ đầu tiên sau khi shuffle
+    };
 
     useEffect(() => {
-        // Đây là nơi bạn sẽ fetch dữ liệu thực tế từ backend nếu cần
-        // Ví dụ:
-        // fetch('/api/vocabularies')
-        //   .then(response => response.json())
-        //   .then(data => setVocabularies(data))
-        //   .catch(error => console.error('Error fetching vocabularies:', error));
+        // Fetch từ backend nếu cần
+        // fetch('/api/vocabularies').then...
     }, []);
 
     return (
-        // Thay đổi nền tổng thể từ màu tối sang màu trắng/xám nhạt
         <div className="min-h-screen bg-gray-50 flex flex-col items-center px-2 py-4">
             {/* Tiêu đề lớn */}
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 text-center">
@@ -68,7 +71,7 @@ export default function FlashCard() {
 
             <FunctionBar />
 
-            {/* Flashcard Player (center) */}
+            {/* Flashcard Player */}
             <div className="w-full max-w-3xl mt-6">
                 {vocabularies.length > 0 ? (
                     <FlashcardPlayer
@@ -77,22 +80,20 @@ export default function FlashCard() {
                         onPrevious={goToPreviousCard}
                         currentIndex={currentCardIndex}
                         totalCards={vocabularies.length}
+                        onShuffle={handleShuffle} // truyền vào nút xáo trộn
                     />
                 ) : (
-                    // Thay đổi màu chữ khi đang tải để phù hợp với nền sáng
                     <p className="text-gray-700 text-center text-lg">Đang tải từ vựng...</p>
                 )}
             </div>
 
-            {/* Info người đăng */}
+            {/* Thông tin người đăng */}
             <div className="w-full max-w-3xl mt-2">
-                {/* AuthorCard đã tự có nền trắng, không cần thay đổi gì thêm ở đây */}
                 <AuthorCard {...author} />
             </div>
 
-            {/* Danh sách từ vựng phía dưới */}
+            {/* Danh sách từ vựng */}
             <div className="w-full max-w-3xl mt-8">
-                {/* VocabularyList đã tự có nền trắng và chữ đen, không cần thay đổi gì thêm ở đây */}
                 <VocabularyList vocabularies={vocabularies} />
             </div>
         </div>

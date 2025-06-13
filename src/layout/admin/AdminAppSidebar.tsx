@@ -15,8 +15,8 @@ import {
   TableIcon,
   UserCircleIcon,
   UserIcon,
-} from "../icons";
-import { useSidebar } from "../context/SidebarContext";
+} from "../../icons";
+import { useSidebar } from "../../context/SidebarContext";
 
 type NavItem = {
   name: string;
@@ -30,10 +30,10 @@ const navItems: NavItem[] = [
   {
     icon: <UserIcon />,
     name: "Quản lí học viên ",
-    subItems: [{ name: "Quản lí thông tin học viên", path: "/userinfo-table", pro: false },
-              { name: "Quản lí tiến trình học tập học viên ", path: "/studentprocess", pro: false },
-              { name: "Quản lí tài liệu học viên ", path: "/", pro: false },
-              { name: "Quản lí báo cáo", path: "/", pro: false },
+    subItems: [{ name: "Quản lí thông tin học viên", path: "/admin/userinfo-table", pro: false },
+              { name: "Quản lí tiến trình học tập học viên ", path: "/admin/studentprocess", pro: false },
+              { name: "Quản lí tài liệu học viên ", path: "/admin", pro: false },
+              { name: "Quản lí báo cáo", path: "/admin", pro: false },
     ],
 
   },

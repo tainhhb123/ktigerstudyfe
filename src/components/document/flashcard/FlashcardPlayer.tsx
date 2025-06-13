@@ -12,6 +12,7 @@ interface FlashcardPlayerProps {
   onPrevious: () => void;
   currentIndex: number;
   totalCards: number;
+  onShuffle: () => void; // thêm props mới
 }
 
 const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
@@ -20,15 +21,14 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
   onPrevious,
   currentIndex,
   totalCards,
+  onShuffle,
 }) => {
   const [flipped, setFlipped] = useState(false);
 
-  // Reset về mặt trước khi đổi flashcard
   useEffect(() => {
     setFlipped(false);
   }, [flashcard]);
 
-  // Kiểm tra nếu không có flashcard nào được truyền vào
   if (!flashcard) {
     return (
       <div className="flex flex-col items-center justify-center w-full max-w-2xl h-64 rounded-2xl bg-white shadow-md text-gray-700 text-lg">
@@ -39,7 +39,7 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
-      {/* Card 3D */}
+      {/* Flashcard */}
       <div
         className="relative w-full max-w-2xl h-64 mb-6 cursor-pointer"
         style={{ perspective: "1200px" }}
@@ -52,7 +52,7 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
             transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}
         >
-          {/* FRONT */}
+          {/* Front */}
           <div
             className="absolute inset-0 rounded-2xl flex items-center justify-center text-gray-800 text-3xl font-semibold p-4"
             style={{
@@ -64,7 +64,7 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
           >
             <div className="px-4 text-center">{flashcard.term}</div>
           </div>
-          {/* BACK */}
+          {/* Back */}
           <div
             className="absolute inset-0 rounded-2xl flex items-center justify-center text-gray-800 text-3xl font-bold p-4"
             style={{
@@ -79,7 +79,7 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
         </div>
       </div>
 
-      {/* Pagination + Control */}
+      {/* Controls */}
       <div className="flex flex-row items-center justify-center space-x-8 mb-2">
         <button
           className="bg-gray-200 text-gray-700 rounded-full h-12 w-12 flex items-center justify-center text-2xl hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -100,19 +100,25 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
         </button>
       </div>
 
-      {/* Footer */}
-      <div className="flex justify-end w-full max-w-2xl mt-2 px-4">
+      {/* Nút shuffle */}
+      <div className="flex items-center justify-between w-full max-w-2xl px-4 mb-6">
+        <button
+          className="bg-purple-100 text-purple-700 text-sm px-4 py-2 rounded-md hover:bg-purple-200 transition"
+          onClick={onShuffle}
+        >
+          🔀 Đảo ngẫu nhiên danh sách
+        </button>
         <button className="p-2 rounded hover:bg-gray-200 text-red-500 transition">
-          {/* Heart Icon */}
           <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
-               2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09 
-               C13.09 3.81 14.76 3 16.5 3 
-               19.58 3 22 5.42 22 8.5 
-               c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                           2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09 
+                           C13.09 3.81 14.76 3 16.5 3 
+                           19.58 3 22 5.42 22 8.5 
+                           c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
           </svg>
         </button>
       </div>
+
 
     </div>
   );

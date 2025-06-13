@@ -1,9 +1,9 @@
 // src/layout/AppLayout.tsx
-import { SidebarProvider, useSidebar } from "../context/SidebarContext";
+import { SidebarProvider, useSidebar } from "../../context/SidebarContext";
 import { Outlet } from "react-router-dom";
-import AppHeader from "./AppHeader";
-import AppSidebar from "./AppSidebar";
-import Backdrop from "./Backdrop";
+import AppHeader from "./AdminAppHeader";
+import AppSidebar from "./AdminAppSidebar";
+import Backdrop from "./AdminBackdrop";
 
 // Dashboard layout content that reads sidebar state
 function DashboardLayoutContent() {

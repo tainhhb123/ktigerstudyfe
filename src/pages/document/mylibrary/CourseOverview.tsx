@@ -41,7 +41,7 @@ export default function CourseOverview() {
                     <input
                         type="text"
                         placeholder="Tìm kiếm thẻ ghi nhớ"
-                        className="w-full py-2 pl-4 pr-10 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        className="w-full py-2 pl-4 pr-10 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm placeholder-gray-500" // Added placeholder-gray-500 for softer placeholder
                     />
                     <svg
                         className="absolute right-3 text-gray-400 h-5 w-5"
@@ -61,39 +61,39 @@ export default function CourseOverview() {
 
             {/* ÍT GIỜ TRƯỚC */}
             <div className="mb-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">ÍT GIỜ TRƯỚC</h3>
-                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg hover:border-blue-300 transition cursor-pointer">
+                <h3 className="text-lg font-medium text-gray-700 mb-3">ÍT GIỜ TRƯỚC</h3> {/* Changed font-semibold to font-medium and text-gray-800 to text-gray-700 */}
+                <div className="bg-white rounded-xl shadow-md p-5 border border-gray-200 hover:shadow-lg hover:border-blue-300 transition cursor-pointer">
                     <div className="flex items-center mb-2">
-                        <span className="text-blue-600 font-bold text-lg mr-2">147 thuật ngữ</span>
+                        <span className="text-blue-600 font-semibold text-base mr-2">147 thuật ngữ</span> {/* Retained font-semibold for the number for slight emphasis */}
                         <img
-                            src="https://via.placeholder.com/24"
+                            src="https://via.placeholder.com/20"
                             alt="Huyen0996"
-                            className="w-6 h-6 rounded-full mr-2"
+                            className="w-5 h-5 rounded-full mr-2"
                         />
-                        <span className="text-gray-700 font-medium">Huyen0996</span>
-                        <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                        <span className="text-gray-600 text-sm">Huyen0996</span> {/* Removed font-medium for a softer look, changed to text-gray-600 */}
+                        <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-full"> {/* Changed font-semibold to font-medium */}
                             Giáo viên
                         </span>
                     </div>
-                    <p className="text-gray-900 text-2xl font-bold">từ vựng tiếng anh</p>
+                    <p className="text-gray-800 text-xl font-normal">từ vựng tiếng anh</p> {/* Changed font-bold to font-normal and text-gray-900 to text-gray-800 */}
                 </div>
             </div>
 
             {/* THÁNG 4 NĂM 2025 */}
             <div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">THÁNG 4 NĂM 2025</h3>
-                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg hover:border-purple-300 transition cursor-pointer">
+                <h3 className="text-lg font-medium text-gray-700 mb-3">THÁNG 4 NĂM 2025</h3> {/* Changed font-semibold to font-medium and text-gray-800 to text-gray-700 */}
+                <div className="bg-white rounded-xl shadow-md p-5 border border-gray-200 hover:shadow-lg hover:border-purple-300 transition cursor-pointer">
                     <div className="flex items-center mb-2">
-                        <span className="text-purple-600 font-bold text-lg mr-2">29 thuật ngữ</span>
+                        <span className="text-purple-600 font-semibold text-base mr-2">29 thuật ngữ</span> {/* Retained font-semibold for the number for slight emphasis */}
                         <img
-                            src="https://via.placeholder.com/24"
+                            src="https://via.placeholder.com/20"
                             alt="vuthingocdiep58"
-                            className="w-6 h-6 rounded-full mr-2"
+                            className="w-5 h-5 rounded-full mr-2"
                         />
-                        <span className="text-gray-700 font-medium">vuthingocdiep58</span>
+                        <span className="text-gray-600 text-sm">vuthingocdiep58</span> {/* Removed font-medium for a softer look, changed to text-gray-600 */}
                         <span className="ml-auto text-gray-400">
                             <svg
-                                className="w-5 h-5 inline-block"
+                                className="w-4 h-4 inline-block"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -107,7 +107,7 @@ export default function CourseOverview() {
                             </svg>
                         </span>
                     </div>
-                    <p className="text-gray-900 text-2xl font-bold">Tiếng Hàn trung cấp cấp 3</p>
+                    <p className="text-gray-800 text-xl font-normal">Tiếng Hàn trung cấp cấp 3</p> {/* Changed font-bold to font-normal and text-gray-900 to text-gray-800 */}
                 </div>
             </div>
         </div>
