@@ -5,6 +5,8 @@ layer(base);
 
 @custom-variant dark (&:is(.dark *));
 
+
+
 @theme {
   --font-*: initial;
   --font-outfit: 'Manrope', sans-serif;
