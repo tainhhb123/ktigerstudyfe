@@ -13,8 +13,7 @@ import Calendar from "./pages/Calendar";
 import Blank from "./pages/Blank";
 import FormElements from "./pages/Forms/FormElements";
 import BasicTables from "./pages/Tables/BasicTables";
-import UserInformation from "./pages/Tables/AdminTablePages/UserInforPage";
-import StudenProcessTables from "./pages/Tables/StudenProcessTables";
+import UserInformation from "./pages/Admin/LearnerManager/LearnerInforPage";
 import Alerts from "./pages/UiElements/Alerts";
 import Avatars from "./pages/UiElements/Avatars";
 import Badges from "./pages/UiElements/Badges";
@@ -23,7 +22,9 @@ import Images from "./pages/UiElements/Images";
 import Videos from "./pages/UiElements/Videos";
 import LineChart from "./pages/Charts/LineChart";
 import BarChart from "./pages/Charts/BarChart";
-import StudenProcess from "./pages/Tables/AdminTablePages/StudentProgressPage";
+import StudenProcess from "./pages/Admin/LearnerManager/LearnerProgressPage";
+import StudentDocument from "./pages/Admin/DocumentManager/DocumentPage";
+
 
 // Document pages & layout
 import AppLayoutDocument from "./layout/document/AppLayoutDocument";
@@ -59,9 +60,11 @@ export default function App() {
           <Route path="blank" element={<Blank />} />
           <Route path="form-elements" element={<FormElements />} />
           <Route path="basic-tables" element={<BasicTables />} />
-          <Route path="userinfo-table" element={<UserInformation />} />
-          <Route path="studentprocess-table" element={<StudenProcessTables />} />
-          <Route path="studentprocess" element={<StudenProcess />} />
+          <Route path="thongtinhocvien" element={<UserInformation />} />
+          <Route path="tientrinhhocvien" element={<StudenProcess />} />
+          <Route path="tailieuhocvien" element={<StudentDocument/>} />
+
+
 
           <Route path="alerts" element={<Alerts />} />
           <Route path="avatars" element={<Avatars />} />

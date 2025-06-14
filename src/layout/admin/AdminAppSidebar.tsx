@@ -15,6 +15,7 @@ import {
   TableIcon,
   UserCircleIcon,
   UserIcon,
+  DocsIcon,
 } from "../../icons";
 import { useSidebar } from "../../context/SidebarContext";
 
@@ -30,10 +31,18 @@ const navItems: NavItem[] = [
   {
     icon: <UserIcon />,
     name: "Quản lí học viên ",
-    subItems: [{ name: "Quản lí thông tin học viên", path: "/admin/userinfo-table", pro: false },
-              { name: "Quản lí tiến trình học tập học viên ", path: "/admin/studentprocess", pro: false },
-              { name: "Quản lí tài liệu học viên ", path: "/admin", pro: false },
-              { name: "Quản lí báo cáo", path: "/admin", pro: false },
+    subItems: [{ name: "Quản lí thông tin học viên", path: "/admin/thongtinhocvien", pro: false },
+              { name: "Quản lí tiến trình học tập học viên ", path: "/admin/tientrinhhocvien", pro: false },
+
+    ],
+
+  },
+
+  {
+    icon: <DocsIcon />,
+    name: "Quản lí tài liệu chia sẻ",
+    subItems: [{ name: "Quản lí danh sách tài liệu học viên chia sẻ", path: "/admin/tailieuhocvien", pro: false },
+              { name: "Quản lí báo cáo tài liệu", path: "/admin", pro: false },
     ],
 
   },
@@ -50,23 +59,23 @@ const navItems: NavItem[] = [
   {
     icon: <UserCircleIcon />,
     name: "User Profile",
-    path: "/profile",
+    path: "/admin/profile",
   },
   {
     name: "Forms",
     icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+    subItems: [{ name: "Form Elements", path: "/admin/form-elements", pro: false }],
   },
   {
     name: "Tables",
     icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
+    subItems: [{ name: "Basic Tables", path: "/admin/basic-tables", pro: false }],
   },
   {
     name: "Pages",
     icon: <PageIcon />,
     subItems: [
-      { name: "Blank Page", path: "/blank", pro: false },
+      { name: "Blank Page", path: "/admin/blank", pro: false },
       { name: "404 Error", path: "/error-404", pro: false },
     ],
   },
@@ -85,12 +94,12 @@ const othersItems: NavItem[] = [
     icon: <BoxCubeIcon />,
     name: "UI Elements",
     subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
-      { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
+      { name: "Alerts", path: "/admin/alerts", pro: false },
+      { name: "Avatar", path: "/admin/avatars", pro: false },
+      { name: "Badge", path: "/admin/badge", pro: false },
+      { name: "Buttons", path: "/admin/buttons", pro: false },
+      { name: "Images", path: "/admin/images", pro: false },
+      { name: "Videos", path: "/admin/videos", pro: false },
     ],
   },
   {
