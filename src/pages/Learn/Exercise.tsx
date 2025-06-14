@@ -1,6 +1,13 @@
-// src/pages/Learn/Exercise.tsx
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
+import SentenceRewritingQuestion from "../../components/learning-path/SentenceRewritingQuestion";
+import MultipleChoiceQuestion from "../../components/learning-path/MultipleChoiceQuestion";
+
+import {
+  getExercisesByLessonId,
+  getMultipleChoiceByExerciseId,
+  getSentenceRewritingByExerciseId,
+} from "../../services/ExerciseApi";
 
 interface MultipleChoiceQuestion {
   questionId: number;
@@ -22,29 +29,32 @@ type QuestionItem =
   | { type: "multiple"; data: MultipleChoiceQuestion }
   | { type: "rewrite"; data: SentenceRewritingQuestion };
 
-export default function ExerciseSection({ lessonId }: { lessonId: string }) {
+export default function Exercise({ lessonId }: { lessonId: string }) {
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isChecked, setIsChecked] = useState(false);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [questionKey, setQuestionKey] = useState(0);
 
   useEffect(() => {
     async function fetchQuestions() {
       try {
-        const res = await axios.get(`/api/exercises/lesson/${lessonId}`);
-        const exercises = res.data;
-
+        const exercises = await getExercisesByLessonId(lessonId);
         const allQuestions: QuestionItem[] = [];
 
         for (const ex of exercises) {
-          const [mcqRes, rewriteRes] = await Promise.all([
-            axios.get(`/api/mcq/exercise/${ex.exerciseId}`),
-            axios.get(`/api/sentence-rewriting/exercise/${ex.exerciseId}`),
+          const [mcq, rewrite] = await Promise.all([
+            getMultipleChoiceByExerciseId(ex.exerciseId),
+            getSentenceRewritingByExerciseId(ex.exerciseId),
           ]);
 
-          mcqRes.data.forEach((q: MultipleChoiceQuestion) => {
+          mcq.forEach((q: MultipleChoiceQuestion) => {
             allQuestions.push({ type: "multiple", data: q });
           });
 
-          rewriteRes.data.forEach((q: SentenceRewritingQuestion) => {
+          rewrite.forEach((q: SentenceRewritingQuestion) => {
             allQuestions.push({ type: "rewrite", data: q });
           });
         }
@@ -60,37 +70,53 @@ export default function ExerciseSection({ lessonId }: { lessonId: string }) {
     fetchQuestions();
   }, [lessonId]);
 
-  if (loading) return <p className="text-center py-8 text-gray-500">Đang tải dữ liệu bài tập...</p>;
+  const handleCheck = () => {
+    const current = questions[currentIdx];
+    if (current?.type === "multiple") {
+      const isCorrect = selectedAnswer === current.data.correctAnswer;
+      setIsCorrect(isCorrect);
+      setIsChecked(true);
+    }
+  };
+
+  const nextQuestion = () => {
+    setIsChecked(false);
+    setIsCorrect(null);
+    setSelectedAnswer(null);
+    setCurrentIdx((prev) => {
+      setQuestionKey(qk => qk + 1); // trigger remount animation
+      return prev + 1 < questions.length ? prev + 1 : prev;
+    });
+  };
+
+  const current = questions[currentIdx];
+  if (loading || !current) return <p>Đang tải câu hỏi...</p>;
 
   return (
-    <div className="p-4 space-y-6">
-      <h2 className="text-2xl font-bold mb-6 border-b pb-2">📝 Bài tập</h2>
+    <div className="p-4 space-y-4">
+      <AnimatePresence mode="wait">
+        {current.type === "multiple" && (
+          <MultipleChoiceQuestion
+            question={current.data}
+            onNext={nextQuestion}
+          />
+        )}
 
-      {questions.map((q, idx) => (
-        <div
-          key={idx}
-          className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition duration-300"
-        >
-          {q.type === "multiple" ? (
-            <>
-              <p className="text-blue-700 font-semibold mb-2">🔘 Câu hỏi trắc nghiệm:</p>
-              <p className="text-gray-800 mb-3">{q.data.questionText}</p>
-              <ul className="grid grid-cols-2 gap-2 text-sm text-gray-700 pl-4">
-                <li><strong>A.</strong> {q.data.optionA}</li>
-                <li><strong>B.</strong> {q.data.optionB}</li>
-                <li><strong>C.</strong> {q.data.optionC}</li>
-                <li><strong>D.</strong> {q.data.optionD}</li>
-              </ul>
-            </>
-          ) : (
-            <>
-              <p className="text-purple-700 font-semibold mb-2">✍️ Viết lại câu:</p>
-              <p className="text-gray-600">Câu gốc: <span className="text-black">{q.data.originalSentence}</span></p>
-              <p className="text-gray-600">Viết lại: <span className="text-black">{q.data.rewrittenSentence}</span></p>
-            </>
-          )}
-        </div>
-      ))}
+        {current.type === "rewrite" && (
+          <motion.div
+            key={questionKey}
+            initial={{ opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -32 }}
+            transition={{ duration: 0.5, type: "spring" }}
+          >
+            <SentenceRewritingQuestion
+              question={current.data}
+              onNext={nextQuestion}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
