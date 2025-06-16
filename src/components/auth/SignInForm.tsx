@@ -41,16 +41,13 @@ const SignInForm: React.FC = () => {
         "http://localhost:8080/api/auth/signin",
         { email, password }
       );
-      const { token, role } = res.data;   // ← lấy thêm role
+      // const { token, role } = res.data;   // ← lấy thêm role
+    const { token, role, userId } = res.data;
 
-      // Lưu token
-      if (keepLoggedIn) {
-        localStorage.setItem("authToken", token);
-        localStorage.setItem("userRole", role);
-      } else {
-        sessionStorage.setItem("authToken", token);
-        sessionStorage.setItem("userRole", role);
-      }
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("userRole", role);
+      localStorage.setItem("userId", userId.toString());
+      console.log("userId đã lưu vào localStorage:", userId);
 
       // Điều hướng theo role
       if (role === "ADMIN") {

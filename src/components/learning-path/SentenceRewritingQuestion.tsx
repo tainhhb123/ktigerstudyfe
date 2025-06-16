@@ -1,3 +1,4 @@
+//src/components/learning-path/SentenceRewritingQuestion.tsx
 import { useState } from "react";
 
 interface SentenceRewritingQuestionProps {
@@ -7,7 +8,7 @@ interface SentenceRewritingQuestionProps {
     rewrittenSentence: string;
     linkMedia?: string;
   };
-  onNext?: () => void;
+  onNext?: (isCorrect: boolean) => void; 
 }
 
 export default function SentenceRewritingQuestion({ question, onNext }: SentenceRewritingQuestionProps) {
@@ -27,7 +28,7 @@ export default function SentenceRewritingQuestion({ question, onNext }: Sentence
     setIsChecked(false);
     setIsCorrect(null);
     setUserInput("");
-    onNext && onNext();
+    if (onNext) onNext(Boolean(isCorrect));
   };
 
   return (
