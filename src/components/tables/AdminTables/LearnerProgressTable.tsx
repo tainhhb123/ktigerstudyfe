@@ -1,7 +1,8 @@
 // src/components/tables/AdminTables/StudentProgressTable.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
+import Button from "../../ui/button/Button";
 
 interface UserProgress {
   userId: number;
@@ -12,12 +13,12 @@ interface UserProgress {
   lessonName: string;
 }
 
-interface PagedResponse<T> {
+interface Paged<T> {
   content: T[];
   totalElements: number;
   totalPages: number;
-  number: number;   // current page (zero-based)
-  size: number;     // page size
+  number: number; // zero-based
+  size: number;
 }
 
 interface StudentProgressTableProps {
@@ -26,100 +27,139 @@ interface StudentProgressTableProps {
 
 export default function StudentProgressTable({ keyword }: StudentProgressTableProps) {
   const pageSize = 10;
-  const [data, setData] = useState<PagedResponse<UserProgress>>({
+  const [data, setData] = useState<Paged<UserProgress>>({
     content: [],
     totalElements: 0,
     totalPages: 1,
     number: 0,
     size: pageSize,
   });
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  // reset page when keyword changes
+  // Reset page when keyword changes
   useEffect(() => {
-    setPage(0);
+    setData((d) => ({ ...d, number: 0 }));
   }, [keyword]);
 
+  // Fetch paged data
   useEffect(() => {
     setLoading(true);
     axios
-      .get<PagedResponse<UserProgress>>(
-        `/api/user-progress/paged?page=${page}&size=${pageSize}`
+      .get<Paged<UserProgress>>(
+        `/api/user-progress/paged?page=${data.number}&size=${pageSize}`
       )
       .then((res) => setData(res.data))
       .catch(() =>
         setData({ content: [], totalElements: 0, totalPages: 1, number: 0, size: pageSize })
       )
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [data.number]);
 
-  // client-side filter if needed
-  const filtered = keyword.trim().length
-    ? data.content.filter(
-        (u) =>
-          u.fullName.toLowerCase().includes(keyword.toLowerCase()) ||
-          u.levelName.toLowerCase().includes(keyword.toLowerCase()) ||
-          u.lessonName.toLowerCase().includes(keyword.toLowerCase())
-      )
-    : data.content;
+  const { content, totalElements, totalPages, number: currentPage } = data;
+
+  // Client-side filter
+  const filtered = useMemo(
+    () =>
+      keyword.trim()
+        ? content.filter(
+            (u) =>
+              u.fullName.toLowerCase().includes(keyword.toLowerCase()) ||
+              u.levelName.toLowerCase().includes(keyword.toLowerCase()) ||
+              u.lessonName.toLowerCase().includes(keyword.toLowerCase())
+          )
+        : content,
+    [keyword, content]
+  );
+
+  // Generate pagination with ellipsis
+  const pages = useMemo<(number | string)[]>(() => {
+    const result: (number | string)[] = [];
+    const total = totalPages;
+    const curr = currentPage + 1;
+    const delta = 1;
+    const left = Math.max(2, curr - delta);
+    const right = Math.min(total - 1, curr + delta);
+    result.push(1);
+    if (left > 2) result.push("...");
+    for (let i = left; i <= right; i++) result.push(i);
+    if (right < total - 1) result.push("...");
+    if (total > 1) result.push(total);
+    return result;
+  }, [currentPage, totalPages]);
+
+  const goToPage = (idx: number) => setData((d) => ({ ...d, number: idx }));
 
   return (
     <div className="rounded-xl bg-white shadow border border-gray-200 dark:bg-white/[0.03] dark:border-white/10">
-      {/* Header with total count and pagination controls */}
+      {/* Header & Pagination */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between px-6 py-4 border-b border-gray-100 dark:border-white/10">
         <span className="font-semibold text-gray-700 dark:text-white">
-          Tổng số tiến trình học viên: {data.totalElements}
+          Tổng số tiến trình học viên: {totalElements}
         </span>
         <div className="flex items-center gap-2 mt-2 md:mt-0">
-          <button
-            disabled={page === 0}
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-white/10 dark:text-white disabled:opacity-50"
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={currentPage === 0}
+            onClick={() => goToPage(Math.max(0, currentPage - 1))}
           >
             Trước
-          </button>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            Trang {page + 1}/{data.totalPages}
-          </span>
-          <button
-            disabled={page + 1 >= data.totalPages}
-            onClick={() => setPage((p) => Math.min(data.totalPages - 1, p + 1))}
-            className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-600 dark:bg-white/10 dark:text-white disabled:opacity-50"
+          </Button>
+          {pages.map((p, idx) =>
+            p === "..." ? (
+              <span key={idx} className="px-2 text-gray-500 dark:text-gray-400">…</span>
+            ) : (
+              <Button
+                key={idx}
+                size="sm"
+                variant={p === currentPage + 1 ? "primary" : "outline"}
+                onClick={() => goToPage((p as number) - 1)}
+              >
+                {p}
+              </Button>
+            )
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={currentPage + 1 >= totalPages}
+            onClick={() => goToPage(Math.min(totalPages - 1, currentPage + 1))}
           >
             Sau
-          </button>
+          </Button>
         </div>
       </div>
 
+      {/* Table */}
       <div className="overflow-x-auto">
         <Table>
           <TableHeader className="bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-700">
             <TableRow>
-              <TableCell isHeader className="font-bold px-5 py-3 text-center border-r border-gray-200 dark:border-gray-700">Ảnh</TableCell>
-              <TableCell isHeader className="font-bold px-5 py-3 text-left border-r border-gray-200 dark:border-gray-700">Họ tên</TableCell>
-              <TableCell isHeader className="font-bold px-5 py-3 text-center border-r border-gray-200 dark:border-gray-700">Ngày tham gia</TableCell>
-              <TableCell isHeader className="font-bold px-5 py-3 text-center border-r border-gray-200 dark:border-gray-700">Cấp độ</TableCell>
-              <TableCell isHeader className="font-bold px-5 py-3 text-center">Bài học hiện tại</TableCell>
+              <TableCell isHeader className="px-5 py-3 text-center font-bold border-r border-gray-200 dark:border-gray-700 dark:text-white">
+                Ảnh
+              </TableCell>
+              <TableCell isHeader className="px-5 py-3 text-left font-bold border-r border-gray-200 dark:border-gray-700 dark:text-white">
+                Họ tên
+              </TableCell>
+              <TableCell isHeader className="px-5 py-3 text-center font-bold border-r border-gray-200 dark:border-gray-700 dark:text-white">
+                Ngày tham gia
+              </TableCell>
+              <TableCell isHeader className="px-5 py-3 text-center font-bold border-r border-gray-200 dark:border-gray-700 dark:text-white">
+                Cấp độ
+              </TableCell>
+              <TableCell isHeader className="px-5 py-3 text-center font-bold dark:text-white">
+                Bài học hiện tại
+              </TableCell>
             </TableRow>
           </TableHeader>
-
           <TableBody>
-            {loading && (
+            {loading ? (
               <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                <td colSpan={5} className="py-6 text-center text-sm text-gray-500">
+                <td colSpan={5} className="py-6 text-center text-gray-500 dark:text-gray-400">
                   Đang tải…
                 </td>
               </TableRow>
-            )}
-            {!loading && filtered.length === 0 && (
-              <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                <td colSpan={5} className="py-6 text-center text-sm text-gray-500">
-                  Không có dữ liệu
-                </td>
-              </TableRow>
-            )}
-            {!loading &&
+            ) : filtered.length > 0 ? (
               filtered.map((u) => (
                 <TableRow key={u.userId} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/10">
                   <TableCell className="px-5 py-4 text-center border-r border-gray-200 dark:border-gray-700">
@@ -129,7 +169,7 @@ export default function StudentProgressTable({ keyword }: StudentProgressTablePr
                       className="h-10 w-10 rounded-full object-cover mx-auto"
                     />
                   </TableCell>
-                  <TableCell className="px-5 py-4 text-left border-r border-gray-200 dark:border-gray-700 font-medium text-gray-800 dark:text-white">
+                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-700 font-medium text-gray-800 dark:text-white">
                     {u.fullName}
                   </TableCell>
                   <TableCell className="px-5 py-4 text-center border-r border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">
@@ -142,7 +182,14 @@ export default function StudentProgressTable({ keyword }: StudentProgressTablePr
                     {u.lessonName}
                   </TableCell>
                 </TableRow>
-              ))}
+              ))
+            ) : (
+              <TableRow className="border-b border-gray-200 dark:border-gray-700">
+                <td colSpan={5} className="py-6 text-center text-gray-500 dark:text-gray-400">
+                  Không có dữ liệu
+                </td>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
