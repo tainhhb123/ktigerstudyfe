@@ -41,15 +41,17 @@ const SignInForm: React.FC = () => {
         "http://localhost:8080/api/auth/signin",
         { email, password }
       );
-      const { token, role } = res.data;   // ← lấy thêm role
+      const { token, role, userId } = res.data;   // ← lấy thêm role
 
       // Lưu token
       if (keepLoggedIn) {
         localStorage.setItem("authToken", token);
         localStorage.setItem("userRole", role);
+        localStorage.setItem("userId", userId.toString());
       } else {
         sessionStorage.setItem("authToken", token);
         sessionStorage.setItem("userRole", role);
+        localStorage.setItem("userId", userId.toString());
       }
 
       // Điều hướng theo role
@@ -62,7 +64,7 @@ const SignInForm: React.FC = () => {
       const axiosErr = err as AxiosError<{ message: string }>;
       setError(
         axiosErr.response?.data?.message ||
-          "Đăng nhập thất bại. Vui lòng kiểm tra lại."
+        "Đăng nhập thất bại. Vui lòng kiểm tra lại."
       );
     } finally {
       setLoading(false);

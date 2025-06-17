@@ -1,4 +1,4 @@
-import EcommerceMetrics from "../../../components/document/homedocument/DocumentItem";
+import DocumentItem from "../../../components/document/homedocument/DocumentItem";
 import PageMeta from "../../../components/document/common/PageMeta";
 import { Link } from "react-router-dom";
 
@@ -24,7 +24,7 @@ export default function Home() {
         </div>
 
         <div className="col-span-12  ">
-          <EcommerceMetrics />
+          <DocumentItem />
         </div>
 
       </div>
