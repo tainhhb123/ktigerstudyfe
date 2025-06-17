@@ -1,4 +1,3 @@
-// src/components/tables/AdminTables/DocumentListTable.tsx
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
@@ -10,6 +9,7 @@ export interface DocumentListResponse {
   title: string;
   createdAt: string;
 }
+
 interface Paged<T> {
   content: T[];
   totalElements: number;
@@ -17,11 +17,11 @@ interface Paged<T> {
   number: number; // zero-based
   size: number;
 }
+
 interface Props {
   keyword: string;
   selectedListId: number | null;
   onSelectList: (id: number | null) => void;
-  onDeleteList: (id: number) => void;
   compact?: boolean; // hide header/pagination
 }
 
@@ -29,7 +29,6 @@ export default function DocumentListTable({
   keyword,
   selectedListId,
   onSelectList,
-  onDeleteList,
   compact = false,
 }: Props) {
   const pageSize = 5;
@@ -42,27 +41,37 @@ export default function DocumentListTable({
   });
   const [loading, setLoading] = useState(false);
 
-  // reset to page 0 when keyword or selection changes
+  // Reset về page 0 khi đổi từ khóa tìm kiếm hoặc đổi tài liệu đang xem
   useEffect(() => {
     setData((d) => ({ ...d, number: 0 }));
   }, [keyword, selectedListId]);
 
-  // fetch paged data
-  useEffect(() => {
+  // Hàm fetch dữ liệu phân trang
+  const fetchData = () => {
     setLoading(true);
+    const baseUrl = `/api/document-lists/public/paged`;
     axios
-      .get<Paged<DocumentListResponse>>( 
-        `/api/document-lists/public/paged?keyword=${encodeURIComponent(
-          keyword
-        )}&page=${data.number}&size=${pageSize}`
-      )
+      .get<Paged<DocumentListResponse>>(baseUrl, {
+        params: {
+          keyword,
+          page: data.number,
+          size: pageSize,
+        },
+      })
       .then((res) => setData(res.data))
+      .catch((err) => console.error("Lỗi khi fetch dữ liệu:", err))
       .finally(() => setLoading(false));
+  };
+
+  // Fetch khi thay đổi keyword hoặc page
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line
   }, [keyword, data.number]);
 
   const { content, totalElements, totalPages, number: currentPage } = data;
 
-  // determine displayed rows
+  // Hiển thị 1 tài liệu nếu đang xem chi tiết, ngược lại hiển thị tất cả
   const lists = useMemo(
     () =>
       selectedListId != null
@@ -71,7 +80,7 @@ export default function DocumentListTable({
     [content, selectedListId]
   );
 
-  // build pagination with ellipsis
+  // Pagination logic
   const pages = useMemo<(number | string)[]>(() => {
     const result: (number | string)[] = [];
     const curr = currentPage + 1;
@@ -89,9 +98,20 @@ export default function DocumentListTable({
 
   const goToPage = (i: number) => setData((d) => ({ ...d, number: i }));
 
+  // Xóa tài liệu
+  const handleDeleteList = (id: number) => {
+    if (!window.confirm('Xác nhận xóa tài liệu này?')) return;
+    setLoading(true);
+    axios
+      .delete(`/api/document-lists/${id}`)
+      .then(() => fetchData())
+      .catch((err) => console.error("Lỗi khi xóa:", err))
+      .finally(() => setLoading(false));
+  };
+
   return (
     <div className="rounded-lg bg-white shadow border border-gray-200 dark:bg-white/[0.03] dark:border-white/10 overflow-x-auto">
-      {/* header & pagination */}
+      {/* Header & pagination */}
       {!compact && (
         <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
           <span className="font-semibold text-gray-700 dark:text-white">
@@ -139,7 +159,7 @@ export default function DocumentListTable({
         </div>
       )}
 
-      {/* table */}
+      {/* Table */}
       <Table>
         <TableHeader className="bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-700">
           <TableRow>
@@ -215,7 +235,7 @@ export default function DocumentListTable({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => onDeleteList(l.listId)}
+                    onClick={() => handleDeleteList(l.listId)}
                   >
                     Xóa
                   </Button>

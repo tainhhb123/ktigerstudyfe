@@ -127,4 +127,4 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
   );
 };
 
-export default FlashcardPlayer;
+export default FlashcardPlayer; 

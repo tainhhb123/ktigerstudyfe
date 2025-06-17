@@ -24,12 +24,14 @@ import LineChart from "./pages/Charts/LineChart";
 import BarChart from "./pages/Charts/BarChart";
 import StudenProcess from "./pages/Admin/LearnerManager/LearnerProgressPage";
 import StudentDocument from "./pages/Admin/DocumentManager/DocumentPage";
+import DocumentReports from "./pages/Admin/DocumentManager/DocumentReports";
+import LessonListPage from "./pages/Admin/LessonManager/LessonListPage";
 
 
 // Document pages & layout
 import AppLayoutDocument from "./layout/document/AppLayoutDocument";
 import HomeDocument from "./pages/document/Dashboard/Home";
-import DocumentDe from "./pages/document/Dashboard/DocumentDe";
+
 import DocumentView from "./pages/document/Dashboard/DocumentView";
 import FlashCardsFull from "./pages/document/documentdetail/FlashCardsFull";
 import FlashCard from "./pages/document/FlashCard";
@@ -63,7 +65,14 @@ export default function App() {
           <Route path="basic-tables" element={<BasicTables />} />
           <Route path="thongtinhocvien" element={<UserInformation />} />
           <Route path="tientrinhhocvien" element={<StudenProcess />} />
+
           <Route path="tailieuhocvien" element={<StudentDocument />} />
+
+          <Route path="tailieuhocvien" element={<StudentDocument />} />
+          <Route path="baocaotailieu" element={<DocumentReports />} />
+          <Route path="danhsachbaihoc" element={<LessonListPage />} />
+
+
 
 
 
