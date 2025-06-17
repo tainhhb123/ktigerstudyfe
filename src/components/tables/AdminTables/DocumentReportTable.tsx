@@ -120,7 +120,6 @@ export default function DocumentReportTable({ keyword = "" }: DocumentReportTabl
         <Table>
           <TableHeader className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <TableRow>
-              <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-200">ID</TableCell>
               <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-200">Người báo cáo</TableCell>
               <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-200">Tài liệu</TableCell>
               <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-200">Lý do</TableCell>
@@ -136,7 +135,6 @@ export default function DocumentReportTable({ keyword = "" }: DocumentReportTabl
             ) : filteredReports.length > 0 ? (
               filteredReports.map((r) => (
                 <TableRow key={r.reportId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-center text-gray-700 dark:text-gray-200">{r.reportId}</TableCell>
                   <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{r.userName}</TableCell>
                   <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{r.listTitle}</TableCell>
                   <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{r.reason}</TableCell>

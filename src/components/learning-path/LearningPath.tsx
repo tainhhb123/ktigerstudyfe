@@ -1,5 +1,5 @@
 //src/components/learning-path/LearningPath.tsx
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import AvatarImg from "../../assets/avatar_campfire.png";
 import HoHan from "../../assets/hohan.png";
