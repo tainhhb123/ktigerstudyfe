@@ -1,6 +1,5 @@
 // src/pages/document/Home.tsx
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import DocumentCard, { Doc } from '../../../components/document/homedocument/DocumentCard';
 
 interface PageResponse<T> {
