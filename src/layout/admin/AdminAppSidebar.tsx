@@ -16,6 +16,7 @@ import {
   UserCircleIcon,
   UserIcon,
   DocsIcon,
+  PencilIcon,
 } from "../../icons";
 import { useSidebar } from "../../context/SidebarContext";
 
@@ -34,6 +35,14 @@ const navItems: NavItem[] = [
     subItems: [{ name: "Danh sách học viên", path: "/admin/thongtinhocvien", pro: false },
               { name: "Danh sách tiến trình học tập học viên ", path: "/admin/tientrinhhocvien", pro: false },
 
+    ],
+
+  },
+
+    {
+    icon: <PencilIcon />,
+    name: "Quản lí bài học",
+    subItems: [{ name: "Danh sách bài học", path: "/admin/danhsachbaihoc", pro: false },
     ],
 
   },

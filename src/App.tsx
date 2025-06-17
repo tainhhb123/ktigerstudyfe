@@ -25,6 +25,7 @@ import BarChart from "./pages/Charts/BarChart";
 import StudenProcess from "./pages/Admin/LearnerManager/LearnerProgressPage";
 import StudentDocument from "./pages/Admin/DocumentManager/DocumentPage";
 import DocumentReports from "./pages/Admin/DocumentManager/DocumentReports";
+import LessonListPage from "./pages/Admin/LessonManager/LessonListPage";
 
 
 // Document pages & layout
@@ -65,6 +66,8 @@ export default function App() {
           <Route path="tientrinhhocvien" element={<StudenProcess />} />
           <Route path="tailieuhocvien" element={<StudentDocument/>} />
           <Route path="baocaotailieu" element={<DocumentReports/>} />
+          <Route path="danhsachbaihoc" element={<LessonListPage/>} />
+
 
 
 
