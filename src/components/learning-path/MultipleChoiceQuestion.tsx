@@ -1,3 +1,4 @@
+//src/components/learning-path/MultipleChoiceQuestion.tsx
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,7 +12,7 @@ interface MultipleChoiceQuestionProps {
     optionD: string;
     correctAnswer: string;
   };
-  onNext?: () => void;
+  onNext?: (isCorrect: boolean) => void; 
 }
 
 export default function MultipleChoiceQuestion({ question, onNext }: MultipleChoiceQuestionProps) {
@@ -29,7 +30,7 @@ export default function MultipleChoiceQuestion({ question, onNext }: MultipleCho
     setIsChecked(false);
     setIsCorrect(null);
     setSelectedAnswer(null);
-    onNext && onNext();
+    if (onNext) onNext(Boolean(isCorrect));
   };
 
   return (
