@@ -21,7 +21,7 @@ interface Props {
   keyword: string;
   selectedListId: number | null;
   onSelectList: (id: number | null) => void;
-  onDeleteList: (id: number) => void;
+  // onDeleteList removed: handle inside
   compact?: boolean; // hide header/pagination
 }
 
@@ -29,7 +29,6 @@ export default function DocumentListTable({
   keyword,
   selectedListId,
   onSelectList,
-  onDeleteList,
   compact = false,
 }: Props) {
   const pageSize = 5;
@@ -47,17 +46,22 @@ export default function DocumentListTable({
     setData((d) => ({ ...d, number: 0 }));
   }, [keyword, selectedListId]);
 
-  // fetch paged data
-  useEffect(() => {
+  // function to fetch paginated data
+  const fetchData = () => {
     setLoading(true);
     axios
-      .get<Paged<DocumentListResponse>>( 
+      .get<Paged<DocumentListResponse>>(
         `/api/document-lists/public/paged?keyword=${encodeURIComponent(
           keyword
         )}&page=${data.number}&size=${pageSize}`
       )
       .then((res) => setData(res.data))
       .finally(() => setLoading(false));
+  };
+
+  // fetch data on mount & page change
+  useEffect(() => {
+    fetchData();
   }, [keyword, data.number]);
 
   const { content, totalElements, totalPages, number: currentPage } = data;
@@ -88,6 +92,15 @@ export default function DocumentListTable({
   }, [currentPage, totalPages]);
 
   const goToPage = (i: number) => setData((d) => ({ ...d, number: i }));
+
+  // handle delete inside table and refresh
+  const handleDeleteList = (id: number) => {
+    if (!window.confirm('Xác nhận xóa tài liệu này?')) return;
+    setLoading(true);
+    axios.delete(`/api/document-lists/${id}`)
+      .then(() => fetchData())
+      .finally(() => setLoading(false));
+  };
 
   return (
     <div className="rounded-lg bg-white shadow border border-gray-200 dark:bg-white/[0.03] dark:border-white/10 overflow-x-auto">
@@ -215,7 +228,7 @@ export default function DocumentListTable({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => onDeleteList(l.listId)}
+                    onClick={() => handleDeleteList(l.listId)}
                   >
                     Xóa
                   </Button>

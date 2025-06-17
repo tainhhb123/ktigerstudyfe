@@ -31,8 +31,8 @@ const navItems: NavItem[] = [
   {
     icon: <UserIcon />,
     name: "Quản lí học viên ",
-    subItems: [{ name: "Quản lí thông tin học viên", path: "/admin/thongtinhocvien", pro: false },
-              { name: "Quản lí tiến trình học tập học viên ", path: "/admin/tientrinhhocvien", pro: false },
+    subItems: [{ name: "Danh sách học viên", path: "/admin/thongtinhocvien", pro: false },
+              { name: "Danh sách tiến trình học tập học viên ", path: "/admin/tientrinhhocvien", pro: false },
 
     ],
 
@@ -41,8 +41,8 @@ const navItems: NavItem[] = [
   {
     icon: <DocsIcon />,
     name: "Quản lí tài liệu chia sẻ",
-    subItems: [{ name: "Quản lí danh sách tài liệu học viên chia sẻ", path: "/admin/tailieuhocvien", pro: false },
-              { name: "Quản lí báo cáo tài liệu", path: "/admin", pro: false },
+    subItems: [{ name: "Danh sách tài liệu học viên chia sẻ", path: "/admin/tailieuhocvien", pro: false },
+              { name: "Báo cáo tài liệu", path: "/admin/baocaotailieu", pro: false },
     ],
 
   },
