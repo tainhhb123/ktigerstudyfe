@@ -30,6 +30,7 @@ import StudentDocument from "./pages/Admin/DocumentManager/DocumentPage";
 import AppLayoutDocument from "./layout/document/AppLayoutDocument";
 import HomeDocument from "./pages/document/Dashboard/Home";
 import DocumentDe from "./pages/document/Dashboard/DocumentDe";
+import DocumentView from "./pages/document/Dashboard/DocumentView";
 import FlashCardsFull from "./pages/document/documentdetail/FlashCardsFull";
 import FlashCard from "./pages/document/FlashCard";
 import Library from "./pages/document/Library";
@@ -62,7 +63,7 @@ export default function App() {
           <Route path="basic-tables" element={<BasicTables />} />
           <Route path="thongtinhocvien" element={<UserInformation />} />
           <Route path="tientrinhhocvien" element={<StudenProcess />} />
-          <Route path="tailieuhocvien" element={<StudentDocument/>} />
+          <Route path="tailieuhocvien" element={<StudentDocument />} />
 
 
 
@@ -79,9 +80,10 @@ export default function App() {
         {/* === Document Layout (với wildcard *) === */}
         <Route path="documents/*" element={<AppLayoutDocument />}>
           <Route index element={<HomeDocument />} />
-          <Route path="document-de" element={<DocumentDe />} />
+
           <Route path="flashcard" element={<FlashCard />} />
-          <Route path="flashcardsfull" element={<FlashCardsFull />} />
+          <Route path="flashcardsfull/:listId" element={<FlashCardsFull />} />
+          <Route path="view/:listId" element={<DocumentView />} />
           {/* <Route path="/study" element={<StudyPage />} />
         <Route path="/quiz" element={<QuizPage />} /> */}
           <Route path="Library/*" element={<Library />}>
