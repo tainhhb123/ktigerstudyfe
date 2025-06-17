@@ -1,15 +1,25 @@
-//src/pages/Learn/Lesson.tsx
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import LearningPath from "../../components/learning-path/LearningPath";
 import RoadmapFooter from "../../components/learning-path/RoadmapFooter";
-import { getLessonsByLevelId} from "../../services/LessonApi";
+import { getLessonsByLevelIdWithProgress } from "../../services/LessonApi";
 
-function StickyRoadmapHeader({ section, title, onGuide, bgColorClass }: { section: string, title: string, onGuide: () => void,  bgColorClass: string; }) {
+function StickyRoadmapHeader({
+  section,
+  title,
+  onGuide,
+  bgColorClass,
+}: {
+  section: string;
+  title: string;
+  onGuide: () => void;
+  bgColorClass: string;
+}) {
   return (
-    <div className={`sticky top-[75px] z-50 w-full`}>
-      <div className={`${bgColorClass} px-6 py-5 rounded-b-2xl shadow-lg flex items-center justify-between transition-colors duration-500 text-xl font-semibold`}>
-
+    <div className="sticky top-[75px] z-50 w-full">
+      <div
+        className={`${bgColorClass} px-6 py-5 rounded-b-2xl shadow-lg flex items-center justify-between transition-colors duration-500 text-xl font-semibold`}
+      >
         <div className="font-bold text-white">{section}</div>
         <button
           className="bg-white text-xs px-4 py-2 rounded font-bold"
@@ -25,28 +35,41 @@ function StickyRoadmapHeader({ section, title, onGuide, bgColorClass }: { sectio
   );
 }
 
-
 export default function Lesson() {
-  const colorList = ["bg-blue-500", "bg-yellow-400", "bg-purple-500", "bg-red-500", "bg-green-500"];
-
+  const colorList = [
+    "bg-blue-500",
+    "bg-yellow-400",
+    "bg-purple-500",
+    "bg-red-500",
+    "bg-green-500",
+  ];
   const [searchParams] = useSearchParams();
   const levelId = searchParams.get("levelId");
+  const userId = Number(localStorage.getItem("userId"));
+
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState<any>(null);
 
   useEffect(() => {
-    if (levelId) {
+    if (levelId && userId) {
       setLoading(true);
-      getLessonsByLevelId(levelId)
-        .then(data => {
-          setLessons(data);
-          setCurrent(data[0]);
+      getLessonsByLevelIdWithProgress(levelId, userId)
+        .then((data) => {
+          // ⭐ Chuyển key locked → isLocked, lessonCompleted → isLessonCompleted
+          const mappedLessons = data.map((item: any) => ({
+            ...item,
+            isLocked: item.locked,                  // FE dùng isLocked
+            isLessonCompleted: item.lessonCompleted // FE dùng isLessonCompleted
+          }));
+          setLessons(mappedLessons);
+          setCurrent(mappedLessons[0]);
         })
         .finally(() => setLoading(false));
     }
-  }, [levelId]);
+  }, [levelId, userId]);
 
+  // Thay đổi bài học hiện tại theo scroll
   useEffect(() => {
     const handleScroll = () => {
       if (!lessons.length) return;
@@ -62,12 +85,14 @@ export default function Lesson() {
       }
     };
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); // init
+    handleScroll(); // khởi tạo lần đầu
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lessons]);
 
-  if (loading) return <div className="text-center py-20">Đang tải bài học...</div>;
-  if (!lessons.length) return <div className="text-center py-20">Không có bài học nào cho cấp độ này!</div>;
+  if (loading)
+    return <div className="text-center py-20">Đang tải bài học...</div>;
+  if (!lessons.length)
+    return <div className="text-center py-20">Không có bài học nào cho cấp độ này!</div>;
 
   return (
     <div className="bg-white min-h-screen">
@@ -75,18 +100,26 @@ export default function Lesson() {
       <StickyRoadmapHeader
         section={current ? `Bài số ${lessons.indexOf(current) + 1}` : ""}
         title={current ? current.lessonName : ""}
-        onGuide={() => alert("Xem hướng dẫn")}  
-        bgColorClass={current ? colorList[lessons.indexOf(current) % colorList.length] : "bg-blue-500"}
+        onGuide={() => alert("Xem hướng dẫn")}
+        bgColorClass={
+          current
+            ? colorList[lessons.indexOf(current) % colorList.length]
+            : "bg-blue-500"
+        }
       />
 
       {/* Danh sách bài học */}
       {lessons.map((lesson, idx) => (
-        <div key={lesson.lessonId} id={`lesson-${lesson.lessonId}`} className="max-w-xl mx-auto pb-32">
-          {/* Truyền idx cho LearningPath nếu cần, hoặc truyền lesson nếu muốn */}
-          <LearningPath 
-          lesson={lesson} 
-          lessonIdx={idx}
-          isActive={lesson.lessonId === current?.lessonId} />
+        <div
+          key={lesson.lessonId}
+          id={`lesson-${lesson.lessonId}`}
+          className="max-w-xl mx-auto pb-32"
+        >
+          <LearningPath
+            lesson={lesson}
+            lessonIdx={idx}
+            isActive={lesson.lessonId === current?.lessonId}
+          />
           <RoadmapFooter text={lesson.lessonDescription || ""} />
         </div>
       ))}

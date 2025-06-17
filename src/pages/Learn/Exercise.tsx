@@ -1,3 +1,4 @@
+//src/pages/Learn/Exercise.tsx
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SentenceRewritingQuestion from "../../components/learning-path/SentenceRewritingQuestion";
@@ -8,6 +9,21 @@ import {
   getSentenceRewritingByExerciseId,
 } from "../../services/ExerciseApi";
 import { saveUserExerciseResult } from "../../services/UserExerciseResultApi";
+
+// Thêm API update UserProgress
+async function updateUserProgress(userId: number, lessonId: number) {
+  try {
+    const res = await fetch("/api/user-progress/complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, lessonId }),
+    });
+    if (!res.ok) throw new Error("Cập nhật tiến trình học thất bại");
+    return await res.json();
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 interface MultipleChoiceQuestion {
   questionId: number;
@@ -31,7 +47,6 @@ type QuestionItem =
   | { type: "multiple"; data: MultipleChoiceQuestion; exerciseId: number }
   | { type: "rewrite"; data: SentenceRewritingQuestion; exerciseId: number };
 
-// Component
 export default function Exercise({
   lessonId,
   userId: userIdProp,
@@ -39,15 +54,9 @@ export default function Exercise({
   lessonId: string;
   userId?: number;
 }) {
-  // ✅ Lấy userId rõ ràng ngay khi component render
   const userId = typeof userIdProp === "number" && !isNaN(userIdProp)
     ? userIdProp
     : Number(localStorage.getItem("userId"));
-
-  // DEBUG mạnh mẽ
-  console.log("userId lấy từ prop:", userIdProp);
-  console.log("userId lấy từ localStorage:", localStorage.getItem("userId"));
-  console.log("userId sử dụng:", userId);
 
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +70,6 @@ export default function Exercise({
   const finishedFirstRound = useRef(false);
   const pendingSavedExercises = useRef<Set<number>>(new Set());
 
-  // Lấy danh sách câu hỏi
   useEffect(() => {
     async function fetchQuestions() {
       try {
@@ -98,7 +106,7 @@ export default function Exercise({
     fetchQuestions();
   }, [lessonId]);
 
-  // Lưu kết quả nếu userId hợp lệ
+  // Lưu kết quả làm bài và cập nhật tiến trình học
   useEffect(() => {
     if (
       phase === "done" &&
@@ -106,13 +114,13 @@ export default function Exercise({
       userId &&
       !isNaN(userId)
     ) {
+      // Lưu điểm từng bài tập như cũ
       const groups: { [exerciseId: number]: QuestionItem[] } = {};
       questions.forEach((q) => {
         const eid = q.exerciseId;
         if (!groups[eid]) groups[eid] = [];
         groups[eid].push(q);
       });
-
       Object.entries(groups).forEach(([eidStr, qArr]) => {
         const eid = Number(eidStr);
         if (pendingSavedExercises.current.has(eid)) return;
@@ -130,8 +138,10 @@ export default function Exercise({
           })
           .catch(console.error);
       });
+      // ➕ Gọi API cập nhật tiến trình học khi hoàn thành bài
+      updateUserProgress(userId, Number(lessonId));
     }
-  }, [phase, questions.length, userId]);
+  }, [phase, questions.length, userId, lessonId]);
 
   const handleAnswer = (isCorrect: boolean) => {
     const curQuestion = currentList[currentIdx];
@@ -145,7 +155,6 @@ export default function Exercise({
         );
       }
     }
-
     if (!isCorrect) setWrongList((list) => [...list, curQuestion]);
 
     if (currentIdx + 1 < currentList.length) {
@@ -181,8 +190,6 @@ export default function Exercise({
   };
 
   if (loading || !currentList[currentIdx]) return <p>Đang tải câu hỏi...</p>;
-
-  // Nếu không có userId hợp lệ thì cảnh báo (và không gọi lưu điểm)
   if (!userId || isNaN(userId)) {
     return (
       <div className="text-center text-red-600 font-bold mt-10">
@@ -207,12 +214,13 @@ export default function Exercise({
             }, {})
           ).map(([eid, total]) => (
             <div key={eid}>
-              Bài tập ID <b>{eid}</b>: Đúng lần đầu:{" "}
+              Bài tập ID <b>{eid}</b>: Đúng lần đầu: {" "}
               <b>
-                {correctCountFirst.current.get(+eid) || 0}/{total} (
-                {Math.round(
-                  ((correctCountFirst.current.get(+eid) || 0) / total) * 100
-                )}
+                {correctCountFirst.current.get(+eid) || 0}/{total} ({
+                  Math.round(
+                    ((correctCountFirst.current.get(+eid) || 0) / total) * 100
+                  )
+                }
                 %)
               </b>
             </div>
