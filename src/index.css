@@ -800,3 +800,16 @@ span.flatpickr-weekday,
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out;
 }
+
+/* Tab Styles */
+.tab-active {
+  @apply border-blue-500 text-blue-600;
+}
+
+.tab-inactive {
+  @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+}
+
+.tab-base {
+  @apply py-2 px-4 border-b-2 font-medium transition-colors;
+}
