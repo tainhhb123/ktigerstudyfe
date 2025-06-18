@@ -1,4 +1,3 @@
-// src/pages/document/Dashboard/DocumentView.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -33,8 +32,9 @@ interface FlashCardType {
 }
 
 export default function DocumentView() {
-    const { listId = '' } = useParams<{ listId: string }>();
-    const API = import.meta.env.VITE_API_BASE_URL;
+    const { listId } = useParams<{ listId: string }>();
+    const listIdNum = Number(listId);
+    const API_URL = import.meta.env.VITE_API_BASE_URL;
 
     const [meta, setMeta] = useState<DocumentListResponse | null>(null);
     const [items, setItems] = useState<DocumentItemResponse[]>([]);
@@ -43,12 +43,17 @@ export default function DocumentView() {
 
     useEffect(() => {
         async function load() {
+            if (isNaN(listIdNum)) {
+                console.error('Invalid listId:', listId);
+                setLoading(false);
+                return;
+            }
             try {
-                const mRes = await fetch(`${API}/document-lists/${listId}`);
+                const mRes = await fetch(`${API_URL}/document-lists/${listIdNum}`);
                 if (!mRes.ok) throw new Error('Không lấy được metadata');
                 setMeta(await mRes.json());
 
-                const iRes = await fetch(`${API}/document-items/list/${listId}`);
+                const iRes = await fetch(`${API_URL}/document-items/list/${listIdNum}`);
                 if (!iRes.ok) throw new Error('Không lấy được từ vựng');
                 setItems(await iRes.json());
             } catch (err) {
@@ -58,52 +63,41 @@ export default function DocumentView() {
             }
         }
         load();
-    }, [API, listId]);
+    }, [API_URL, listIdNum]);
 
     const goNext = () =>
-        setCurrentIndex((i) => (items.length ? (i + 1) % items.length : 0));
+        setCurrentIndex(i => (items.length ? (i + 1) % items.length : 0));
     const goPrev = () =>
-        setCurrentIndex((i) =>
-            items.length ? (i === 0 ? items.length - 1 : i - 1) : 0
-        );
+        setCurrentIndex(i => (items.length ? (i === 0 ? items.length - 1 : i - 1) : 0));
     const shuffle = () => {
         const shuffled = [...items].sort(() => Math.random() - 0.5);
         setItems(shuffled);
         setCurrentIndex(0);
     };
 
-    if (loading) {
-        return <p className="p-4 text-center">Đang tải dữ liệu…</p>;
-    }
-    if (!meta) {
-        return (
-            <p className="p-4 text-center text-red-500">
-                Không tìm thấy bộ ghi nhớ.
-            </p>
-        );
-    }
+    if (loading) return <p className="p-4 text-center">Đang tải dữ liệu…</p>;
+    if (!meta) return <p className="p-4 text-center text-red-500">Không tìm thấy bộ ghi nhớ.</p>;
 
-    const flashcards: FlashCardType[] = items.map((it) => ({
+    const flashcards: FlashCardType[] = items.map(it => ({
         id: it.wordId,
         term: it.word,
         meaning: it.meaning,
     }));
-    const currentFlashcard = flashcards[currentIndex] || {
-        id: 0,
-        term: '',
-        meaning: '',
-    };
+    const currentFlashcard = flashcards[currentIndex] || { id: 0, term: '', meaning: '' };
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col items-center px-2 py-4">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 text-center">
                 {meta.title}
             </h1>
-            <FunctionBar listId={listId} />
+
+            {/* FunctionBar now receives numeric listId */}
+            <FunctionBar listId={listIdNum.toString()} />
 
             <div className="w-full max-w-3xl mt-6">
                 {flashcards.length > 0 ? (
                     <FlashcardPlayer
+                        listId={listIdNum}
                         flashcard={currentFlashcard}
                         onNext={goNext}
                         onPrevious={goPrev}
@@ -112,9 +106,7 @@ export default function DocumentView() {
                         onShuffle={shuffle}
                     />
                 ) : (
-                    <p className="text-gray-700 text-center text-lg">
-                        Chưa có từ vựng nào.
-                    </p>
+                    <p className="text-gray-700 text-center text-lg">Chưa có từ vựng nào.</p>
                 )}
             </div>
 
