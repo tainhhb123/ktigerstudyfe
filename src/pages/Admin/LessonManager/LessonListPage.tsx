@@ -1,11 +1,13 @@
 // src/pages/admin/LessonListPage.tsx
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";
 import PageMeta from "../../../components/common/PageMeta";
 import LessonTable from "../../../components/tables/AdminTables/LessonTable";
 
 export default function LessonListPage() {
+  const navigate = useNavigate();
   const [group, setGroup] = useState<"basic" | "intermediate">("basic");
   const [levelId, setLevelId] = useState<number>(1);
   const [keyword, setKeyword] = useState<string>("");
@@ -17,6 +19,11 @@ export default function LessonListPage() {
   useEffect(() => {
     setLevelId(levels[0]);
   }, [group]);
+
+  const handleViewDetail = (lessonId: number) => {
+    console.log('Navigating to lesson:', lessonId);
+    navigate(`/admin/lessons/${lessonId}`);
+  };
 
   return (
     <>
@@ -76,7 +83,11 @@ export default function LessonListPage() {
         </ComponentCard>
 
         <ComponentCard title="Danh sách bài học">
-          <LessonTable levelId={levelId} keyword={keyword} />
+          <LessonTable 
+            levelId={levelId}
+            keyword={keyword}
+            onViewDetail={handleViewDetail}
+          />
         </ComponentCard>
       </div>
     </>
