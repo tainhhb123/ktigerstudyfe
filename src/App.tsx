@@ -26,6 +26,7 @@ import StudenProcess from "./pages/Admin/LearnerManager/LearnerProgressPage";
 import StudentDocument from "./pages/Admin/DocumentManager/DocumentPage";
 import DocumentReports from "./pages/Admin/DocumentManager/DocumentReports";
 import LessonListPage from "./pages/Admin/LessonManager/LessonListPage";
+import LessonDetailPage from "./pages/Admin/LessonManager/LessonDetailPage";
 
 
 // Document pages & layout
@@ -70,7 +71,9 @@ export default function App() {
 
           <Route path="tailieuhocvien" element={<StudentDocument />} />
           <Route path="baocaotailieu" element={<DocumentReports />} />
+
           <Route path="danhsachbaihoc" element={<LessonListPage />} />
+          <Route path="lessons/:lessonId/" element={<LessonDetailPage />} />
 
 
 
