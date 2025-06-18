@@ -1,4 +1,3 @@
-//src/pages/Learn/Exercise.tsx
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SentenceRewritingQuestion from "../../components/learning-path/SentenceRewritingQuestion";
@@ -9,6 +8,8 @@ import {
   getSentenceRewritingByExerciseId,
 } from "../../services/ExerciseApi";
 import { saveUserExerciseResult } from "../../services/UserExerciseResultApi";
+import { addUserXP } from "../../services/UserXPApi";
+import LevelUpPopup from "../../components/learning-path/LevelUpPopup";
 
 // Thêm API update UserProgress
 async function updateUserProgress(userId: number, lessonId: number) {
@@ -65,10 +66,18 @@ export default function Exercise({
   const [wrongList, setWrongList] = useState<QuestionItem[]>([]);
   const [phase, setPhase] = useState<"main" | "review" | "done">("main");
   const [questionKey, setQuestionKey] = useState(0);
+  // ➕ Popup lên cấp
+  const [levelUpData, setLevelUpData] = useState<null | {
+    levelNumber: number;
+    currentTitle: string;
+    currentBadge: string;
+  }>(null);
 
   const correctCountFirst = useRef<Map<number, number>>(new Map());
   const finishedFirstRound = useRef(false);
   const pendingSavedExercises = useRef<Set<number>>(new Set());
+  // (1) Thêm biến ref để lưu level trước đó
+  const prevLevelRef = useRef<number | null>(null);
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -106,7 +115,7 @@ export default function Exercise({
     fetchQuestions();
   }, [lessonId]);
 
-  // Lưu kết quả làm bài và cập nhật tiến trình học
+  // (2) Khi vào phase "done", lưu điểm và cộng XP, show popup nếu lên cấp
   useEffect(() => {
     if (
       phase === "done" &&
@@ -114,6 +123,14 @@ export default function Exercise({
       userId &&
       !isNaN(userId)
     ) {
+      // Lấy level cũ trước khi cộng XP (chỉ lấy cho bài đầu tiên)
+      if (prevLevelRef.current === null) {
+        fetch(`/api/user-xp/${userId}`)
+          .then((res) => res.json())
+          .then((data) => {
+            prevLevelRef.current = data.levelNumber;
+          });
+      }
       // Lưu điểm từng bài tập như cũ
       const groups: { [exerciseId: number]: QuestionItem[] } = {};
       questions.forEach((q) => {
@@ -135,6 +152,26 @@ export default function Exercise({
         })
           .then(() => {
             pendingSavedExercises.current.add(eid);
+            // ➕ Gọi API cộng điểm vào UserXP
+            return addUserXP({ userId, xpToAdd: score });
+          })
+          .then((data) => {
+            // Nếu response dạng object, kiểm tra các field, nếu không có thì không render popup
+            if (
+              prevLevelRef.current !== null &&
+              typeof data === "object" &&
+              data.levelNumber !== undefined &&
+              data.currentTitle !== undefined &&
+              data.currentBadge !== undefined &&
+              data.levelNumber > prevLevelRef.current
+            ) {
+              setLevelUpData({
+                levelNumber: data.levelNumber,
+                currentTitle: data.currentTitle,
+                currentBadge: data.currentBadge,
+              });
+              prevLevelRef.current = data.levelNumber;
+            }
           })
           .catch(console.error);
       });
@@ -190,6 +227,8 @@ export default function Exercise({
   };
 
   if (loading || !currentList[currentIdx]) return <p>Đang tải câu hỏi...</p>;
+  const current = currentList[currentIdx];
+
   if (!userId || isNaN(userId)) {
     return (
       <div className="text-center text-red-600 font-bold mt-10">
@@ -199,71 +238,80 @@ export default function Exercise({
     );
   }
 
-  if (phase === "done") {
-    return (
-      <div className="p-6 text-center">
-        <h2 className="text-2xl font-bold text-green-600 mb-2">
-          🎉 Hoàn thành bài tập!
-        </h2>
-        <div className="mb-2">
-          {Object.entries(
-            questions.reduce<{ [eid: number]: number }>((acc, q) => {
-              const eid = q.exerciseId;
-              acc[eid] = (acc[eid] || 0) + 1;
-              return acc;
-            }, {})
-          ).map(([eid, total]) => (
-            <div key={eid}>
-              Bài tập ID <b>{eid}</b>: Đúng lần đầu: {" "}
-              <b>
-                {correctCountFirst.current.get(+eid) || 0}/{total} ({
-                  Math.round(
-                    ((correctCountFirst.current.get(+eid) || 0) / total) * 100
-                  )
-                }
-                %)
-              </b>
-            </div>
-          ))}
-        </div>
-        <div className="mb-4 text-gray-500 text-sm">
-          Tất cả câu hỏi đã được làm đúng, bạn đã hoàn thành bài tập này.
-        </div>
-      </div>
-    );
-  }
-
-  const current = currentList[currentIdx];
-
   return (
-    <div className="p-4 space-y-4">
-      <div className="mb-2 text-sm text-gray-500">
-        Câu {currentIdx + 1} / {currentList.length}{" "}
-        {phase === "review" && <span>(Làm lại các câu sai)</span>}
-      </div>
-      <AnimatePresence mode="wait">
-        {current.type === "multiple" && (
-          <MultipleChoiceQuestion
-            question={current.data}
-            onNext={handleAnswer}
-            key={questionKey}
-          />
-        )}
-        {current.type === "rewrite" && (
-          <motion.div
-            key={questionKey}
-            initial={{ opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -32 }}
-            transition={{ duration: 0.5, type: "spring" }}
-          >
-            <SentenceRewritingQuestion
-              question={current.data}
-              onNext={handleAnswer}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <>
+      {/* Pop-up sẽ chỉ render khi đầy đủ dữ liệu */}
+      {levelUpData && levelUpData.levelNumber && levelUpData.currentTitle && levelUpData.currentBadge && (
+        <LevelUpPopup
+          levelNumber={levelUpData.levelNumber}
+          currentTitle={levelUpData.currentTitle}
+          currentBadge={levelUpData.currentBadge}
+          onClose={() => setLevelUpData(null)}
+          
+        />
+      )}
+      {/* Phần chính */}
+      {phase === "done" ? (
+        <div className="p-6 text-center">
+          <h2 className="text-2xl font-bold text-green-600 mb-2">
+            🎉 Hoàn thành bài tập!
+          </h2>
+          <div className="mb-2">
+            {Object.entries(
+              questions.reduce<{ [eid: number]: number }>((acc, q) => {
+                const eid = q.exerciseId;
+                acc[eid] = (acc[eid] || 0) + 1;
+                return acc;
+              }, {})
+            ).map(([eid, total]) => (
+              <div key={eid}>
+                Bài tập ID <b>{eid}</b>: Đúng lần đầu:{" "}
+                <b>
+                  {correctCountFirst.current.get(+eid) || 0}/{total} ({
+                    Math.round(
+                      ((correctCountFirst.current.get(+eid) || 0) / total) * 100
+                    )
+                  }
+                  %)
+                </b>
+              </div>
+            ))}
+          </div>
+          <div className="mb-4 text-gray-500 text-sm">
+            Tất cả câu hỏi đã được làm đúng, bạn đã hoàn thành bài tập này.
+          </div>
+        </div>
+      ) : (
+        // Câu hỏi bình thường
+        <div className="p-4 space-y-4">
+          <div className="mb-2 text-sm text-gray-500">
+            Câu {currentIdx + 1} / {currentList.length} {phase === "review" && <span>(Làm lại các câu sai)</span>}
+          </div>
+          <AnimatePresence mode="wait">
+            {current.type === "multiple" && (
+              <MultipleChoiceQuestion
+                question={current.data}
+                onNext={handleAnswer}
+                key={questionKey}
+              />
+            )}
+            {current.type === "rewrite" && (
+              <motion.div
+                key={questionKey}
+                initial={{ opacity: 0, y: 32 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -32 }}
+                transition={{ duration: 0.5, type: "spring" }}
+              >
+                <SentenceRewritingQuestion
+                  question={current.data}
+                  onNext={handleAnswer}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+    </>
   );
 }
