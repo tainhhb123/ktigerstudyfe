@@ -7,6 +7,7 @@ import AppLayout from "./layout/admin/AdminAppLayout";
 import LearnAppLayout from "./layout/learn/AppLayout";
 
 import Home from "./pages/Dashboard/Home";
+
 import LearnHome from "./pages/Learn/LearnHome";
 import UserProfiles from "./pages/UserProfiles";
 import Calendar from "./pages/Calendar";
@@ -32,7 +33,7 @@ import LessonDetailPage from "./pages/Admin/LessonManager/LessonDetailPage";
 // Document pages & layout
 import AppLayoutDocument from "./layout/document/AppLayoutDocument";
 import HomeDocument from "./pages/document/Dashboard/Home";
-
+import SearchPage from "./pages/document/Dashboard/SearchPage";
 import DocumentView from "./pages/document/Dashboard/DocumentView";
 import FlashCardsFull from "./pages/document/documentdetail/FlashCardsFull";
 import FlashCard from "./pages/document/FlashCard";
@@ -92,7 +93,7 @@ export default function App() {
         {/* === Document Layout (với wildcard *) === */}
         <Route path="documents/*" element={<AppLayoutDocument />}>
           <Route index element={<HomeDocument />} />
-
+          <Route path="search" element={<SearchPage />} />
           <Route path="flashcard" element={<FlashCard />} />
           <Route path="flashcardsfull/:listId" element={<FlashCardsFull />} />
           <Route path="view/:listId" element={<DocumentView />} />

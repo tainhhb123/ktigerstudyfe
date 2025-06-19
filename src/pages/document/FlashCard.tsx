@@ -167,7 +167,7 @@ const FlashCard: React.FC = () => {
             checked={isPublic}
             onChange={e => setIsPublic(e.target.checked)}
           />
-          Công khai?
+          chỉ mình tôi
         </label>
       </div>
 
