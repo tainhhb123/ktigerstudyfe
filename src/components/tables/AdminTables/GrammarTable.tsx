@@ -23,6 +23,12 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [pageNumber, setPageNumber] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editValues, setEditValues] = useState({
+    grammarTitle: '',
+    grammarContent: '',
+    grammarExample: ''
+  });
 
   const fetchGrammar = async () => {
     if (!lessonId) return;
@@ -65,6 +71,60 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
     }
     return pages;
   }, [totalPages, pageNumber]);
+
+  const handleEditClick = (grammar: Grammar) => {
+    setEditingId(grammar.grammarId);
+    setEditValues({
+      grammarTitle: grammar.grammarTitle,
+      grammarContent: grammar.grammarContent,
+      grammarExample: grammar.grammarExample || ''
+    });
+  };
+
+  const handleUpdate = async (grammarId: number) => {
+    try {
+      await axios.put(`/api/grammar-theories/${grammarId}`, {
+        ...editValues,
+        lessonId
+      });
+      setEditingId(null);
+      fetchGrammar(); // Refresh data after update
+    } catch (error) {
+      console.error('Error updating grammar:', error);
+      alert('Failed to update grammar');
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setEditValues(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditValues({
+      grammarTitle: '',
+      grammarContent: '',
+      grammarExample: ''
+    });
+  };
+
+  // Add handleDelete function
+  const handleDelete = async (grammarId: number, grammarTitle: string) => {
+    if (window.confirm(`Bạn có chắc muốn xóa ngữ pháp "${grammarTitle}"?`)) {
+      try {
+        await axios.delete(`/api/grammar-theories/${grammarId}`);
+        // Refresh the data after successful deletion
+        fetchGrammar();
+      } catch (error) {
+        console.error('Error deleting grammar:', error);
+        alert('Failed to delete grammar');
+      }
+    }
+  };
 
   return (
     <div className="rounded-lg bg-white shadow border border-gray-200 dark:bg-white/[0.03] dark:border-white/10 overflow-x-auto">
@@ -175,22 +235,81 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
             items.map((grammar) => (
               <TableRow key={grammar.grammarId} className="border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-white/10">
                 <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white">
-                  {grammar.grammarTitle}
+                  {editingId === grammar.grammarId ? (
+                    <input
+                      type="text"
+                      name="grammarTitle"
+                      value={editValues.grammarTitle}
+                      onChange={handleInputChange}
+                      className="w-full px-2 py-1 border rounded dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    />
+                  ) : (
+                    grammar.grammarTitle
+                  )}
                 </TableCell>
                 <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">
-                  {grammar.grammarContent}
+                  {editingId === grammar.grammarId ? (
+                    <textarea
+                      name="grammarContent"
+                      value={editValues.grammarContent}
+                      onChange={handleInputChange}
+                      rows={3}
+                      className="w-full px-2 py-1 border rounded dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    />
+                  ) : (
+                    grammar.grammarContent
+                  )}
                 </TableCell>
                 <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">
-                  {grammar.grammarExample || "—"}
+                  {editingId === grammar.grammarId ? (
+                    <textarea
+                      name="grammarExample"
+                      value={editValues.grammarExample}
+                      onChange={handleInputChange}
+                      rows={2}
+                      className="w-full px-2 py-1 border rounded dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    />
+                  ) : (
+                    grammar.grammarExample || "—"
+                  )}
                 </TableCell>
                 <TableCell className="px-5 py-4 text-center">
-                  <div className="flex space-x-2 justify-center">
-                    <Button size="sm" variant="outline">
-                      Sửa
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      Xóa
-                    </Button>
+                  <div className="flex justify-center space-x-2">
+                    {editingId === grammar.grammarId ? (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          onClick={() => handleUpdate(grammar.grammarId)}
+                        >
+                          Cập nhật
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleCancel}
+                        >
+                          Hủy
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditClick(grammar)}
+                        >
+                          Sửa
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDelete(grammar.grammarId, grammar.grammarTitle)}
+                        >
+                          Xóa
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

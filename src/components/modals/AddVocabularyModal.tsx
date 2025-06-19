@@ -1,21 +1,12 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import Button from '../ui/button/Button';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import Button from "../../components/ui/button/Button";
 
 interface AddVocabularyModalProps {
-  lessonId: number; // Change from string to number
+  lessonId: number;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-}
-
-interface ApiError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-  message: string;
 }
 
 export default function AddVocabularyModal({ 
@@ -24,10 +15,10 @@ export default function AddVocabularyModal({
   onClose,
   onSuccess 
 }: AddVocabularyModalProps) {
-  const [vocabulary, setVocabulary] = useState({ 
-    word: '', 
+  const [vocabulary, setVocabulary] = useState({
+    word: '',
     meaning: '',
-    example: '' // Add example field
+    example: ''
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,30 +35,28 @@ export default function AddVocabularyModal({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setVocabulary(prev => ({ ...prev, [name]: value }));
+    setVocabulary(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
-      const response = await axios.post('/api/vocabulary-theories', {
-        word: vocabulary.word,
-        meaning: vocabulary.meaning,
-        example: vocabulary.example || null,
-        lessonId: lessonId
+      await axios.post('/api/vocabulary-theories', {
+        ...vocabulary,
+        lessonId
       });
 
-      console.log('Vocabulary created:', response.data);
       onSuccess();
       setVocabulary({ word: '', meaning: '', example: '' });
       onClose();
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Error creating vocabulary:', error);
-      // Cast error to our custom ApiError type
-      const err = error as ApiError;
-      alert(err.response?.data?.message || err.message || 'Failed to create vocabulary');
+      alert('Failed to create vocabulary');
     } finally {
       setIsLoading(false);
     }
@@ -76,79 +65,93 @@ export default function AddVocabularyModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="relative w-full max-w-md bg-white dark:bg-zinc-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 mx-4">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Thêm từ vựng mới
-          </h3>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Từ vựng *
-              </label>
-              <input
-                type="text"
-                name="word"
-                value={vocabulary.word}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
-                required
-              />
+    <>
+      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
+      <div className="fixed inset-x-0 top-[64px] bottom-0 z-50 flex items-start justify-center overflow-y-auto">
+        <div className="relative w-full max-w-2xl mx-auto my-6 p-4">
+          <div className="relative bg-white dark:bg-zinc-800 rounded-lg shadow-xl">
+            {/* Header */}
+            <div className="sticky top-0 bg-white dark:bg-zinc-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700 rounded-t-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Thêm từ vựng mới
+                </h3>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                >
+                  <span className="text-2xl">&times;</span>
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Nghĩa *
-              </label>
-              <input
-                type="text"
-                name="meaning"
-                value={vocabulary.meaning}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
-                required
-              />
-            </div>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="max-h-[calc(100vh-200px)] overflow-y-auto">
+              <div className="px-6 py-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Từ vựng *
+                    </label>
+                    <input
+                      type="text"
+                      name="word"
+                      value={vocabulary.word}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                      required
+                    />
+                  </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Ví dụ
-              </label>
-              <textarea
-                name="example"
-                value={vocabulary.example}
-                onChange={handleChange}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white resize-none"
-                placeholder="Nhập ví dụ sử dụng từ vựng (không bắt buộc)"
-              />
-            </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Nghĩa *
+                    </label>
+                    <textarea
+                      name="meaning"
+                      value={vocabulary.meaning}
+                      onChange={handleChange}
+                      rows={4}
+                      className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                      required
+                    />
+                  </div>
 
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-              >
-                Hủy
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                loading={isLoading}
-              >
-                {isLoading ? 'Đang tạo...' : 'Tạo mới'}
-              </Button>
-            </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Ví dụ
+                    </label>
+                    <textarea
+                      name="example"
+                      value={vocabulary.example}
+                      onChange={handleChange}
+                      rows={2}
+                      className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="sticky bottom-0 bg-white dark:bg-zinc-800 px-6 py-4 border-t border-gray-200 dark:border-gray-700 rounded-b-lg">
+                <div className="flex justify-end space-x-3">
+                  <Button type="button" variant="outline" onClick={onClose}>
+                    Hủy
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    variant="primary"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Đang tạo...' : 'Tạo mới'}
+                  </Button>
+                </div>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
