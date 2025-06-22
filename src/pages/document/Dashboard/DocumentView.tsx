@@ -29,6 +29,8 @@ interface FlashCardType {
     id: number;
     term: string;
     meaning: string;
+    example?: string; // Made optional
+    vocabImage?: string; // Made optional
 }
 
 export default function DocumentView() {
@@ -82,6 +84,8 @@ export default function DocumentView() {
         id: it.wordId,
         term: it.word,
         meaning: it.meaning,
+        example: it.example,
+        vocabImage: it.vocabImage,
     }));
     const currentFlashcard = flashcards[currentIndex] || { id: 0, term: '', meaning: '' };
 

@@ -36,9 +36,11 @@ import HomeDocument from "./pages/document/Dashboard/Home";
 import SearchPage from "./pages/document/Dashboard/SearchPage";
 import DocumentView from "./pages/document/Dashboard/DocumentView";
 import FlashCardsFull from "./pages/document/documentdetail/FlashCardsFull";
+import QuizPage from "./pages/document/documentdetail/QuizPage";
 import FlashCard from "./pages/document/FlashCard";
 import Library from "./pages/document/Library";
 import MyClass from "./pages/document/mylibrary/MyClass";
+import FavoriteDocument from "./pages/document/mylibrary/FavoriteDocument";
 import CourseOverview from "./pages/document/mylibrary/CourseOverview";
 import ParticipateClass from "./pages/document/mylibrary/ParticipateClass";
 
@@ -96,6 +98,7 @@ export default function App() {
           <Route path="search" element={<SearchPage />} />
           <Route path="flashcard" element={<FlashCard />} />
           <Route path="flashcardsfull/:listId" element={<FlashCardsFull />} />
+          <Route path="quiz/:listId" element={<QuizPage />} />
           <Route path="view/:listId" element={<DocumentView />} />
           {/* <Route path="/study" element={<StudyPage />} />
         <Route path="/quiz" element={<QuizPage />} /> */}
@@ -103,7 +106,7 @@ export default function App() {
             <Route index element={<Navigate to="lop-hoc" replace />} />
             <Route index path="lop-hoc" element={<MyClass />} />
             <Route path="tai-lieu" element={<CourseOverview />} />
-            <Route path="tailieuyeuthich" element={<MyClass />} />
+            <Route path="tailieuyeuthich" element={<FavoriteDocument />} />
             <Route path="lophocthamgia" element={<ParticipateClass />} />
           </Route>
         </Route>
