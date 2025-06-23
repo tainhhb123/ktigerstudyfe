@@ -50,6 +50,7 @@ import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 import Level from "./pages/Learn/Level";
+import LeaderBoard from "./pages/Learn/LeaderBoard";
 import Lesson from "./pages/Learn/Lesson";
 import LessonDetail from "./pages/Learn/LessonDetail";
 
@@ -119,7 +120,7 @@ export default function App() {
           <Route path="level" element={<Level />} />
           <Route path="lesson" element={<Lesson />} />
           <Route path="lesson-detail" element={<LessonDetail />} />
-
+          <Route path="leaderboard" element={<LeaderBoard />} />
 
         </Route>
 
