@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import PageMeta from "../../../components/common/PageMeta";
 import { authService } from '../../../services/authService';
 import { Link } from 'react-router-dom';
+import { FaTrash, FaEye, FaEyeSlash, FaEdit } from "react-icons/fa";
 
 const tabs = [
     { label: "Tài liệu", path: "/documents/Library/tai-lieu" },
@@ -25,6 +26,7 @@ export default function CourseOverview() {
         fullName: string;
         title: string;
         type: string;
+        isPublic: number;
     }
 
     const [lists, setLists] = useState<DocumentList[]>([]);
@@ -54,6 +56,28 @@ export default function CourseOverview() {
         };
         fetchLists();
     }, [API_URL, userId]);
+
+    const handleTogglePublic = async (listId: number, currentFlag: number) => {
+        // currentFlag: 0 = công khai, 1 = riêng tư
+        try {
+            const res = await fetch(`${API_URL}/document-lists/${listId}/visibility`, {
+                method: 'PATCH',
+            });
+            if (!res.ok) throw new Error(`Failed to update visibility: ${res.status}`);
+            // nếu thành công thì cập nhật local state
+            setLists(prev =>
+                prev.map(l =>
+                    l.listId === listId
+                        ? { ...l, isPublic: currentFlag === 0 ? 1 : 0 }
+                        : l
+                )
+            );
+        } catch (err) {
+            console.error(err);
+            alert('Không thể thay đổi trạng thái công khai.');
+        }
+    };
+
 
     const handleDelete = async (id: number) => {
         if (!window.confirm('Bạn có chắc muốn xoá danh sách này?')) return;
@@ -127,22 +151,46 @@ export default function CourseOverview() {
 
             {!loading && !error && lists.map(item => (
                 <div key={item.listId} className="mb-6">
+                    {/* Header của từng list */}
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-lg font-medium text-gray-700">
                             {item.createdAt.replace('T', ' ')}
                         </h3>
-                        <button
-                            onClick={() => handleDelete(item.listId)}
-                            className="text-red-500 hover:text-red-700 p-1"
-                            aria-label="Xoá danh sách"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22" />
-                            </svg>
-                        </button>
-                    </div>
-                    <Link to={`/documents/view/${item.listId}`}>
+                        <div className="flex space-x-3">
+                            {/* Toggle public/private */}
+                            <button
+                                onClick={() => handleTogglePublic(item.listId, item.isPublic)}
+                                className="p-1 text-gray-600 hover:text-gray-800"
+                                title={item.isPublic === 0 ? "Chuyển sang riêng tư" : "Chuyển sang công khai"}
+                            >
+                                {item.isPublic === 0
+                                    ? <FaEye size={20} />
+                                    : <FaEyeSlash size={20} />
+                                }
+                            </button>
 
+                            {/* Edit list */}
+                            <Link
+                                to={`/documents/edit/${item.listId}`}
+                                className="p-1 text-blue-600 hover:text-blue-800"
+                                title="Chỉnh sửa danh sách"
+                            >
+                                <FaEdit size={20} />
+                            </Link>
+
+                            {/* Delete list */}
+                            <button
+                                onClick={() => handleDelete(item.listId)}
+                                className="p-1 text-red-500 hover:text-red-700"
+                                title="Xoá danh sách"
+                            >
+                                <FaTrash size={20} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Card nội dung */}
+                    <Link to={`/documents/view/${item.listId}`}>
                         <div className="bg-white rounded-xl shadow-md p-5 border border-gray-200 hover:shadow-lg hover:border-purple-300 transition cursor-pointer">
                             <div className="flex items-center mb-2">
                                 <span className="text-purple-600 font-semibold text-base mr-2">

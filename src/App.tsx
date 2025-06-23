@@ -37,6 +37,7 @@ import SearchPage from "./pages/document/Dashboard/SearchPage";
 import DocumentView from "./pages/document/Dashboard/DocumentView";
 import FlashCardsFull from "./pages/document/documentdetail/FlashCardsFull";
 import QuizPage from "./pages/document/documentdetail/QuizPage";
+import EditDocument from "./pages/document/mylibrary/EditDocument";
 import FlashCard from "./pages/document/FlashCard";
 import Library from "./pages/document/Library";
 import MyClass from "./pages/document/mylibrary/MyClass";
@@ -99,6 +100,7 @@ export default function App() {
           <Route path="flashcard" element={<FlashCard />} />
           <Route path="flashcardsfull/:listId" element={<FlashCardsFull />} />
           <Route path="quiz/:listId" element={<QuizPage />} />
+          <Route path="edit/:listId" element={<EditDocument />} />
           <Route path="view/:listId" element={<DocumentView />} />
           {/* <Route path="/study" element={<StudyPage />} />
         <Route path="/quiz" element={<QuizPage />} /> */}
