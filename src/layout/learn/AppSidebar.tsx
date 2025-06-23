@@ -58,7 +58,7 @@ const navItems: NavItem[] = [
   {
   icon: <Crown size={28} color="#FFC800" weight="fill" />, 
   name: "View Leaderboard",
-  path: "learn/leaderboard",
+  path: "/learn/leaderboard",
   },
  
 ];
