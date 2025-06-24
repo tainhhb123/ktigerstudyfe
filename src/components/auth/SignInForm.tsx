@@ -42,23 +42,28 @@ const SignInForm: React.FC = () => {
         { email, password }
       );
 
-      const { token, role, userId } = res.data;   // ← lấy thêm role
-
+      // const { token, role, userId } = res.data;   // ← lấy thêm role
+      const { token, role, userId, fullName } = res.data;
       // Lưu token
       if (keepLoggedIn) {
         localStorage.setItem("authToken", token);
         localStorage.setItem("userRole", role);
         localStorage.setItem("userId", userId.toString());
+         localStorage.setItem("fullName", fullName);
       } else {
         sessionStorage.setItem("authToken", token);
         sessionStorage.setItem("userRole", role);
         localStorage.setItem("userId", userId.toString());
+        localStorage.setItem("fullName", fullName);
       }
 
       localStorage.setItem("authToken", token);
       localStorage.setItem("userRole", role);
       localStorage.setItem("userId", userId.toString());
+       localStorage.setItem("fullName", fullName);
+
       console.log("userId đã lưu vào localStorage:", userId);
+      console.log("fullName đã lưu vào localStorage:", fullName);
 
 
       // Điều hướng theo role
