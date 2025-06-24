@@ -1,4 +1,4 @@
-//src/components/learning-path/MultipleChoiceQuestion.tsx
+// src/components/learning-path/MultipleChoiceQuestion.tsx
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,11 +11,15 @@ interface MultipleChoiceQuestionProps {
     optionC: string;
     optionD: string;
     correctAnswer: string;
+    linkMedia?: string | null;
   };
-  onNext?: (isCorrect: boolean) => void; 
+  onNext?: (isCorrect: boolean) => void;
 }
 
-export default function MultipleChoiceQuestion({ question, onNext }: MultipleChoiceQuestionProps) {
+export default function MultipleChoiceQuestion({
+  question,
+  onNext,
+}: MultipleChoiceQuestionProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isChecked, setIsChecked] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -49,6 +53,33 @@ export default function MultipleChoiceQuestion({ question, onNext }: MultipleCho
       >
         {question.questionText}
       </motion.h3>
+
+     {question.linkMedia && (
+    <div className="mb-2">
+      {question.linkMedia.match(/\.(mp3|m4a|ogg)$/i) ? (
+        <audio
+          controls
+          className="w-full rounded-md"
+          style={{ display: "block", width: "100%" }}
+        >
+          <source src={question.linkMedia} type="audio/mp4" />
+          Trình duyệt của bạn không hỗ trợ audio.
+        </audio>
+      ) : (
+        <video
+          controls
+          className="w-full max-h-[300px] rounded-md"
+          style={{ display: "block", width: "100%" }}
+        >
+          <source src={question.linkMedia} type="video/mp4" />
+          Trình duyệt của bạn không hỗ trợ video.
+        </video>
+      )}
+    </div>
+)}
+
+
+
       <div className="grid grid-cols-2 gap-3">
         {["A", "B", "C", "D"].map((opt, idx) => {
           const optionKey = `option${opt}` as keyof typeof question;
@@ -57,7 +88,9 @@ export default function MultipleChoiceQuestion({ question, onNext }: MultipleCho
               key={opt}
               whileTap={{ scale: 0.95 }}
               whileHover={{ scale: 1.04 }}
-              className={`border rounded-lg py-2 px-4 transition-colors duration-300 focus:outline-none ${selectedAnswer === opt ? "bg-blue-200" : "hover:bg-blue-100"}`}
+              className={`border rounded-lg py-2 px-4 transition-colors duration-300 focus:outline-none ${
+                selectedAnswer === opt ? "bg-blue-200" : "hover:bg-blue-100"
+              }`}
               onClick={() => setSelectedAnswer(opt)}
               disabled={isChecked}
               initial={{ opacity: 0, y: 16 }}
@@ -69,6 +102,7 @@ export default function MultipleChoiceQuestion({ question, onNext }: MultipleCho
           );
         })}
       </div>
+
       <div className="flex justify-between mt-4">
         <motion.button
           className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
@@ -87,6 +121,7 @@ export default function MultipleChoiceQuestion({ question, onNext }: MultipleCho
           Kiểm tra
         </motion.button>
       </div>
+
       <AnimatePresence>
         {isChecked && (
           <motion.div
@@ -95,7 +130,9 @@ export default function MultipleChoiceQuestion({ question, onNext }: MultipleCho
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
-            className={`mt-4 p-4 rounded-lg flex items-center justify-between ${isCorrect ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+            className={`mt-4 p-4 rounded-lg flex items-center justify-between ${
+              isCorrect ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+            }`}
           >
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white border">
@@ -104,13 +141,17 @@ export default function MultipleChoiceQuestion({ question, onNext }: MultipleCho
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     className="text-green-600 text-xl font-bold"
-                  >✔</motion.span>
+                  >
+                    ✔
+                  </motion.span>
                 ) : (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     className="text-red-600 text-xl font-bold"
-                  >✖</motion.span>
+                  >
+                    ✖
+                  </motion.span>
                 )}
               </div>
               <div>
@@ -119,13 +160,19 @@ export default function MultipleChoiceQuestion({ question, onNext }: MultipleCho
                 </p>
                 {!isCorrect && (
                   <p className="text-sm italic">
-                    {question[`option${question.correctAnswer}` as keyof typeof question]}
+                    {
+                      question[
+                        `option${question.correctAnswer}` as keyof typeof question
+                      ]
+                    }
                   </p>
                 )}
               </div>
             </div>
             <motion.button
-              className={`px-4 py-2 rounded font-semibold ${isCorrect ? "bg-green-600 text-white" : "bg-red-600 text-white"}`}
+              className={`px-4 py-2 rounded font-semibold ${
+                isCorrect ? "bg-green-600 text-white" : "bg-red-600 text-white"
+              }`}
               onClick={handleNext}
               whileTap={{ scale: 0.97 }}
             >

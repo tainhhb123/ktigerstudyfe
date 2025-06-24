@@ -1,3 +1,4 @@
+//src/components/learning-path/Flashcard.tsx
 import React, { useState, useEffect } from "react";
 import FlashcardPlayer from "../../components/flashcard/FlashcardPlayer";
 import VocabularyList from "../../components/flashcard/VocabularyList";
@@ -10,6 +11,7 @@ interface Vocabulary {
   word: string;
   meaning: string;
   example?: string;
+  image?: string;
 }
 
 interface AuthorInfo {
@@ -23,6 +25,7 @@ interface Flashcard {
   term: string;
   meaning: string;
   example?: string; 
+  image?: string;
 }
 interface Props {
   lessonId: string;
@@ -51,7 +54,8 @@ export default function FlashCard({ lessonId }: Props) {
             id: vocab.vocabId,
             term: vocab.word,
             meaning: vocab.meaning,
-            example: vocab.example 
+            example: vocab.example,
+            image: vocab.image
         }));
         setVocabularies(mapped); 
         })

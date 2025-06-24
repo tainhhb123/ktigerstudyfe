@@ -47,7 +47,7 @@ export default function LessonDetail() {
       {/* Nội dung tương ứng */}
       <div className="max-w-3xl mx-auto pt-24 px-4">
         {activeTab === "vocab" && <Vocabulary lessonId={lessonId} />}
-        {activeTab === "grammar" && <Grammar lessonId={lessonId} />}
+        {activeTab === "grammar" && <Grammar lessonId={lessonId} setActiveTab={setActiveTab} />}
         {activeTab === "exercise" && <Exercise lessonId={lessonId} />}
       </div>
     </div>

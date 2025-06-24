@@ -52,6 +52,7 @@ import Level from "./pages/Learn/Level";
 import LeaderBoard from "./pages/Learn/LeaderBoard";
 import Lesson from "./pages/Learn/Lesson";
 import LessonDetail from "./pages/Learn/LessonDetail";
+import Profile from "./pages/Profile";
 
 
 export default function App() {
@@ -119,14 +120,18 @@ export default function App() {
           <Route path="lesson" element={<Lesson />} />
           <Route path="lesson-detail" element={<LessonDetail />} />
           <Route path="leaderboard" element={<LeaderBoard />} />
-
+          
         </Route>
-
+        <Route path="/*" element={<LearnAppLayout />}>
+          <Route path="profile" element={<Profile />} />      
+        </Route>
 
         {/* === Auth & Fallback === */}
         <Route path="signin" element={<SignIn />} />
         <Route path="signup" element={<SignUp />} />
         <Route path="*" element={<NotFound />} />
+        
+        
       </Routes>
     </BrowserRouter>
   );
