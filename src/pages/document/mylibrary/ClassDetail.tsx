@@ -1,359 +1,130 @@
-// src/pages/ClassDetail.tsx
-import React, { useEffect, useState, ChangeEvent } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+// src/pages/MyClass.tsx
+import { JSX, useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import PageMeta from "../../../components/document/common/PageMeta";
-import { motion } from "framer-motion";
 import { authService } from "../../../services/authService";
-import debounce from "lodash.debounce";
 
 interface ClassResponse {
     classId: number;
     className: string;
     description?: string;
-    userId: number;
-    userFullName: string;
     createdAt: string;
-    password: string;
 }
 
-interface ClassUserResponse {
-    classUserId: number;
-    classId: number;
-    userId: number;
-    userFullName: string;
-    joinedAt: string;
-}
+const tabs = [
+    { label: "Tài liệu", path: "/documents/Library/tai-lieu" },
+    { label: "Tài liệu yêu thích", path: "/documents/Library/tailieuyeuthich" },
+    { label: "Lớp học của tôi", path: "/documents/Library/lop-hoc" },
+    { label: "Lớp học tham gia", path: "/documents/Library/lophocthamgia" },
+];
 
-interface ClassDocumentListResponse {
-    classDocumentListId: number;
-    classId: number;
-    listId: number;
-    listTitle: string;
-    assignedAt: string;
-}
-
-interface UserSearchResult {
-    userId: number;
-    fullName: string;
-    email: string;
-}
-
-interface DocListSearchResult {
-    listId: number;
-    title: string;
-}
-
-export default function ClassDetail() {
-    const { classId } = useParams<{ classId: string }>();
-    const id = Number(classId);
+export default function MyClass(): JSX.Element {
+    const location = useLocation();
     const navigate = useNavigate();
-    const API = import.meta.env.VITE_API_BASE_URL;
-    const me = authService.getUserId();
+    const [classes, setClasses] = useState<ClassResponse[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // 1. Class info
-    const [cls, setCls] = useState<ClassResponse | null>(null);
-    const [infoLoading, setInfoLoading] = useState(true);
-    const [savingInfo, setSavingInfo] = useState(false);
-
-    // 2. Members
-    const [members, setMembers] = useState<ClassUserResponse[]>([]);
-    const [memberLoading, setMemberLoading] = useState(true);
-    const [searchUserQ, setSearchUserQ] = useState("");
-    const [searchUsers, setSearchUsers] = useState<UserSearchResult[]>([]);
-    const [searchingUsers, setSearchingUsers] = useState(false);
-
-    // 3. Docs
-    const [docs, setDocs] = useState<ClassDocumentListResponse[]>([]);
-    const [docsLoading, setDocsLoading] = useState(true);
-    const [searchDocQ, setSearchDocQ] = useState("");
-    const [searchDocs, setSearchDocs] = useState<DocListSearchResult[]>([]);
-    const [searchingDocs, setSearchingDocs] = useState(false);
+    const userId = authService.getUserId();
+    const API_URL = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
-        if (isNaN(id)) return navigate(-1);
-        // load class info
-        fetch(`${API}/classes/${id}`)
-            .then(r => r.json())
-            .then((data: ClassResponse) => setCls(data))
-            .finally(() => setInfoLoading(false));
-        // load members
-        fetch(`${API}/class-users/class/${id}`)
-            .then(r => r.json())
-            .then((d: ClassUserResponse[]) => setMembers(d))
-            .finally(() => setMemberLoading(false));
-        // load docs
-        fetch(`${API}/class-document-lists/class/${id}`)
-            .then(r => r.json())
-            .then((d: ClassDocumentListResponse[]) => setDocs(d))
-            .finally(() => setDocsLoading(false));
-    }, [API, id, navigate]);
-
-    // ---- handlers class info ----
-    const updateField = (k: keyof ClassResponse, v: string) => {
-        if (!cls) return;
-        setCls({ ...cls, [k]: v });
-    };
-    const handleSaveInfo = async () => {
-        if (!cls) return;
-        setSavingInfo(true);
-        try {
-            const { className, description, password } = cls;
-            await fetch(`${API}/classes/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ className, description, password, userId: me }),
-            });
-            alert("Cập nhật thông tin lớp thành công");
-        } catch {
-            alert("Lỗi khi lưu thông tin lớp");
-        } finally {
-            setSavingInfo(false);
+        if (!userId) {
+            setError("Bạn chưa đăng nhập.");
+            setLoading(false);
+            return;
         }
-    };
+        (async () => {
+            try {
+                const res = await fetch(`${API_URL}/classes/user/${userId}`);
+                if (!res.ok) throw new Error(`Lỗi ${res.status}`);
+                setClasses(await res.json());
+            } catch (e: any) {
+                console.error(e);
+                setError(e.message || "Không thể tải lớp học");
+            } finally {
+                setLoading(false);
+            }
+        })();
+    }, [API_URL, userId]);
 
-    // ---- search & add member ----
-    const doSearchUsers = debounce((q: string) => {
-        if (!q.trim()) return setSearchUsers([]);
-        setSearchingUsers(true);
-        fetch(`${API}/users/search?keyword=${encodeURIComponent(q)}&page=0&size=5`)
-            .then(r => r.json())
-            .then((page: any) => setSearchUsers(page.content))
-            .finally(() => setSearchingUsers(false));
-    }, 300);
-
-    useEffect(() => {
-        doSearchUsers(searchUserQ);
-    }, [searchUserQ]);
-
-    const handleAddMember = async (u: UserSearchResult) => {
-        try {
-            const res = await fetch(`${API}/class-users`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ classId: id, userId: u.userId }),
-            });
-            const added: ClassUserResponse = await res.json();
-            setMembers(m => [...m, added]);
-            setSearchUserQ("");
-            setSearchUsers([]);
-        } catch {
-            alert("Thêm thành viên thất bại");
-        }
-    };
-    const handleRemoveMember = async (uid: number) => {
-        if (!window.confirm("Xóa thành viên này?")) return;
-        const cu = members.find(m => m.userId === uid);
-        if (!cu) return;
-        await fetch(`${API}/class-users/${cu.classUserId}`, { method: "DELETE" });
-        setMembers(m => m.filter(x => x.userId !== uid));
-    };
-
-    // ---- search & add docs ----
-    const doSearchDocs = debounce((q: string) => {
-        if (!q.trim()) return setSearchDocs([]);
-        setSearchingDocs(true);
-        fetch(`${API}/document-lists/user/${me}`) // load all user's lists
-            .then(r => r.json())
-            .then((all: DocListSearchResult[]) => {
-                const filt = all.filter(d =>
-                    d.title.toLowerCase().includes(q.toLowerCase())
-                ).slice(0, 5);
-                setSearchDocs(filt);
-            })
-            .finally(() => setSearchingDocs(false));
-    }, 300);
-
-    useEffect(() => {
-        doSearchDocs(searchDocQ);
-    }, [searchDocQ]);
-
-    const handleAddDoc = async (dl: DocListSearchResult) => {
-        try {
-            const res = await fetch(`${API}/class-document-lists`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ classId: id, listId: dl.listId }),
-            });
-            const added: ClassDocumentListResponse = await res.json();
-            setDocs(d => [...d, added]);
-            setSearchDocQ("");
-            setSearchDocs([]);
-        } catch {
-            alert("Thêm tài liệu thất bại");
-        }
-    };
-    const handleRemoveDoc = async (cdlId: number) => {
-        if (!window.confirm("Xóa tài liệu khỏi lớp?")) return;
-        await fetch(`${API}/class-document-lists/${cdlId}`, { method: "DELETE" });
-        setDocs(d => d.filter(x => x.classDocumentListId !== cdlId));
-    };
 
     return (
         <>
             <PageMeta
-                title={cls ? `Lớp: ${cls.className}` : "Chi tiết lớp học"}
-                description=""
+                title="Lớp học | Thư viện của bạn"
+                description="Danh sách lớp học của bạn"
             />
 
-            <div className="max-w-4xl mx-auto p-6 space-y-8">
-                {/* 1. Info */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-xl shadow p-6 space-y-4"
+            {/* Header Tabs + Tạo lớp học */}
+            <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-wrap items-center justify-between">
+                <nav className="flex space-x-4 text-sm font-medium text-gray-700">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.path}
+                            onClick={() => navigate(tab.path)}
+                            className={`py-2 px-4 rounded-lg transition-colors duration-200 ${location.pathname === tab.path
+                                ? "bg-blue-100 text-blue-700"
+                                : "hover:bg-gray-100 hover:text-gray-900"
+                                }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </nav>
+                <button
+                    onClick={() => navigate("/documents/Library/lop-hoc/create")}
+                    className="mt-2 sm:mt-0 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
                 >
-                    <h2 className="text-2xl font-semibold">Thông tin lớp học</h2>
-                    {infoLoading || !cls ? (
-                        <p>Đang tải…</p>
-                    ) : (
-                        <>
-                            <label className="block">
-                                <span className="text-gray-700">Tên lớp</span>
-                                <input
-                                    value={cls.className}
-                                    onChange={(e) => updateField("className", e.target.value)}
-                                    disabled={savingInfo}
-                                    className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring"
-                                />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-700">Mô tả</span>
-                                <textarea
-                                    value={cls.description || ""}
-                                    onChange={(e) => updateField("description", e.target.value)}
-                                    disabled={savingInfo}
-                                    className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring"
-                                />
-                            </label>
-                            <label className="block">
-                                <span className="text-gray-700">Mật khẩu</span>
-                                <input
-                                    type="password"
-                                    value={cls.password}
-                                    onChange={(e) => updateField("password", e.target.value)}
-                                    disabled={savingInfo}
-                                    className="mt-1 w-full border rounded px-3 py-2 focus:outline-none focus:ring"
-                                />
-                            </label>
-                            <button
-                                onClick={handleSaveInfo}
-                                disabled={savingInfo}
-                                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-                            >
-                                {savingInfo ? "Đang lưu…" : "Lưu thông tin"}
-                            </button>
-                        </>
-                    )}
-                </motion.div>
-
-                {/* 2. Members */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-xl shadow p-6 space-y-4"
-                >
-                    <h2 className="text-2xl font-semibold">Thành viên ({members.length})</h2>
-
-                    {/* search */}
-                    <div className="flex gap-2">
-                        <input
-                            placeholder="Tìm kiếm người dùng..."
-                            value={searchUserQ}
-                            onChange={(e) => setSearchUserQ(e.target.value)}
-                            className="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring"
-                        />
-                        {searchingUsers && <span>…</span>}
-                    </div>
-                    {/* kết quả search */}
-                    {searchUsers.length > 0 && (
-                        <ul className="border rounded bg-gray-50 p-2 space-y-1 max-h-40 overflow-auto">
-                            {searchUsers.map(u => (
-                                <li key={u.userId} className="flex justify-between px-2">
-                                    <span>{u.fullName} ({u.email})</span>
-                                    <button
-                                        onClick={() => handleAddMember(u)}
-                                        className="text-green-600 hover:underline"
-                                    >
-                                        Thêm
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-
-                    {/* danh sách thành viên */}
-                    {memberLoading ? (
-                        <p>Đang tải…</p>
-                    ) : (
-                        <ul className="space-y-2">
-                            {members.map(m => (
-                                <li key={m.classUserId} className="flex justify-between items-center">
-                                    <span>{m.userFullName}</span>
-                                    <button
-                                        onClick={() => handleRemoveMember(m.userId)}
-                                        className="text-red-500 hover:underline"
-                                    >
-                                        Xóa
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </motion.div>
-
-                {/* 3. Documents */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-xl shadow p-6 space-y-4"
-                >
-                    <h2 className="text-2xl font-semibold">Tài liệu</h2>
-
-                    {/* search */}
-                    <div className="flex gap-2">
-                        <input
-                            placeholder="Tìm tài liệu của bạn..."
-                            value={searchDocQ}
-                            onChange={(e) => setSearchDocQ(e.target.value)}
-                            className="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring"
-                        />
-                        {searchingDocs && <span>…</span>}
-                    </div>
-                    {searchDocs.length > 0 && (
-                        <ul className="border rounded bg-gray-50 p-2 space-y-1 max-h-40 overflow-auto">
-                            {searchDocs.map(d => (
-                                <li key={d.listId} className="flex justify-between px-2">
-                                    <span>{d.title}</span>
-                                    <button
-                                        onClick={() => handleAddDoc(d)}
-                                        className="text-green-600 hover:underline"
-                                    >
-                                        Thêm
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-
-                    {docsLoading ? (
-                        <p>Đang tải…</p>
-                    ) : (
-                        <ul className="space-y-2">
-                            {docs.map(d => (
-                                <li key={d.classDocumentListId} className="flex justify-between items-center">
-                                    <span>{d.listTitle}</span>
-                                    <button
-                                        onClick={() => handleRemoveDoc(d.classDocumentListId)}
-                                        className="text-red-500 hover:underline"
-                                    >
-                                        Xóa
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </motion.div>
+                    + Tạo lớp học
+                </button>
             </div>
+
+            {/* Nội dung chính */}
+            {loading && <p className="text-center">Đang tải lớp học…</p>}
+            {error && <p className="text-center text-red-600">{error}</p>}
+
+            {!loading && !error && classes.length === 0 && (
+                <div className="flex flex-col items-center justify-center mt-16 space-y-4">
+                    <p className="text-xl font-semibold text-gray-800 text-center">
+                        Bạn chưa tạo hoặc tham gia lớp học nào
+                    </p>
+                    <button
+                        onClick={() => navigate("/documents/Library/lop-hoc/create")}
+                        className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
+                    >
+                        + Tạo lớp học
+                    </button>
+                </div>
+            )}
+
+            {!loading && !error && classes.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {classes.map((cls) => (
+                        <Link
+                            key={cls.classId}
+                            to={`/documents/Library/lop-hoc/classes/${cls.classId}`}  // <-- relative to /lop-hoc/
+                            className="block cursor-pointer bg-white rounded-xl shadow hover:shadow-lg transition p-6 space-y-3"
+                        >
+                            <h3 className="text-xl font-semibold text-gray-800">
+                                {cls.className}
+                            </h3>
+                            {cls.description && (
+                                <p className="text-gray-600 truncate">{cls.description}</p>
+                            )}
+                            <p className="text-gray-400 text-sm">
+                                Tạo ngày{" "}
+                                {new Date(cls.createdAt).toLocaleDateString("vi-VN", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                })}
+                            </p>
+                        </Link>
+                    ))}
+                </div>
+            )}
+
         </>
     );
 }

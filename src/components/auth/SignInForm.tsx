@@ -7,13 +7,14 @@ import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import axios, { AxiosError } from "axios";
+import { authService } from "../../services/authService";
 
 interface SignInResponse {
   userId: number;
   email: string;
   fullName: string;
   token: string;
-  role: "ADMIN" | "USER";    // ← thêm role
+  role: "ADMIN" | "USER";
 }
 
 const SignInForm: React.FC = () => {
@@ -42,35 +43,25 @@ const SignInForm: React.FC = () => {
         { email, password }
       );
 
-      // const { token, role, userId } = res.data;   // ← lấy thêm role
       const { token, role, userId, fullName, email: userEmail } = res.data;
 
-      const userData = {
-        userId,
-        fullName,
-        email: userEmail,  
-        role,
-        token,
-      };
-      // Lưu token
+      // Lưu token, role và userId qua authService
+      authService.setToken(token, keepLoggedIn);
+      authService.setRole(role, keepLoggedIn);
+      authService.setUserId(userId, keepLoggedIn);
+
+      // Tuỳ chọn: lưu thêm thông tin profile để hiển thị sau này
+      const profile = { userId, fullName, email: userEmail };
+      const profileKey = "userProfile";
       if (keepLoggedIn) {
-        localStorage.setItem("authToken", token);
-        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem(profileKey, JSON.stringify(profile));
       } else {
-        sessionStorage.setItem("authToken", token);
-        sessionStorage.setItem("userRole", role);
-        localStorage.setItem("user", JSON.stringify(userData));
+        sessionStorage.setItem(profileKey, JSON.stringify(profile));
       }
 
-      localStorage.setItem("authToken", token);
-      localStorage.setItem("userRole", role);
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      console.log("userId đã lưu vào localStorage:", userId);
-      console.log("fullName đã lưu vào localStorage:", fullName);
-      console.log("email đã lưu vào localStorage:", email);
-      console.log("role đã lưu vào localStorage:", role);
-      console.log("token đã lưu vào localStorage:", token);
+      console.log("userId đã lưu:", authService.getUserId());
+      console.log("role đã lưu:", authService.getRole());
+      console.log("token đã lưu:", authService.getToken());
 
       // Điều hướng theo role
       if (role === "ADMIN") {
@@ -187,7 +178,7 @@ const SignInForm: React.FC = () => {
         </form>
 
         <p className="mt-5 text-sm text-center text-gray-700 dark:text-gray-400">
-          Chưa có tài khoản?{" "}
+          Chưa có tài khoản?{' '}
           <Link
             to="/signup"
             className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
