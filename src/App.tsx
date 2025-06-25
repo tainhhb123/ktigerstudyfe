@@ -41,6 +41,8 @@ import EditDocument from "./pages/document/mylibrary/EditDocument";
 import FlashCard from "./pages/document/FlashCard";
 import Library from "./pages/document/Library";
 import MyClass from "./pages/document/mylibrary/MyClass";
+import CreateClass from "./pages/document/mylibrary/CreateClass";
+import ClassDetail from "./pages/document/mylibrary/ClassDetail";
 import FavoriteDocument from "./pages/document/mylibrary/FavoriteDocument";
 import CourseOverview from "./pages/document/mylibrary/CourseOverview";
 import ParticipateClass from "./pages/document/mylibrary/ParticipateClass";
@@ -103,11 +105,11 @@ export default function App() {
           <Route path="quiz/:listId" element={<QuizPage />} />
           <Route path="edit/:listId" element={<EditDocument />} />
           <Route path="view/:listId" element={<DocumentView />} />
-          {/* <Route path="/study" element={<StudyPage />} />
-        <Route path="/quiz" element={<QuizPage />} /> */}
           <Route path="Library/*" element={<Library />}>
             <Route index element={<Navigate to="lop-hoc" replace />} />
             <Route index path="lop-hoc" element={<MyClass />} />
+            <Route path="lop-hoc/create" element={<CreateClass />} />
+            <Route path="lop-hoc/classes/:id" element={<ClassDetail />} />
             <Route path="tai-lieu" element={<CourseOverview />} />
             <Route path="tailieuyeuthich" element={<FavoriteDocument />} />
             <Route path="lophocthamgia" element={<ParticipateClass />} />

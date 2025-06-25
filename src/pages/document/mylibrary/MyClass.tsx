@@ -1,6 +1,15 @@
-import { JSX } from "react";
-import { Link, useLocation } from "react-router-dom";
+// src/pages/MyClass.tsx
+import { JSX, useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import PageMeta from "../../../components/document/common/PageMeta";
+import { authService } from "../../../services/authService";
+
+interface ClassResponse {
+    classId: number;
+    className: string;
+    description?: string;
+    createdAt: string;
+}
 
 const tabs = [
     { label: "Tài liệu", path: "/documents/Library/tai-lieu" },
@@ -11,74 +20,111 @@ const tabs = [
 
 export default function MyClass(): JSX.Element {
     const location = useLocation();
+    const navigate = useNavigate();
+    const [classes, setClasses] = useState<ClassResponse[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const userId = authService.getUserId();
+    const API_URL = import.meta.env.VITE_API_BASE_URL;
+
+    useEffect(() => {
+        if (!userId) {
+            setError("Bạn chưa đăng nhập.");
+            setLoading(false);
+            return;
+        }
+        (async () => {
+            try {
+                const res = await fetch(`${API_URL}/classes/user/${userId}`);
+                if (!res.ok) throw new Error(`Lỗi ${res.status}`);
+                setClasses(await res.json());
+            } catch (e: any) {
+                console.error(e);
+                setError(e.message || "Không thể tải lớp học");
+            } finally {
+                setLoading(false);
+            }
+        })();
+    }, [API_URL, userId]);
+
 
     return (
         <>
             <PageMeta
                 title="Lớp học | Thư viện của bạn"
-                description="Bạn chưa tham gia hoặc tạo lớp học nào"
+                description="Danh sách lớp học của bạn"
             />
 
-            <div className="">
-
-                {/* Header Tabs */}
-                <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center justify-between">
-                    <nav className="flex space-x-4 text-sm font-medium text-gray-700">
-                        {tabs.map((tab) => (
-                            <a
-                                key={tab.path}
-                                href={tab.path}
-                                className={`py-2 px-4 rounded-lg transition-colors duration-200 ${location.pathname === tab.path
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "hover:bg-gray-100 hover:text-gray-900"
-                                    }`}
-                            >
-                                {tab.label}
-                            </a>
-                        ))}
-                    </nav>
-
-                    {/* Search Bar */}
-                    <div className="relative flex items-center w-80">
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm thẻ ghi nhớ"
-                            className="w-full py-2 pl-4 pr-10 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                        />
-                        <svg
-                            className="absolute right-3 text-gray-400 h-5 w-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+            {/* Header Tabs + Tạo lớp học */}
+            <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-wrap items-center justify-between">
+                <nav className="flex space-x-4 text-sm font-medium text-gray-700">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.path}
+                            onClick={() => navigate(tab.path)}
+                            className={`py-2 px-4 rounded-lg transition-colors duration-200 ${location.pathname === tab.path
+                                ? "bg-blue-100 text-blue-700"
+                                : "hover:bg-gray-100 hover:text-gray-900"
+                                }`}
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                            ></path>
-                        </svg>
-                    </div>
-                </div>
+                            {tab.label}
+                        </button>
+                    ))}
+                </nav>
+                <button
+                    onClick={() => navigate("/documents/Library/lop-hoc/create")}
+                    className="mt-2 sm:mt-0 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+                >
+                    + Tạo lớp học
+                </button>
+            </div>
 
-                {/* Nội dung chính */}
-                <div className="flex flex-col items-center justify-center mt-16">
-                    <img
-                        src="/images/chat/chat.jpg"
-                        alt="placeholder"
-                        className="w-80 mb-6"
-                    />
+            {/* Nội dung chính */}
+            {loading && <p className="text-center">Đang tải lớp học…</p>}
+            {error && <p className="text-center text-red-600">{error}</p>}
+
+            {!loading && !error && classes.length === 0 && (
+                <div className="flex flex-col items-center justify-center mt-16 space-y-4">
                     <p className="text-xl font-semibold text-gray-800 text-center">
                         Bạn chưa tạo hoặc tham gia lớp học nào
                     </p>
-                    <p className="text-gray-600 text-center mt-2 max-w-md">
-                        Tạo một lớp học để giúp bạn sắp xếp học phần của mình và chia sẻ chúng với bạn cùng lớp
-                    </p>
-                    <button className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition">
-                        Tham gia hoặc tạo lớp học
+                    <button
+                        onClick={() => navigate("/documents/Library/lop-hoc/create")}
+                        className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
+                    >
+                        + Tạo lớp học
                     </button>
                 </div>
-            </div>
+            )}
+
+            {!loading && !error && classes.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {classes.map((cls) => (
+                        <Link
+                            key={cls.classId}
+                            to={`/documents/Library/lop-hoc/classes/${cls.classId}`}  // <-- relative to /lop-hoc/
+                            className="block cursor-pointer bg-white rounded-xl shadow hover:shadow-lg transition p-6 space-y-3"
+                        >
+                            <h3 className="text-xl font-semibold text-gray-800">
+                                {cls.className}
+                            </h3>
+                            {cls.description && (
+                                <p className="text-gray-600 truncate">{cls.description}</p>
+                            )}
+                            <p className="text-gray-400 text-sm">
+                                Tạo ngày{" "}
+                                {new Date(cls.createdAt).toLocaleDateString("vi-VN", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                })}
+                            </p>
+                        </Link>
+                    ))}
+                </div>
+            )}
+
         </>
     );
 }

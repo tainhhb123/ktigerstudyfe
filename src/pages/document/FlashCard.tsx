@@ -1,77 +1,99 @@
+// src/pages/FlashCard.tsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { authService } from '../../services/authService';
 
-// Kiểu dữ liệu cho mỗi flashcard
+import BulkImportModal, { RawItem } from '../../components/document/flashcard/BulkImportModal';
+
 type FlashCardType = {
   term: string;
   def: string;
   example?: string;
-  img?: string | null; // lưu URL ảnh từ Cloudinary
+  img?: string | null;
 };
 
-const FlashCard: React.FC = () => {
+export default function FlashCard() {
+  const navigate = useNavigate();
+  const userId = authService.getUserId();
+  const API_URL = import.meta.env.VITE_API_BASE_URL;
+
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
-  const [type, setType] = useState('');
+  const [typeDoc, setTypeDoc] = useState('');
   const [cards, setCards] = useState<FlashCardType[]>([
     { term: '', def: '', example: '', img: null },
   ]);
   const [isPublic, setIsPublic] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
-  const userId = authService.getUserId();
+  const updateCard = (
+    idx: number,
+    key: keyof FlashCardType,
+    val: string | null
+  ) => {
+    setCards((prev) =>
+      prev.map((c, i) => (i === idx ? { ...c, [key]: val } : c))
+    );
+  };
+  const addEmptyCard = () =>
+    setCards((prev) => [...prev, { term: '', def: '', example: '', img: null }]);
+  const deleteCard = (idx: number) =>
+    setCards((prev) => prev.filter((_, i) => i !== idx));
 
-  // Upload hình ảnh lên Cloudinary
-  const uploadImage = async (file: File, index: number) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-
+  const uploadImage = async (file: File, idx: number) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
     try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        { method: 'POST', body: formData }
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+        }/image/upload`,
+        { method: 'POST', body: fd }
       );
-      const data = await response.json();
-      if (data.secure_url) {
-        updateCard(index, 'img', data.secure_url);
-      } else {
-        console.error('Upload thất bại:', data);
-      }
-    } catch (error) {
-      console.error('Lỗi khi upload hình:', error);
+      const data = await res.json();
+      if (data.secure_url) updateCard(idx, 'img', data.secure_url);
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  // Thêm flashcard mới
-  const addCard = () => {
-    setCards(prev => [...prev, { term: '', def: '', example: '', img: null }]);
+  // Nhận mảng RawItem từ BulkImportModal, ghép vào cards
+  const handleBulkImport = (items: RawItem[]) => {
+    const newCards: FlashCardType[] = items.map((it) => ({
+      term: it.term,
+      def: it.meaning,
+      example: it.example,
+      img: null,
+    }));
+    setCards((prev) => [...prev, ...newCards]);
   };
 
-  // Cập nhật trường của flashcard
-  const updateCard = (
-    index: number,
-    key: keyof FlashCardType,
-    value: string | null
-  ) => {
-    setCards(prev =>
-      prev.map((card, i) => (i === index ? { ...card, [key]: value } : card))
-    );
-  };
-
-  // Xóa flashcard
-  const deleteCard = (index: number) => {
-    setCards(prev => prev.filter((_, i) => i !== index));
-  };
-
-  // Gửi dữ liệu lên backend và reset form khi thành công
   const handleCreate = async () => {
+    if (!title.trim()) {
+      alert('Vui lòng nhập tiêu đề.');
+      return;
+    }
+
+    // Lọc card chỉ lấy những thẻ có term + def
+    const validCards = cards.filter(
+      (c) => c.term.trim().length > 0 && c.def.trim().length > 0
+    );
+    if (validCards.length === 0) {
+      alert('Phải có ít nhất một thẻ hợp lệ (có thuật ngữ và định nghĩa).');
+      return;
+    }
+
+    setSaving(true);
+
     const payload = {
       userId,
       title,
       description: desc,
-      type,
+      type: typeDoc,
       isPublic: isPublic ? 1 : 0,
-      items: cards.map(c => ({
+      items: validCards.map((c) => ({
         word: c.term,
         meaning: c.def,
         example: c.example || null,
@@ -80,186 +102,202 @@ const FlashCard: React.FC = () => {
     };
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/document-lists`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch(`${API_URL}/document-lists`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
       if (!res.ok) throw new Error(await res.text());
-
-      await res.json();
-      // Hiển thị hộp thoại có nút OK và Hủy
-      const confirmReset = window.confirm('Lưu thành công! Bạn có muốn xóa dữ liệu và tiếp tục không?');
-      if (!confirmReset) return;
-
-      // Reset form
-      setTitle('');
-      setDesc('');
-      setType('');
-      setIsPublic(false);
-      setCards([{ term: '', def: '', example: '', img: null }]);
-    } catch (err) {
-      console.error('Lỗi khi tạo bộ flashcard:', err);
-      alert('Có lỗi khi tạo bộ flashcard');
+      navigate('/documents/Library/tai-lieu');
+    } catch (e: any) {
+      console.error(e);
+      alert('Lưu thất bại: ' + e.message);
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="mb-6">
-        <input
-          type="text"
-          className="w-full p-4 text-xl border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-          placeholder='Nhập tiêu đề, ví dụ "Sinh học - Chương 22: Tiến hóa"'
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-        />
+    <>
+      <BulkImportModal
+        visible={showImport}
+        onClose={() => setShowImport(false)}
+        onImport={handleBulkImport}
+      />
 
-        {/* Loại tài liệu */}
-        <div className="relative mt-4">
-          <select
-            className="w-full p-3 pr-10 text-base border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 appearance-none bg-white"
-            value={type}
-            onChange={e => setType(e.target.value)}
-          >
-            <option value="" disabled>-- Chọn loại tài liệu --</option>
-            <option value="tu-vung">Từ vựng</option>
-            <option value="ngu-phap">Ngữ pháp</option>
-            <option value="dich-cau">Dịch câu</option>
-            <option value="quan-dung-ngu">Quán dụng ngữ</option>
-            <option value="khac">Khác</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
-            ▼
-          </div>
-        </div>
-
-        {/* Mô tả */}
-        <textarea
-          className="w-full mt-4 p-4 text-base border border-gray-300 rounded-lg shadow-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-          placeholder="Thêm mô tả..."
-          value={desc}
-          onChange={e => setDesc(e.target.value)}
-        />
-      </div>
-
-      {/* Toolbar */}
-      <div className="flex justify-between items-center flex-wrap gap-4 mb-6">
-        <div className="flex gap-2">
-          <button className="bg-blue-100 text-blue-800 px-4 py-2 rounded-md hover:bg-blue-200 transition shadow-sm">
-            + Nhập
-          </button>
-          <button className="bg-gray-100 text-gray-400 px-4 py-2 rounded-md cursor-not-allowed">
-            + Thêm sơ đồ
-          </button>
-          <button className="bg-purple-100 text-purple-700 px-4 py-2 rounded-md hover:bg-purple-200 transition shadow-sm">
-            ✨ Tạo từ ghi chú
-          </button>
-        </div>
-        <label className="flex items-center gap-2 text-sm text-gray-700">
+      <div className="w-full max-w-5xl mx-auto px-4 py-6 space-y-6">
+        {/* Header */}
+        <div className="space-y-4 ">
           <input
-            type="checkbox"
-            className="w-4 h-4 text-blue-500"
-            checked={isPublic}
-            onChange={e => setIsPublic(e.target.checked)}
+            type="text"
+            placeholder='Nhập tiêu đề, ví dụ "Sinh học - Chương 22: Tiến hóa"'
+            className="bg-white w-full p-4 text-xl border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={saving}
           />
-          chỉ mình tôi
-        </label>
-      </div>
 
-      {/* Danh sách flashcards */}
-      <div className="space-y-6">
-        {cards.map((card, i) => (
-          <div
-            key={i}
-            className="border rounded-xl p-4 bg-white shadow hover:shadow-lg transform hover:scale-[1.01] transition duration-300 space-y-3"
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-200 text-blue-800 font-semibold">{i + 1}</span>
-              <span className="text-gray-600">Thẻ ghi nhớ</span>
-            </div>
+          <div className="relative ">
+            <select
+              className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+              value={typeDoc}
+              onChange={(e) => setTypeDoc(e.target.value)}
+              disabled={saving}
+            >
+              <option value="" disabled>
+                -- Chọn loại tài liệu --
+              </option>
+              <option value="tu-vung">Từ vựng</option>
+              <option value="ngu-phap">Ngữ pháp</option>
+              <option value="dich-cau">Dịch câu</option>
+              <option value="quan-dung-ngu">Quán dụng ngữ</option>
+              <option value="khac">Khác</option>
+            </select>
 
-            <div className="flex gap-4 items-start">
-              <input
-                className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 transition"
-                placeholder="Thuật ngữ"
-                value={card.term}
-                onChange={e => updateCard(i, 'term', e.target.value)}
-              />
-              <input
-                className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 transition"
-                placeholder="Định nghĩa"
-                value={card.def}
-                onChange={e => updateCard(i, 'def', e.target.value)}
-              />
-
-              <div className="flex flex-col gap-1">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  id={`upload-${i}`}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) uploadImage(file, i);
-                  }}
-                />
-                <label
-                  htmlFor={`upload-${i}`}
-                  className="cursor-pointer text-blue-600 hover:underline"
-                >
-                  🖼️ Hình ảnh
-                </label>
-                {card.img && (
-                  <img
-                    src={card.img}
-                    alt="preview"
-                    className="w-16 h-16 object-cover rounded-md mt-2"
-                  />
-                )}
-                <button
-                  type="button"
-                  className="text-red-500 hover:underline hover:text-red-700 transition"
-                  onClick={() => deleteCard(i)}
-                >
-                  🗑️ Xóa
-                </button>
-              </div>
-            </div>
-
-            <input
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-400 transition"
-              placeholder="Ví dụ"
-              value={card.example || ''}
-              onChange={e => updateCard(i, 'example', e.target.value)}
-            />
           </div>
-        ))}
-      </div>
 
-      {/* Footer Button */}
-      <div className="flex justify-between items-center mt-8">
-        <button
-          type="button"
-          className="bg-blue-100 text-blue-800 px-4 py-2 rounded-md hover:bg-blue-200 transition shadow-sm"
-          onClick={addCard}
-        >
-          + Thêm thẻ
-        </button>
-        <button
-          type="button"
-          className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition shadow-lg"
-          onClick={handleCreate}
-        >
-          Tạo và ôn luyện
-        </button>
+          <textarea
+            placeholder="Thêm mô tả..."
+            className=" bg-white w-full p-4 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            disabled={saving}
+          />
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              disabled={saving}
+              className="w-4 h-4"
+            />
+            Chỉ mình tôi
+          </label>
+        </div>
+
+        {/* Toolbar */}
+        <div className="flex items-center justify-between mb-6 space-x-4">
+
+          <div className="flex flex-wrap items-center gap-4">
+            <button
+              onClick={() => setShowImport(true)}
+              disabled={saving}
+              className="bg-blue-100 text-blue-800 px-4 py-2 rounded hover:bg-blue-200"
+            >
+              + Nhập
+            </button>
+            <button
+              onClick={addEmptyCard}
+              disabled={saving}
+              className="bg-green-100 text-green-800 px-4 py-2 rounded hover:bg-green-200"
+            >
+              + Thêm thẻ
+            </button>
+          </div>
+          <button
+            onClick={handleCreate}
+            disabled={saving}
+            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            {saving ? 'Đang lưu...' : 'Tạo và ôn luyện'}
+          </button>
+
+        </div>
+
+        {/* Cards */}
+        <div className="space-y-6">
+          <AnimatePresence>
+            {cards.map((c, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                whileHover={{ scale: 1.02 }}
+                className="p-4 bg-white rounded-lg shadow space-y-3"
+              >
+                <div className="flex justify-between items-center">
+                  <h4 className="font-semibold">Thẻ #{i + 1}</h4>
+                  <button
+                    onClick={() => deleteCard(i)}
+                    disabled={saving}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    🗑️
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    placeholder="Thuật ngữ"
+                    className="p-2 border rounded focus:ring-2 focus:ring-blue-400"
+                    value={c.term}
+                    onChange={(e) => updateCard(i, 'term', e.target.value)}
+                    disabled={saving}
+                  />
+                  <input
+                    placeholder="Định nghĩa"
+                    className="p-2 border rounded focus:ring-2 focus:ring-blue-400"
+                    value={c.def}
+                    onChange={(e) => updateCard(i, 'def', e.target.value)}
+                    disabled={saving}
+                  />
+                </div>
+
+                <input
+                  placeholder="Ví dụ"
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-400"
+                  value={c.example || ''}
+                  onChange={(e) => updateCard(i, 'example', e.target.value)}
+                  disabled={saving}
+                />
+
+                <div className="flex items-center gap-4">
+                  {c.img && (
+                    <img
+                      src={c.img}
+                      alt=""
+                      className="w-20 h-20 object-cover rounded"
+                    />
+                  )}
+                  <label className="cursor-pointer text-blue-600 hover:underline">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) uploadImage(f, i);
+                      }}
+                      disabled={saving}
+                    />
+                    🖼️ {c.img ? 'Thay hình' : 'Tải hình'}
+                  </label>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {/* Submit */}
+        <div className="flex items-center justify-between mb-6 space-x-4">
+          <button
+            onClick={addEmptyCard}
+            disabled={saving}
+            className="bg-green-100 text-green-800 px-4 py-2 rounded hover:bg-green-200"
+          >
+            + Thêm thẻ
+          </button>
+          <button
+            onClick={handleCreate}
+            disabled={saving}
+            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            {saving ? 'Đang lưu...' : 'Tạo và ôn luyện'}
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
-};
-
-export default FlashCard;
+}
