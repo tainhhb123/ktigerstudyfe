@@ -1,5 +1,5 @@
 // src/components/tables/AdminTables/StudentProgressTable.tsx
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 import Button from "../../ui/button/Button";

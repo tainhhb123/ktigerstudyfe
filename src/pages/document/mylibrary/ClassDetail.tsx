@@ -44,8 +44,7 @@ interface DocListSearchResult {
 }
 
 export default function ClassDetail() {
-    const { classId } = useParams<{ classId: string }>();
-    const id = Number(classId);
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const API = import.meta.env.VITE_API_BASE_URL;
     const me = authService.getUserId();
@@ -70,7 +69,7 @@ export default function ClassDetail() {
     const [searchingDocs, setSearchingDocs] = useState(false);
 
     useEffect(() => {
-        if (isNaN(id)) return navigate(-1);
+        if (isNaN(Number(id))) return navigate(-1);
         // load class info
         fetch(`${API}/classes/${id}`)
             .then(r => r.json())

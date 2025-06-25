@@ -42,9 +42,7 @@ const navItems: NavItem[] = [
     {
     icon: <PencilIcon />,
     name: "Quản lí bài học",
-    subItems: [{ name: "Danh sách bài học", path: "/admin/danhsachbaihoc", pro: false },
-    ],
-
+    path: "/admin/danhsachbaihoc",
   },
 
   {

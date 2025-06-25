@@ -2,22 +2,23 @@ import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 import Button from "../../ui/button/Button";
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch } from "react-icons/fa";
 
-interface Grammar {
-  grammarId: number;
+interface Exercise {
+  exerciseId: number;
   lessonId: number;
-  grammarTitle: string;
-  grammarContent: string;
-  grammarExample?: string;
+  exerciseTitle: string;
+  exerciseType: string;
+  exerciseDescription?: string;
 }
 
-interface GrammarTableProps {
+interface ExerciseTableProps {
   lessonId: number;
+  onViewDetail?: (exercise: Exercise) => void; // Optional: callback khi bấm xem chi tiết
 }
 
-export default function GrammarTable({ lessonId }: GrammarTableProps) {
-  const [items, setItems] = useState<Grammar[]>([]);
+export default function ExerciseTable({ lessonId, onViewDetail }: ExerciseTableProps) {
+  const [items, setItems] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,35 +26,34 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
   const [totalPages, setTotalPages] = useState(0);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValues, setEditValues] = useState({
-    grammarTitle: '',
-    grammarContent: '',
-    grammarExample: ''
+    exerciseTitle: "",
+    exerciseType: "",
+    exerciseDescription: ""
   });
 
-  const fetchGrammar = async () => {
+  const fetchExercises = async () => {
     if (!lessonId) return;
     setLoading(true);
     try {
-      const response = await axios.get(`/api/grammar-theories/lessons/${lessonId}/grammar/paged`, {
+      const response = await axios.get(`/api/exercises/lesson/${lessonId}/paged`, {
         params: {
-          searchTerm,
+          title: searchTerm,
           page: pageNumber,
           size: 10
         }
       });
-      
       setItems(response.data.content);
       setTotalPages(response.data.totalPages);
-    } catch (error) {
-      console.error('Error fetching grammar:', error);
-      setError('Failed to load grammar items');
+    } catch {
+      setError("Không thể tải dữ liệu bài tập");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchGrammar();
+    fetchExercises();
+    // eslint-disable-next-line
   }, [lessonId, pageNumber, searchTerm]);
 
   const paginationPages = useMemo(() => {
@@ -72,30 +72,29 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
     return pages;
   }, [totalPages, pageNumber]);
 
-  const handleEditClick = (grammar: Grammar) => {
-    setEditingId(grammar.grammarId);
+  const handleEditClick = (exercise: Exercise) => {
+    setEditingId(exercise.exerciseId);
     setEditValues({
-      grammarTitle: grammar.grammarTitle,
-      grammarContent: grammar.grammarContent,
-      grammarExample: grammar.grammarExample || ''
+      exerciseTitle: exercise.exerciseTitle,
+      exerciseType: exercise.exerciseType,
+      exerciseDescription: exercise.exerciseDescription || ""
     });
   };
 
-  const handleUpdate = async (grammarId: number) => {
+  const handleUpdate = async (exerciseId: number) => {
     try {
-      await axios.put(`/api/grammar-theories/${grammarId}`, {
+      await axios.put(`/api/exercises/${exerciseId}`, {
         ...editValues,
         lessonId
       });
       setEditingId(null);
-      fetchGrammar(); // Refresh data after update
-    } catch (error) {
-      console.error('Error updating grammar:', error);
-      alert('Failed to update grammar');
+      fetchExercises();
+    } catch {
+      alert("Cập nhật thất bại");
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setEditValues(prev => ({
       ...prev,
@@ -106,22 +105,19 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
   const handleCancel = () => {
     setEditingId(null);
     setEditValues({
-      grammarTitle: '',
-      grammarContent: '',
-      grammarExample: ''
+      exerciseTitle: "",
+      exerciseType: "",
+      exerciseDescription: ""
     });
   };
 
-  // Add handleDelete function
-  const handleDelete = async (grammarId: number, grammarTitle: string) => {
-    if (window.confirm(`Bạn có chắc muốn xóa ngữ pháp "${grammarTitle}"?`)) {
+  const handleDelete = async (exerciseId: number, exerciseTitle: string) => {
+    if (window.confirm(`Bạn có chắc muốn xóa bài tập "${exerciseTitle}"?`)) {
       try {
-        await axios.delete(`/api/grammar-theories/${grammarId}`);
-        // Refresh the data after successful deletion
-        fetchGrammar();
-      } catch (error) {
-        console.error('Error deleting grammar:', error);
-        alert('Failed to delete grammar');
+        await axios.delete(`/api/exercises/${exerciseId}`);
+        fetchExercises();
+      } catch {
+        alert("Xóa thất bại");
       }
     }
   };
@@ -135,7 +131,7 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
             <FaSearch className="absolute left-3 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
-              placeholder="Tìm kiếm ngữ pháp..."
+              placeholder="Tìm kiếm tiêu đề bài tập..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -162,13 +158,13 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
       {/* Pagination Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 border-b border-gray-200 dark:border-gray-700 gap-2">
         <span className="font-semibold text-gray-700 dark:text-white">
-          Tổng số ngữ pháp: {items.length}
+          Tổng số bài tập: {items.length}
         </span>
         <div className="flex items-center space-x-2 md:justify-end mt-2 md:mt-0">
-          <Button 
-            size="sm" 
-            variant="outline" 
-            disabled={pageNumber === 0} 
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pageNumber === 0}
             onClick={() => setPageNumber(prev => prev - 1)}
           >
             Trước
@@ -208,10 +204,10 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
               Tiêu đề
             </TableCell>
             <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-gray-700 font-bold text-gray-700 dark:text-white">
-              Nội dung
+              Loại
             </TableCell>
             <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-gray-700 font-bold text-gray-700 dark:text-white">
-              Ví dụ
+              Mô tả
             </TableCell>
             <TableCell isHeader className="px-5 py-3 font-bold text-gray-700 dark:text-white">
               Thao tác
@@ -232,55 +228,64 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
               </TableCell>
             </TableRow>
           ) : items.length > 0 ? (
-            items.map((grammar) => (
-              <TableRow key={grammar.grammarId} className="border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-white/10">
+            items.map((exercise) => (
+              <TableRow key={exercise.exerciseId} className="border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-white/10">
                 <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white">
-                  {editingId === grammar.grammarId ? (
+                  {editingId === exercise.exerciseId ? (
                     <input
                       type="text"
-                      name="grammarTitle"
-                      value={editValues.grammarTitle}
+                      name="exerciseTitle"
+                      value={editValues.exerciseTitle}
                       onChange={handleInputChange}
                       className="w-full px-2 py-1 border rounded dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
                     />
                   ) : (
-                    grammar.grammarTitle
+                    exercise.exerciseTitle
                   )}
                 </TableCell>
                 <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">
-                  {editingId === grammar.grammarId ? (
-                    <textarea
-                      name="grammarContent"
-                      value={editValues.grammarContent}
+                  {editingId === exercise.exerciseId ? (
+                    <select
+                      name="exerciseType"
+                      value={editValues.exerciseType}
                       onChange={handleInputChange}
-                      rows={3}
                       className="w-full px-2 py-1 border rounded dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
-                    />
+                    >
+                      <option value="multiple_choice">Trắc nghiệm</option>
+                      <option value="fill_blank">Điền từ</option>
+                      <option value="sentence_rewriting">Viết lại câu</option>
+                    </select>
                   ) : (
-                    grammar.grammarContent
+                    exercise.exerciseType === "multiple_choice"
+                      ? "Trắc nghiệm"
+                      : exercise.exerciseType === "fill_blank"
+                      ? "Điền từ"
+                      : exercise.exerciseType === "sentence_rewriting"
+                      ? "Viết lại câu"
+                      : exercise.exerciseType
                   )}
                 </TableCell>
                 <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">
-                  {editingId === grammar.grammarId ? (
+                  {editingId === exercise.exerciseId ? (
                     <textarea
-                      name="grammarExample"
-                      value={editValues.grammarExample}
+                      name="exerciseDescription"
+                      value={editValues.exerciseDescription}
                       onChange={handleInputChange}
                       rows={2}
                       className="w-full px-2 py-1 border rounded dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
                     />
                   ) : (
-                    grammar.grammarExample || "—"
+                    exercise.exerciseDescription || "—"
                   )}
                 </TableCell>
                 <TableCell className="px-5 py-4 text-center">
                   <div className="flex justify-center space-x-2">
-                    {editingId === grammar.grammarId ? (
+                    {editingId === exercise.exerciseId ? (
                       <>
                         <Button
                           size="sm"
                           variant="primary"
-                          onClick={() => handleUpdate(grammar.grammarId)}
+                          onClick={() => handleUpdate(exercise.exerciseId)}
                         >
                           Cập nhật
                         </Button>
@@ -297,17 +302,26 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleEditClick(grammar)}
+                          onClick={() => handleEditClick(exercise)}
                         >
                           Sửa
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleDelete(grammar.grammarId, grammar.grammarTitle)}
+                          onClick={() => handleDelete(exercise.exerciseId, exercise.exerciseTitle)}
                         >
                           Xóa
                         </Button>
+                        {onViewDetail && (
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            onClick={() => onViewDetail(exercise)}
+                          >
+                            Xem chi tiết
+                          </Button>
+                        )}
                       </>
                     )}
                   </div>
@@ -317,7 +331,7 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
           ) : (
             <TableRow>
               <TableCell colSpan={4} className="text-center py-4 text-gray-500 dark:text-gray-400">
-                Không có dữ liệu ngữ pháp
+                Không có dữ liệu bài tập
               </TableCell>
             </TableRow>
           )}
