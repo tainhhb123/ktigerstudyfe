@@ -1,5 +1,5 @@
 // src/pages/admin/DocumentReports.tsx
-import React, { useState } from "react";
+import { useState } from "react";
 import PageMeta from "../../../components/common/PageMeta";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";

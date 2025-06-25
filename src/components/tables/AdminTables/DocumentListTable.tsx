@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 import Button from "../../ui/button/Button";
@@ -18,10 +18,11 @@ interface Paged<T> {
   size: number;
 }
 
-interface Props {
+interface DocumentListTableProps {
   keyword: string;
   selectedListId: number | null;
   onSelectList: (id: number | null) => void;
+  onDeleteList: (id: number) => void; // <-- nhận prop này từ cha
   compact?: boolean; // hide header/pagination
 }
 
@@ -29,8 +30,9 @@ export default function DocumentListTable({
   keyword,
   selectedListId,
   onSelectList,
+  onDeleteList,
   compact = false,
-}: Props) {
+}: DocumentListTableProps) {
   const pageSize = 5;
   const [data, setData] = useState<Paged<DocumentListResponse>>({
     content: [],
@@ -97,17 +99,6 @@ export default function DocumentListTable({
   }, [currentPage, totalPages]);
 
   const goToPage = (i: number) => setData((d) => ({ ...d, number: i }));
-
-  // Xóa tài liệu
-  const handleDeleteList = (id: number) => {
-    if (!window.confirm('Xác nhận xóa tài liệu này?')) return;
-    setLoading(true);
-    axios
-      .delete(`/api/document-lists/${id}`)
-      .then(() => fetchData())
-      .catch((err) => console.error("Lỗi khi xóa:", err))
-      .finally(() => setLoading(false));
-  };
 
   return (
     <div className="rounded-lg bg-white shadow border border-gray-200 dark:bg-white/[0.03] dark:border-white/10 overflow-x-auto">
@@ -235,7 +226,7 @@ export default function DocumentListTable({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleDeleteList(l.listId)}
+                    onClick={() => onDeleteList(l.listId)}
                   >
                     Xóa
                   </Button>

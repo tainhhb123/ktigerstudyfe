@@ -18,8 +18,32 @@ const tabs = [
     { label: "Lớp học tham gia", path: "/documents/Library/lophocthamgia" },
 ];
 
+<<<<<<< HEAD
 export default function MyClass(): JSX.Element {
     const location = useLocation();
+=======
+interface ClassDocumentListResponse {
+    classDocumentListId: number;
+    classId: number;
+    listId: number;
+    listTitle: string;
+    assignedAt: string;
+}
+
+interface UserSearchResult {
+    userId: number;
+    fullName: string;
+    email: string;
+}
+
+interface DocListSearchResult {
+    listId: number;
+    title: string;
+}
+
+export default function ClassDetail() {
+    const { id } = useParams<{ id: string }>();
+>>>>>>> 5684b6eced8f14625f868f72c99158c4212971ee
     const navigate = useNavigate();
     const [classes, setClasses] = useState<ClassResponse[]>([]);
     const [loading, setLoading] = useState(true);
@@ -29,10 +53,51 @@ export default function MyClass(): JSX.Element {
     const API_URL = import.meta.env.VITE_API_BASE_URL;
 
     useEffect(() => {
+<<<<<<< HEAD
         if (!userId) {
             setError("Bạn chưa đăng nhập.");
             setLoading(false);
             return;
+=======
+        if (isNaN(Number(id))) return navigate(-1);
+        // load class info
+        fetch(`${API}/classes/${id}`)
+            .then(r => r.json())
+            .then((data: ClassResponse) => setCls(data))
+            .finally(() => setInfoLoading(false));
+        // load members
+        fetch(`${API}/class-users/class/${id}`)
+            .then(r => r.json())
+            .then((d: ClassUserResponse[]) => setMembers(d))
+            .finally(() => setMemberLoading(false));
+        // load docs
+        fetch(`${API}/class-document-lists/class/${id}`)
+            .then(r => r.json())
+            .then((d: ClassDocumentListResponse[]) => setDocs(d))
+            .finally(() => setDocsLoading(false));
+    }, [API, id, navigate]);
+
+    // ---- handlers class info ----
+    const updateField = (k: keyof ClassResponse, v: string) => {
+        if (!cls) return;
+        setCls({ ...cls, [k]: v });
+    };
+    const handleSaveInfo = async () => {
+        if (!cls) return;
+        setSavingInfo(true);
+        try {
+            const { className, description, password } = cls;
+            await fetch(`${API}/classes/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ className, description, password, userId: me }),
+            });
+            alert("Cập nhật thông tin lớp thành công");
+        } catch {
+            alert("Lỗi khi lưu thông tin lớp");
+        } finally {
+            setSavingInfo(false);
+>>>>>>> 5684b6eced8f14625f868f72c99158c4212971ee
         }
         (async () => {
             try {

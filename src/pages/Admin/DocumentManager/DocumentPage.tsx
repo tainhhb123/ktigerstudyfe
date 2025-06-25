@@ -1,5 +1,5 @@
 // src/pages/admin/StudentDocumentPage.tsx
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";
@@ -17,7 +17,8 @@ export default function StudentDocumentPage() {
     axios.delete(`/api/document-lists/${id}`)
       .then(() => {
         if (selectedListId === id) setSelectedListId(null);
-        setKeyword((k) => k);
+        // Gọi lại fetch hoặc trigger reload nếu cần
+        setKeyword((k) => k); // hoặc setKeyword("") để reload
       })
       .catch(() => alert("Xóa thất bại"));
   };

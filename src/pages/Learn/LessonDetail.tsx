@@ -1,6 +1,6 @@
 //src/pages/Learn/LessonDetail.tsx
 import { useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Vocabulary from "../../pages/Learn/Vocabulary";
 import Grammar from "../../pages/Learn/Grammar";
 import Exercise from "../../pages/Learn/Exercise";
