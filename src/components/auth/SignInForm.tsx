@@ -42,24 +42,35 @@ const SignInForm: React.FC = () => {
         { email, password }
       );
 
-      const { token, role, userId } = res.data;   // ← lấy thêm role
+      // const { token, role, userId } = res.data;   // ← lấy thêm role
+      const { token, role, userId, fullName, email: userEmail } = res.data;
 
+      const userData = {
+        userId,
+        fullName,
+        email: userEmail,  
+        role,
+        token,
+      };
       // Lưu token
       if (keepLoggedIn) {
         localStorage.setItem("authToken", token);
-        localStorage.setItem("userRole", role);
-        localStorage.setItem("userId", userId.toString());
+        localStorage.setItem("user", JSON.stringify(userData));
       } else {
         sessionStorage.setItem("authToken", token);
         sessionStorage.setItem("userRole", role);
-        localStorage.setItem("userId", userId.toString());
+        localStorage.setItem("user", JSON.stringify(userData));
       }
 
       localStorage.setItem("authToken", token);
       localStorage.setItem("userRole", role);
-      localStorage.setItem("userId", userId.toString());
-      console.log("userId đã lưu vào localStorage:", userId);
+      localStorage.setItem("user", JSON.stringify(userData));
 
+      console.log("userId đã lưu vào localStorage:", userId);
+      console.log("fullName đã lưu vào localStorage:", fullName);
+      console.log("email đã lưu vào localStorage:", email);
+      console.log("role đã lưu vào localStorage:", role);
+      console.log("token đã lưu vào localStorage:", token);
 
       // Điều hướng theo role
       if (role === "ADMIN") {

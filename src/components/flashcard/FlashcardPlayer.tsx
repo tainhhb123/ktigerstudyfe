@@ -5,6 +5,7 @@ interface Flashcard {
   id: number;
   term: string;
   meaning: string;
+  image?: string;
 }
 
 interface FlashcardPlayerProps {
@@ -23,13 +24,50 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
   totalCards,
 }) => {
   const [flipped, setFlipped] = useState(false);
-
-  // Reset về mặt trước khi đổi flashcard
+  const [autoPlay, setAutoPlay] = useState(false);
+  
+  // Đổi useEffect để đảm bảo thứ tự hoạt động đúng
   useEffect(() => {
-    setFlipped(false);
-  }, [flashcard]);
+    if (!autoPlay) return;
 
-  // Kiểm tra nếu không có flashcard nào được truyền vào
+    // Nếu đang ở thẻ cuối => dừng autoplay
+    if (currentIndex >= totalCards - 1 && flipped) {
+      setTimeout(() => {
+        setAutoPlay(false);
+      }, 1000);
+      return;
+    }
+
+    let timer: NodeJS.Timeout;
+
+    if (!flipped) {
+      // Nếu thẻ chưa lật, sẽ lật thẻ sau 1 giây
+      timer = setTimeout(() => {
+        setFlipped(true);
+      }, 1000);
+    } else {
+      // Nếu thẻ đã lật, sẽ tiến tới thẻ kế tiếp sau 1 giây
+      // Và reset về mặt trước
+      timer = setTimeout(() => {
+        // Chuyển thẻ và đảm bảo hiển thị mặt trước
+        onNext();
+        // Reset thẻ về mặt trước (không nhấp nháy)
+        setFlipped(false);
+      }, 1000);
+    }
+
+    return () => clearTimeout(timer);
+  }, [autoPlay, flipped, currentIndex, totalCards, onNext]);
+
+  // Reset về mặt trước khi flashcard thay đổi 
+  // Vô hiệu hóa để tránh conflict với luồng autoPlay
+  useEffect(() => {
+    if (!autoPlay) {
+      setFlipped(false);
+    }
+  }, [flashcard, autoPlay]);
+
+  // Trường hợp không có flashcard
   if (!flashcard) {
     return (
       <div className="flex flex-col items-center justify-center w-full max-w-2xl h-64 rounded-2xl bg-white shadow-md text-gray-700 text-lg">
@@ -44,16 +82,16 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
       <div
         className="relative w-full max-w-2xl h-64 mb-6 cursor-pointer"
         style={{ perspective: "1200px" }}
-        onClick={() => setFlipped((f) => !f)}
+        onClick={() => !autoPlay && setFlipped((f) => !f)} // Chỉ cho phép click khi không trong chế độ autoplay
       >
         <div
-          className={`w-full h-full transition-transform duration-500 relative`}
+          className="w-full h-full transition-transform duration-500 relative"
           style={{
             transformStyle: "preserve-3d",
             transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
           }}
         >
-          {/* FRONT */}
+          {/* Mặt Trước */}
           <div
             className="absolute inset-0 rounded-2xl flex items-center justify-center text-gray-800 text-3xl font-semibold p-4"
             style={{
@@ -63,9 +101,19 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
               transform: "rotateY(0deg)",
             }}
           >
-            <div className="px-4 text-center">{flashcard.term}</div>
+            <div className="flex flex-row items-center justify-center gap-8">
+              <div className="text-center text-3xl font-semibold">{flashcard.term}</div>
+              {flashcard.image && (
+                <img
+                  src={flashcard.image}
+                  alt="Flashcard"
+                  className="w-50 h-50 object-cover rounded-lg border border-gray-200"
+                />
+              )}
+            </div>
           </div>
-          {/* BACK */}
+
+          {/* Mặt Sau */}
           <div
             className="absolute inset-0 rounded-2xl flex items-center justify-center text-gray-800 text-3xl font-bold p-4"
             style={{
@@ -80,46 +128,68 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
         </div>
       </div>
 
-      {/* Pagination + Control */}
-      <div className="flex flex-row items-center justify-center space-x-8 mb-2">
-        <button
-          className="bg-gray-200 text-gray-700 rounded-full h-12 w-12 flex items-center justify-center text-2xl hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={onPrevious}
-          disabled={currentIndex === 0}
-        >
-          &#8592;
-        </button>
-        <span className="text-gray-700 text-lg font-semibold select-none">
-          {currentIndex + 1} / {totalCards}
-        </span>
-        <button
-          className="bg-gray-200 text-gray-700 rounded-full h-12 w-12 flex items-center justify-center text-2xl hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={onNext}
-          disabled={currentIndex === totalCards - 1}
-        >
-          &#8594;
-        </button>
-      </div>
-
-      {/* Footer */}
-      <div className="flex flex-row items-center justify-between w-full max-w-2xl mt-2 px-4">
-        {/* Hint Section */}
-        <div className="text-gray-600 text-sm flex items-center gap-2">
-          <svg width="18" height="18" fill="none" className="inline">
-            <circle cx="9" cy="9" r="9" fill="#e0e0e0" /> {/* Màu nền cho circle */}
-            <text x="9" y="13" fontSize="10" textAnchor="middle" fill="#333333"> {/* Màu chữ cho text */}
-              힌트
-            </text>
-          </svg>
-          힌트 얻기
-        </div>
-        {/* Control Buttons (Play & Review) */}
-        <div className="flex items-center gap-3">
-          <button className="p-2 rounded hover:bg-gray-200 text-gray-700 transition">
-            <svg width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+      {/* Thanh điều hướng & Nút chức năng */}
+      <div className="relative w-full flex items-center justify-center mb-2">
+        {/* Nút quay lui - số thứ tự - nút tiếp theo (giữa) */}
+        <div className="flex flex-row items-center space-x-4">
+          <button
+            className="bg-gray-200 text-gray-700 rounded-full h-12 w-12 flex items-center justify-center text-2xl hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => {
+              setFlipped(false);
+              onPrevious();
+            }}
+            disabled={currentIndex === 0 || autoPlay}
+          >
+            &#8592;
           </button>
+          <span className="text-gray-700 text-lg font-semibold select-none">
+            {currentIndex + 1} / {totalCards}
+          </span>
+          <button
+            className="bg-gray-200 text-gray-700 rounded-full h-12 w-12 flex items-center justify-center text-2xl hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => {
+              setFlipped(false);
+              onNext();
+            }}
+            disabled={currentIndex === totalCards - 1 || autoPlay}
+          >
+            &#8594;
+          </button>
+        </div>
+
+        {/* Nút Play & Review (phải) */}
+        <div className="absolute right-0 pr-6 flex items-center gap-3">
+          {/* Nút Play/Pause thay đổi dựa vào trạng thái */}
+          <button
+            className={`p-2 rounded hover:bg-gray-200 transition ${
+              autoPlay ? "bg-gray-200 text-blue-600" : "text-gray-700"
+            }`}
+            onClick={() => {
+              // Bật/tắt AutoPlay
+              setAutoPlay((prev) => !prev);
+              // Luôn bắt đầu từ mặt trước khi bật autoplay
+              if (!autoPlay) setFlipped(false);
+            }}
+            title={autoPlay ? "Dừng phát" : "Tự động phát"}
+          >
+            {autoPlay ? (
+              // Icon Pause khi đang phát
+              <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+              </svg>
+            ) : (
+              // Icon Play khi đang dừng
+              <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </button>
+
+          {/* Nút Review (chưa xác định chức năng) */}
           <button className="p-2 rounded hover:bg-gray-200 text-gray-700 transition">
-            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+            </svg>
           </button>
         </div>
       </div>
@@ -127,4 +197,4 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
   );
 };
 
-export default FlashcardPlayer; 
+export default FlashcardPlayer;

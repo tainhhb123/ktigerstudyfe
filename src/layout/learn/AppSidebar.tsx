@@ -45,22 +45,23 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-   {
-    icon: <House size={28} color="#FFC800" weight="fill"/>, 
-    name: "Learn",
-    path: "/learn/level",
-  },
   {
     icon: <House size={28} color="#FFC800" weight="fill" />, 
     name: "Ecommerce",
     path: "/learn",
   },
   {
+    icon: <House size={28} color="#FFC800" weight="fill" />,
+    name: "Learn",
+    path: "/learn/level",
+  },
+
+  {
   icon: <Crown size={28} color="#FFC800" weight="fill" />, 
   name: "View Leaderboard",
   path: "/learn/leaderboard",
   },
- 
+
 ];
 
 const othersItems: NavItem[] = [

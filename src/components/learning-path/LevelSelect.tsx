@@ -28,7 +28,7 @@ export default function LevelSelect() {
   }, []);
 
   const handleClick = (levelId: number, levelName: string) => {
-    navigate(`/learn/lesson?levelId=${levelId}`); // ✅ Đúng
+    navigate(`/learn/lesson?levelId=${levelId}`);
 
   };
 
