@@ -17,6 +17,7 @@ interface SignInResponse {
   role: "ADMIN" | "USER";
 }
 
+
 const SignInForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,6 +46,14 @@ const SignInForm: React.FC = () => {
 
       const { token, role, userId, fullName, email: userEmail } = res.data;
 
+        const userData = {
+        userId,
+        fullName,
+        email: userEmail,  
+        role,
+        token,
+      };
+
       // Lưu token, role và userId qua authService
       authService.setToken(token, keepLoggedIn);
       authService.setRole(role, keepLoggedIn);
@@ -55,13 +64,28 @@ const SignInForm: React.FC = () => {
       const profileKey = "userProfile";
       if (keepLoggedIn) {
         localStorage.setItem(profileKey, JSON.stringify(profile));
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("user", JSON.stringify(userData));
       } else {
         sessionStorage.setItem(profileKey, JSON.stringify(profile));
+        sessionStorage.setItem("authToken", token);
+        sessionStorage.setItem("userRole", role);
+        localStorage.setItem("user", JSON.stringify(userData));
       }
 
       console.log("userId đã lưu:", authService.getUserId());
       console.log("role đã lưu:", authService.getRole());
       console.log("token đã lưu:", authService.getToken());
+
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("userRole", role);
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      console.log("userId đã lưu vào localStorage:", userId);
+      console.log("fullName đã lưu vào localStorage:", fullName);
+      console.log("email đã lưu vào localStorage:", email);
+      console.log("role đã lưu vào localStorage:", role);
+      console.log("token đã lưu vào localStorage:", token);
 
       // Điều hướng theo role
       if (role === "ADMIN") {
@@ -178,7 +202,7 @@ const SignInForm: React.FC = () => {
         </form>
 
         <p className="mt-5 text-sm text-center text-gray-700 dark:text-gray-400">
-          Chưa có tài khoản?{' '}
+          Chưa có tài khoản?{" "}
           <Link
             to="/signup"
             className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
