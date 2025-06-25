@@ -52,20 +52,48 @@ export default function Lesson() {
   const [current, setCurrent] = useState<any>(null);
 
   useEffect(() => {
+    console.log("🔍 DEBUG - useEffect triggered with:", { levelId, userId });
+    
     if (levelId && userId) {
       setLoading(true);
+      console.log("📊 Fetching lessons for levelId:", levelId, "userId:", userId);
+      
       getLessonsByLevelIdWithProgress(levelId, userId)
         .then((data) => {
+          console.log("📊 API Response:", data);
+          
+          // Kiểm tra nếu data không phải là array hoặc rỗng
+          if (!Array.isArray(data)) {
+            console.error("❌ API response is not an array:", data);
+            setLessons([]);
+            return;
+          }
+          
+          if (data.length === 0) {
+            console.warn("⚠️ No lessons found for this level");
+            setLessons([]);
+            return;
+          }
+
           // ⭐ Chuyển key locked → isLocked, lessonCompleted → isLessonCompleted
           const mappedLessons = data.map((item: any) => ({
             ...item,
             isLocked: item.locked,                  // FE dùng isLocked
             isLessonCompleted: item.lessonCompleted // FE dùng isLessonCompleted
           }));
+          
+          console.log("📊 Mapped lessons:", mappedLessons);
           setLessons(mappedLessons);
           setCurrent(mappedLessons[0]);
         })
+        .catch((error) => {
+          console.error("❌ Error fetching lessons:", error);
+          setLessons([]);
+        })
         .finally(() => setLoading(false));
+    } else {
+      console.warn("⚠️ Missing levelId or userId:", { levelId, userId });
+      setLoading(false);
     }
   }, [levelId, userId]);
 
@@ -91,6 +119,9 @@ export default function Lesson() {
 
   if (loading)
     return <div className="text-center py-20">Đang tải bài học...</div>;
+  
+  console.log("📊 Current lessons state:", lessons, "Length:", lessons.length);
+  
   if (!lessons.length)
     return <div className="text-center py-20">Không có bài học nào cho cấp độ này!</div>;
 
