@@ -1,12 +1,49 @@
 import ComponentCard from "../../common/ComponentCard";
 import { useDropzone } from "react-dropzone";
-// import Dropzone from "react-dropzone";
+import { useState, useCallback } from "react";
 
-const DropzoneComponent: React.FC = () => {
-  const onDrop = (acceptedFiles: File[]) => {
-    console.log("Files dropped:", acceptedFiles);
-    // Handle file uploads here
-  };
+const CLOUDINARY_UPLOAD_PRESET = "2OPMBDnbMXCLhq8K-laxVfa8_CI";
+const CLOUDINARY_CLOUD_NAME = "do0k0jkej";
+
+async function uploadToCloudinary(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+  const data = await res.json();
+  if (data.secure_url) return data.secure_url;
+  throw new Error("Upload thất bại");
+}
+
+interface DropzoneComponentProps {
+  onUploaded: (url: string) => void;
+}
+
+const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ onUploaded }) => {
+  const [uploading, setUploading] = useState(false);
+
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (acceptedFiles.length === 0) return;
+      setUploading(true);
+      try {
+        const url = await uploadToCloudinary(acceptedFiles[0]);
+        onUploaded(url);
+      } catch {
+        alert("Upload thất bại");
+      } finally {
+        setUploading(false);
+      }
+    },
+    [onUploaded]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -15,29 +52,29 @@ const DropzoneComponent: React.FC = () => {
       "image/jpeg": [],
       "image/webp": [],
       "image/svg+xml": [],
+      "audio/*": [],
+      "video/*": [],
     },
+    multiple: false,
   });
+
   return (
-    <ComponentCard title="Dropzone">
+    <ComponentCard title="Upload Media">
       <div className="transition border border-gray-300 border-dashed cursor-pointer dark:hover:border-brand-500 dark:border-gray-700 rounded-xl hover:border-brand-500">
         <form
           {...getRootProps()}
-          className={`dropzone rounded-xl   border-dashed border-gray-300 p-7 lg:p-10
-        ${
-          isDragActive
-            ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
-            : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
-        }
-      `}
+          className={`dropzone rounded-xl border-dashed border-gray-300 p-7 lg:p-10
+            ${isDragActive
+              ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
+              : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
+            }
+          `}
           id="demo-upload"
         >
-          {/* Hidden Input */}
           <input {...getInputProps()} />
-
           <div className="dz-message flex flex-col items-center m-0!">
-            {/* Icon Container */}
             <div className="mb-[22px] flex justify-center">
-              <div className="flex h-[68px] w-[68px]  items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+              <div className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
                 <svg
                   className="fill-current"
                   width="29"
@@ -53,16 +90,16 @@ const DropzoneComponent: React.FC = () => {
                 </svg>
               </div>
             </div>
-
-            {/* Text Content */}
             <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-              {isDragActive ? "Drop Files Here" : "Drag & Drop Files Here"}
+              {uploading
+                ? "Đang upload..."
+                : isDragActive
+                ? "Drop Files Here"
+                : "Drag & Drop Files Here"}
             </h4>
-
-            <span className=" text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
-              Drag and drop your PNG, JPG, WebP, SVG images here or browse
+            <span className="text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
+              Drag and drop your PNG, JPG, WebP, SVG, audio, video here or browse
             </span>
-
             <span className="font-medium underline text-theme-sm text-brand-500">
               Browse File
             </span>

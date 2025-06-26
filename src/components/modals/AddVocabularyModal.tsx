@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Button from "../../components/ui/button/Button";
+import DropzoneComponent from "../../components/form/form-elements/DropZone"; // đường dẫn đúng theo dự án bạn
 
 interface AddVocabularyModalProps {
   lessonId: number;
@@ -9,54 +10,63 @@ interface AddVocabularyModalProps {
   onSuccess: () => void;
 }
 
-export default function AddVocabularyModal({ 
-  lessonId, 
-  isOpen, 
+export default function AddVocabularyModal({
+  lessonId,
+  isOpen,
   onClose,
-  onSuccess 
+  onSuccess,
 }: AddVocabularyModalProps) {
   const [vocabulary, setVocabulary] = useState({
-    word: '',
-    meaning: '',
-    example: ''
+    word: "",
+    meaning: "",
+    example: "",
+    media: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setVocabulary(prev => ({
+    setVocabulary((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
+    }));
+  };
+
+  const handleUploaded = (url: string) => {
+    setVocabulary((prev) => ({
+      ...prev,
+      media: url,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
-      await axios.post('/api/vocabulary-theories', {
+      await axios.post("/api/vocabulary-theories", {
         ...vocabulary,
-        lessonId
+        lessonId,
       });
 
       onSuccess();
-      setVocabulary({ word: '', meaning: '', example: '' });
+      setVocabulary({ word: "", meaning: "", example: "", media: "" });
       onClose();
     } catch (error) {
-      console.error('Error creating vocabulary:', error);
-      alert('Failed to create vocabulary');
+      console.error("Error creating vocabulary:", error);
+      alert("Failed to create vocabulary");
     } finally {
       setIsLoading(false);
     }
@@ -87,49 +97,70 @@ export default function AddVocabularyModal({
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="max-h-[calc(100vh-200px)] overflow-y-auto">
-              <div className="px-6 py-4">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Từ vựng *
-                    </label>
-                    <input
-                      type="text"
-                      name="word"
-                      value={vocabulary.word}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
-                      required
-                    />
-                  </div>
+            <form
+              onSubmit={handleSubmit}
+              className="max-h-[calc(100vh-200px)] overflow-y-auto"
+            >
+              <div className="px-6 py-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Từ vựng *
+                  </label>
+                  <input
+                    type="text"
+                    name="word"
+                    value={vocabulary.word}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    required
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Nghĩa *
-                    </label>
-                    <textarea
-                      name="meaning"
-                      value={vocabulary.meaning}
-                      onChange={handleChange}
-                      rows={4}
-                      className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
-                      required
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Nghĩa *
+                  </label>
+                  <textarea
+                    name="meaning"
+                    value={vocabulary.meaning}
+                    onChange={handleChange}
+                    rows={4}
+                    className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    required
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Ví dụ
-                    </label>
-                    <textarea
-                      name="example"
-                      value={vocabulary.example}
-                      onChange={handleChange}
-                      rows={2}
-                      className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Ví dụ
+                  </label>
+                  <textarea
+                    name="example"
+                    value={vocabulary.example}
+                    onChange={handleChange}
+                    rows={2}
+                    className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                  />
+                </div>
+
+                {/* Dropzone Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Upload Media
+                  </label>
+                  <DropzoneComponent onUploaded={handleUploaded} />
+                  {vocabulary.media && (
+                    <div className="mt-2">
+                      <a
+                        href={vocabulary.media}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        Xem media đã upload
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -139,12 +170,12 @@ export default function AddVocabularyModal({
                   <Button type="button" variant="outline" onClick={onClose}>
                     Hủy
                   </Button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     variant="primary"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Đang tạo...' : 'Tạo mới'}
+                    {isLoading ? "Đang tạo..." : "Tạo mới"}
                   </Button>
                 </div>
               </div>
