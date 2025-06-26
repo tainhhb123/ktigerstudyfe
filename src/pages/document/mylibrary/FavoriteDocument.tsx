@@ -1,3 +1,4 @@
+// src/pages/document/mylibrary/FavoriteDocument.tsx
 import React, { JSX, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { authService } from '../../../services/authService';
@@ -12,7 +13,10 @@ const tabs = [
 ];
 
 export default function FavoriteDocument(): JSX.Element {
-    const API_URL = import.meta.env.VITE_API_BASE_URL;
+    const rawApiUrl = import.meta.env.VITE_API_BASE_URL || '';
+    // Loại bỏ trailing slash nếu có
+    const API_URL = rawApiUrl.replace(/\/$/, '');
+
     const userId = authService.getUserId();
     const location = useLocation();
 
@@ -29,14 +33,27 @@ export default function FavoriteDocument(): JSX.Element {
         const fetchFavorited = async () => {
             setLoading(true);
             setError(null);
+
+            const endpoint = `${API_URL}/document-lists/favorited/${userId}`;
+            console.log('Fetching favorited docs from:', endpoint);
+
             try {
-                const res = await fetch(`${API_URL}/document-lists/favorited/${userId}`);
-                if (!res.ok) throw new Error(`Server error ${res.status}`);
+                const res = await fetch(endpoint);
+
+                if (res.status === 404) {
+                    // Nếu chưa có tài liệu yêu thích → hiển thị như danh sách rỗng
+                    setDocs([]);
+                    return;
+                }
+                if (!res.ok) {
+                    throw new Error(`Server error ${res.status}`);
+                }
+
                 const data: Doc[] = await res.json();
                 setDocs(data);
             } catch (err: any) {
                 console.error('Failed to fetch favorited docs:', err);
-                setError(err.message || 'Đã có lỗi xảy ra');
+                setError(err.message ?? 'Đã có lỗi xảy ra');
             } finally {
                 setLoading(false);
             }

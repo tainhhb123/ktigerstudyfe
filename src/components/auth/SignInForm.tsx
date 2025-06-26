@@ -58,6 +58,7 @@ const SignInForm: React.FC = () => {
       authService.setToken(token, keepLoggedIn);
       authService.setRole(role, keepLoggedIn);
       authService.setUserId(userId, keepLoggedIn);
+     
 
       // Tuỳ chọn: lưu thêm thông tin profile để hiển thị sau này
       const profile = { userId, fullName, email: userEmail };
@@ -73,10 +74,12 @@ const SignInForm: React.FC = () => {
         localStorage.setItem("user", JSON.stringify(userData));
       }
 
+  
       console.log("userId đã lưu:", authService.getUserId());
       console.log("role đã lưu:", authService.getRole());
       console.log("token đã lưu:", authService.getToken());
-
+      
+     localStorage.setItem("userId", String(userId));
       localStorage.setItem("authToken", token);
       localStorage.setItem("userRole", role);
       localStorage.setItem("user", JSON.stringify(userData));
