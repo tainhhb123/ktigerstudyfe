@@ -74,12 +74,12 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ onUploaded }) => 
         const url = await uploadToCloudinary(file);
         console.log("Upload successful:", url);
         onUploaded(url);
-        alert("Upload thành công!");
+        alert("Tải lên thành công!");
       } catch (error) {
         console.error("Upload failed:", error);
         const errorMessage = error instanceof Error ? error.message : String(error);
         setError(errorMessage);
-        alert(`Upload thất bại: ${errorMessage}`);
+        alert(`Tải lên thất bại: ${errorMessage}`);
       } finally {
         setUploading(false);
       }
@@ -98,16 +98,16 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ onUploaded }) => 
     maxSize: 10 * 1024 * 1024, // 10MB
     onDropRejected: (rejectedFiles) => {
       console.log("Rejected files:", rejectedFiles);
-      alert("File không hợp lệ hoặc quá lớn (tối đa 10MB)");
+      alert("Tệp không hợp lệ hoặc quá lớn (tối đa 10MB)");
     },
   });
 
   return (
-    <ComponentCard title="Upload Media">
+    <ComponentCard title="Tải lên Media">
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-red-700 text-sm">
-            <strong>Lỗi upload:</strong> {error}
+            <strong>Lỗi tải lên:</strong> {error}
           </p>
         </div>
       )}
@@ -149,20 +149,20 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({ onUploaded }) => 
             </div>
             <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
               {uploading
-                ? "Đang upload..."
+                ? "Đang tải lên..."
                 : isDragActive
-                ? "Drop Files Here"
-                : "Drag & Drop Files Here"}
+                ? "Thả tệp vào đây"
+                : "Kéo & Thả tệp vào đây"}
             </h4>
             <span className="text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
               {uploading 
                 ? "Vui lòng đợi..."
-                : "Drag and drop your PNG, JPG, WebP, audio, video here or browse"
+                : "Kéo và thả tệp PNG, JPG, WebP, âm thanh, video vào đây hoặc duyệt"
               }
             </span>
             {!uploading && (
               <span className="font-medium underline text-theme-sm text-brand-500">
-                Browse File
+                Duyệt tệp
               </span>
             )}
           </div>
