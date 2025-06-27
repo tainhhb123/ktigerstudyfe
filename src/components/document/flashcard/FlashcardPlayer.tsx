@@ -236,8 +236,13 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
 
       {/* Report Modal */}
       {showReport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        // wrapper cố định full màn hình
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          {/* Backdrop: mờ + blur nền phía sau */}
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+
+          {/* Modal content */}
+          <div className="relative bg-white rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-semibold mb-4">Báo cáo tài liệu</h2>
             <select
               value={selectedReason}
@@ -259,15 +264,20 @@ const FlashcardPlayer: React.FC<FlashcardPlayerProps> = ({
               <button
                 onClick={() => setShowReport(false)}
                 className="px-4 py-2 rounded hover:bg-gray-100"
-              >Hủy</button>
+              >
+                Hủy
+              </button>
               <button
                 onClick={submitReport}
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              >Gửi</button>
+              >
+                Gửi
+              </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 };
