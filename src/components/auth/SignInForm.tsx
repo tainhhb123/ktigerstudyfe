@@ -67,6 +67,7 @@ const SignInForm: React.FC = () => {
         localStorage.setItem(profileKey, JSON.stringify(profile));
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(userData));
+        
       } else {
         sessionStorage.setItem(profileKey, JSON.stringify(profile));
         sessionStorage.setItem("authToken", token);
@@ -74,12 +75,12 @@ const SignInForm: React.FC = () => {
         localStorage.setItem("user", JSON.stringify(userData));
       }
 
-  
       console.log("userId đã lưu:", authService.getUserId());
       console.log("role đã lưu:", authService.getRole());
       console.log("token đã lưu:", authService.getToken());
       
      localStorage.setItem("userId", String(userId));
+     localStorage.setItem("fullName", fullName);
       localStorage.setItem("authToken", token);
       localStorage.setItem("userRole", role);
       localStorage.setItem("user", JSON.stringify(userData));

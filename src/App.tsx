@@ -56,6 +56,7 @@ import LeaderBoard from "./pages/Learn/LeaderBoard";
 import Lesson from "./pages/Learn/Lesson";
 import LessonDetail from "./pages/Learn/LessonDetail";
 import Profile from "./pages/Profile";
+import ChangePasswordForm from "./components/auth/ChangePasswordForm";
 
 
 export default function App() {
@@ -128,6 +129,7 @@ export default function App() {
         </Route>
         <Route path="/*" element={<LearnAppLayout />}>
           <Route path="profile" element={<Profile />} />      
+          <Route path="profile/change-password" element={<ChangePasswordForm />} />
         </Route>
 
         {/* === Auth & Fallback === */}
