@@ -1,6 +1,7 @@
 // src/pages/MyClass.tsx
 import { JSX, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
+import { FaTrash } from "react-icons/fa";
 import PageMeta from "../../../components/document/common/PageMeta";
 import { authService } from "../../../services/authService";
 
@@ -28,6 +29,7 @@ export default function MyClass(): JSX.Element {
     const userId = authService.getUserId();
     const API_URL = import.meta.env.VITE_API_BASE_URL;
 
+    // Fetch user's classes
     useEffect(() => {
         if (!userId) {
             setError("Bạn chưa đăng nhập.");
@@ -46,6 +48,20 @@ export default function MyClass(): JSX.Element {
             }
         })();
     }, [API_URL, userId]);
+
+    // Delete a class
+    const handleDelete = async (classId: number) => {
+        if (!window.confirm("Bạn có chắc muốn xóa lớp này?")) return;
+        try {
+            const res = await fetch(`${API_URL}/classes/${classId}`, {
+                method: "DELETE",
+            });
+            if (!res.ok) throw new Error(`Lỗi ${res.status}`);
+            setClasses((prev) => prev.filter((c) => c.classId !== classId));
+        } catch (e: any) {
+            alert("Xóa không thành công: " + e.message);
+        }
+    };
 
     return (
         <>
@@ -79,8 +95,12 @@ export default function MyClass(): JSX.Element {
             </div>
 
             {/* Loading / Error */}
-            {loading && <p className="text-center dark:text-gray-200">Đang tải lớp học…</p>}
-            {error && <p className="text-center text-red-600 dark:text-red-400">{error}</p>}
+            {loading && (
+                <p className="text-center dark:text-gray-200">Đang tải lớp học…</p>
+            )}
+            {error && (
+                <p className="text-center text-red-600 dark:text-red-400">{error}</p>
+            )}
 
             {/* Empty state */}
             {!loading && !error && classes.length === 0 && (
@@ -101,30 +121,45 @@ export default function MyClass(): JSX.Element {
             {!loading && !error && classes.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {classes.map((cls) => (
-                        <Link
-                            key={cls.classId}
-                            to={`classes/${cls.classId}`}
-                            className="block cursor-pointer bg-white dark:bg-zinc-800 rounded-xl shadow hover:shadow-lg transition p-6 space-y-3 border border-gray-100 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-400"
-                            aria-label={`Xem chi tiết lớp học ${cls.className}`}
-                        >
-                            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
-                                {cls.className}
-                            </h3>
-                            {cls.description && (
-                                <p className="text-gray-600 dark:text-gray-300 truncate">{cls.description}</p>
-                            )}
-                            <p className="text-gray-400 dark:text-gray-400 text-sm">
-                                Tạo ngày{' '}
-                                {new Date(cls.createdAt).toLocaleDateString('vi-VN', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: 'numeric',
-                                })}
-                            </p>
-                        </Link>
+                        <div key={cls.classId} className="relative">
+                            <Link
+                                to={`classes/${cls.classId}`}
+                                className="block cursor-pointer bg-white dark:bg-zinc-800 rounded-xl shadow hover:shadow-lg transition p-6 space-y-3 border border-gray-100 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-400"
+                                aria-label={`Xem chi tiết lớp học ${cls.className}`}
+                            >
+                                <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+                                    {cls.className}
+                                </h3>
+                                {cls.description && (
+                                    <p className="text-gray-600 dark:text-gray-300 truncate">
+                                        {cls.description}
+                                    </p>
+                                )}
+                                <p className="text-gray-400 dark:text-gray-400 text-sm">
+                                    Tạo ngày{" "}
+                                    {new Date(cls.createdAt).toLocaleDateString("vi-VN", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                    })}
+                                </p>
+                            </Link>
+
+                            {/* Delete icon */}
+                            <button
+                                onClick={() => handleDelete(cls.classId)}
+                                aria-label="Xóa lớp học"
+                                className="absolute top-3 right-3 text-red-500 hover:text-red-700 p-1"
+                            >
+                                <FaTrash size={16} />
+                            </button>
+                        </div>
                     ))}
                 </div>
             )}
+
+            {/* render nested routes if any */}
+            <Outlet />
         </>
     );
 }

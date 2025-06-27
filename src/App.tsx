@@ -43,6 +43,7 @@ import Library from "./pages/document/Library";
 import MyClass from "./pages/document/mylibrary/MyClass";
 import CreateClass from "./pages/document/mylibrary/CreateClass";
 import ClassDetail from "./pages/document/mylibrary/ClassDetail";
+import ClassDetailView from "./pages/document/mylibrary/ClassDetailView";
 import FavoriteDocument from "./pages/document/mylibrary/FavoriteDocument";
 import CourseOverview from "./pages/document/mylibrary/CourseOverview";
 import ParticipateClass from "./pages/document/mylibrary/ParticipateClass";
@@ -112,6 +113,7 @@ export default function App() {
             <Route index path="lop-hoc" element={<MyClass />} />
             <Route path="lop-hoc/create" element={<CreateClass />} />
             <Route path="lop-hoc/classes/:id" element={<ClassDetail />} />
+            <Route path="classesuser/:id" element={<ClassDetailView />} />
             <Route path="tai-lieu" element={<CourseOverview />} />
             <Route path="tailieuyeuthich" element={<FavoriteDocument />} />
             <Route path="lophocthamgia" element={<ParticipateClass />} />
@@ -125,19 +127,23 @@ export default function App() {
           <Route path="lesson" element={<Lesson />} />
           <Route path="lesson-detail" element={<LessonDetail />} />
           <Route path="leaderboard" element={<LeaderBoard />} />
-          
+
         </Route>
         <Route path="/*" element={<LearnAppLayout />}>
+
           <Route path="profile" element={<Profile />} />      
           <Route path="profile/change-password" element={<ChangePasswordForm />} />
+
+         
+
         </Route>
 
         {/* === Auth & Fallback === */}
         <Route path="signin" element={<SignIn />} />
         <Route path="signup" element={<SignUp />} />
         <Route path="*" element={<NotFound />} />
-        
-        
+
+
       </Routes>
     </BrowserRouter>
   );
