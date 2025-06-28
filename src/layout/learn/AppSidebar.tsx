@@ -32,9 +32,11 @@ import {
   ShieldCheck,
   Storefront,
   Crown,
+  Book,
 } from "phosphor-react";
 import { useSidebar } from "../../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
+
 
 
 type NavItem = {
@@ -47,18 +49,18 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     icon: <House size={28} color="#FFC800" weight="fill" />, 
-    name: "Ecommerce",
+    name: "Trang chủ",
     path: "/learn",
   },
-  {
-    icon: <House size={28} color="#FFC800" weight="fill" />,
-    name: "Learn",
-    path: "/learn/level",
-  },
+{
+  icon: <Book size={28} color="#FFC800" weight="fill" />,
+  name: "Học",
+  path: "/learn/level",
+},
 
   {
   icon: <Crown size={28} color="#FFC800" weight="fill" />, 
-  name: "View Leaderboard",
+  name: "Bảng xếp hạng",
   path: "/learn/leaderboard",
   },
 
@@ -336,7 +338,8 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
+                  // "Others"
+                  " "
                 ) : (
                   <HorizontaLDots />
                 )}
@@ -345,7 +348,7 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
+        {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
       </div>
     </aside>
   );
