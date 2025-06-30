@@ -28,6 +28,7 @@ import StudentDocument from "./pages/Admin/DocumentManager/DocumentPage";
 import DocumentReports from "./pages/Admin/DocumentManager/DocumentReports";
 import LessonListPage from "./pages/Admin/LessonManager/LessonListPage";
 import LessonDetailPage from "./pages/Admin/LessonManager/LessonDetailPage";
+import ChatAI from "./pages/KoreanChatPage";
 
 
 // Document pages & layout
@@ -86,10 +87,7 @@ export default function App() {
 
           <Route path="danhsachbaihoc" element={<LessonListPage />} />
           <Route path="lessons/:lessonId/" element={<LessonDetailPage />} />
-
-
-
-
+          <Route path="chatai" element={<ChatAI />} />
 
           <Route path="alerts" element={<Alerts />} />
           <Route path="avatars" element={<Avatars />} />
@@ -100,6 +98,7 @@ export default function App() {
           <Route path="line-chart" element={<LineChart />} />
           <Route path="bar-chart" element={<BarChart />} />
         </Route>
+
 
         {/* === Document Layout (với wildcard *) === */}
         <Route path="documents/*" element={<AppLayoutDocument />}>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FileText } from "lucide-react";
+import { ChatBot } from "../../icons";
 import { Link } from "react-router-dom";
 import { useSidebar } from "../../context/SidebarContext";
 import { ThemeToggleButton } from "../../components/common/ThemeToggleButton";
@@ -157,11 +157,11 @@ const AppHeader: React.FC = () => {
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
             <Link
-              to="/documents"
+              to="/admin/chatai"
               className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition"
               title="Tài liệu"
             >
-              <FileText className="w-5 h-5 text-gray-700" />
+              <ChatBot className="w-5 h-5 text-gray-700" />
             </Link>
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
