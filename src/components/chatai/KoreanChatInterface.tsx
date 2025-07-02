@@ -51,6 +51,7 @@ export default function KoreanChatInterface({
   const [isLoading, setIsLoading] = useState(false);
   const [showQuickPhrases, setShowQuickPhrases] = useState(true);
   const [translationVisible, setTranslationVisible] = useState<{ [key: number]: boolean }>({});
+  const [currentSpeakingId, setCurrentSpeakingId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Speech Recognition
@@ -68,9 +69,12 @@ export default function KoreanChatInterface({
   // Text To Speech
   const {
     speak,
+    stop,
+    toggle,
     isSpeaking,
+    isPaused,
     isSupported: ttsSupported,
-    // error: ttsError
+  
   } = useTextToSpeech();
 
   useEffect(() => {
@@ -99,11 +103,33 @@ export default function KoreanChatInterface({
     }
   }, [transcript, isListening, resetTranscript]);
 
+  // Auto-play AI messages when they appear
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.messageType === 'ai' && lastMessage.content && ttsSupported) {
+        // Auto-play the latest AI message
+        setCurrentSpeakingId(lastMessage.messageId);
+        speak(lastMessage.content, true); // Auto-play enabled
+      }
+    }
+  }, [messages, speak, ttsSupported]);
+
+  // Update current speaking ID when speech starts/stops
+  useEffect(() => {
+    if (!isSpeaking) {
+      setCurrentSpeakingId(null);
+    }
+  }, [isSpeaking]);
+
   const displayInput = isListening ? (interimTranscript || '') : inputMessage;
 
   const sendMessage = async (content: string) => {
     const cleanMessage = content.trim();
     if (!cleanMessage || isLoading) return;
+
+    // Stop any current speech before sending new message
+    stop();
 
     setIsLoading(true);
     setShowQuickPhrases(false);
@@ -169,6 +195,39 @@ export default function KoreanChatInterface({
     }));
   };
 
+  const handleSpeakerClick = (messageId: number, text: string) => {
+    if (currentSpeakingId === messageId) {
+      // Currently speaking this message - toggle play/pause
+      toggle();
+    } else {
+      // Speaking different message or not speaking - start this message
+      setCurrentSpeakingId(messageId);
+      speak(text, true);
+    }
+  };
+
+  const getSpeakerIcon = (messageId: number) => {
+    if (currentSpeakingId === messageId) {
+      if (isSpeaking && !isPaused) {
+        return '🔊'; // Currently playing
+      } else if (isPaused) {
+        return '⏸️'; // Paused
+      }
+    }
+    return '🔈'; // Not playing
+  };
+
+  const getSpeakerTitle = (messageId: number) => {
+    if (currentSpeakingId === messageId) {
+      if (isSpeaking && !isPaused) {
+        return 'Nhấn để dừng';
+      } else if (isPaused) {
+        return 'Nhấn để tiếp tục';
+      }
+    }
+    return 'Nhấn để đọc';
+  };
+
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
       {/* Simple Header */}
@@ -218,6 +277,11 @@ export default function KoreanChatInterface({
               <p className="text-gray-600 dark:text-gray-400">
                 Chọn gợi ý hoặc nhập tin nhắn để bắt đầu
               </p>
+              {ttsSupported && (
+                <p className="text-sm text-green-600 dark:text-green-400 mt-2">
+                  🔊 AI sẽ tự động đọc câu trả lời
+                </p>
+              )}
             </div>
           )}
 
@@ -265,11 +329,15 @@ export default function KoreanChatInterface({
                   
                   {message.messageType === 'ai' && ttsSupported && (
                     <button
-                      onClick={() => speak(message.content)}
-                      className="ml-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600"
-                      title="Đọc tin nhắn"
+                      onClick={() => handleSpeakerClick(message.messageId, message.content)}
+                      className={`ml-2 p-1 rounded transition-all duration-200 ${
+                        currentSpeakingId === message.messageId && isSpeaking
+                          ? 'bg-green-100 dark:bg-green-900/30'
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-600'
+                      }`}
+                      title={getSpeakerTitle(message.messageId)}
                     >
-                      {isSpeaking ? '🔊' : '🔈'}
+                      {getSpeakerIcon(message.messageId)}
                     </button>
                   )}
                 </div>
