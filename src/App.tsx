@@ -128,6 +128,7 @@ export default function App() {
           <Route path="lesson" element={<Lesson />} />
           <Route path="lesson-detail" element={<LessonDetail />} />
           <Route path="leaderboard" element={<LeaderBoard />} />
+          <Route path="chatai" element={<ChatAI />} />
 
         </Route>
         <Route path="/*" element={<LearnAppLayout />}>

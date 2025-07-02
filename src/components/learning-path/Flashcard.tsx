@@ -72,20 +72,9 @@ export default function FlashCard({ lessonId }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center px-2 py-4">
-      <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 text-center">
-        THTH Trung Cấp 3 - Bài học
-      </h1>
 
-      <div className="mb-2">
-        <span className="text-gray-600 text-sm flex items-center gap-2">
-          <button className="flex items-center gap-1 text-gray-600 hover:text-gray-800 transition-colors duration-200">
-            <span>⭐</span>
-            <span>첫 번째 평점 남기기</span>
-          </button>
-        </span>
-      </div>
 
-      <FunctionBar />
+  
 
       <div className="w-full max-w-3xl mt-6">
         {vocabularies.length > 0 ? (
@@ -101,9 +90,7 @@ export default function FlashCard({ lessonId }: Props) {
         )}
       </div>
 
-      <div className="w-full max-w-3xl mt-2">
-        <AuthorCard {...author} />
-      </div>
+   
 
       <div className="w-full max-w-3xl mt-8">
         <VocabularyList vocabularies={vocabularies} />

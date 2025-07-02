@@ -33,6 +33,7 @@ import {
   Storefront,
   Crown,
   Book,
+  Brain
 } from "phosphor-react";
 import { useSidebar } from "../../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
@@ -63,7 +64,11 @@ const navItems: NavItem[] = [
   name: "Bảng xếp hạng",
   path: "/learn/leaderboard",
   },
-
+{
+  icon: <Brain size={28} color="#FFC800" weight="fill" />,
+  name: "Chat AI",
+  path: "/learn/chatai",
+},
 ];
 
 const othersItems: NavItem[] = [
