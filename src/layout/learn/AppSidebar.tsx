@@ -17,20 +17,6 @@ import {
 } from "../../icons";
 import {
   House,
-  Trophy,
-  UserCircle,
-  CalendarCheck,
-  ListBullets,
-  Table,
-  PuzzlePiece,
-  ChartBar,
-  Cube,
-  Plug,
-  DotsThreeOutline,
-  Image,
-  VideoCamera,
-  ShieldCheck,
-  Storefront,
   Crown,
   Book,
   Brain
