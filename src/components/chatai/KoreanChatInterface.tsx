@@ -5,6 +5,7 @@ import { KoreanChatScenario, KoreanDifficultyLevel, ChatMessage, ChatResponsePai
 import { koreanChatApi } from '../../services/koreanChatApi';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
+import { KaraokeText } from './KaraokeText';
 import Button from '../ui/button/Button';
 
 interface KoreanChatInterfaceProps {
@@ -53,6 +54,7 @@ export default function KoreanChatInterface({
   const [translationVisible, setTranslationVisible] = useState<{ [key: number]: boolean }>({});
   const [currentSpeakingId, setCurrentSpeakingId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastMessageIdRef = useRef<number | null>(null);
 
   // Speech Recognition
   const {
@@ -74,9 +76,12 @@ export default function KoreanChatInterface({
     isSpeaking,
     isPaused,
     isSupported: ttsSupported,
-  
+    error: ttsError,
+    currentWordIndex,
+    words
   } = useTextToSpeech();
 
+  // Load messages
   useEffect(() => {
     const loadMessages = async () => {
       setIsLoading(true);
@@ -92,77 +97,85 @@ export default function KoreanChatInterface({
     loadMessages();
   }, [conversationId]);
 
+  // Auto scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, interimTranscript]);
 
+  // Speech recognition -> input
   useEffect(() => {
-    if (!isListening && transcript && transcript.trim()) {
+    if (!isListening && transcript.trim()) {
       setInputMessage(transcript.trim());
       resetTranscript();
     }
   }, [transcript, isListening, resetTranscript]);
 
-  // Auto-play AI messages when they appear
+  // Tự động đọc tin nhắn AI mới
   useEffect(() => {
-    if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage.messageType === 'ai' && lastMessage.content && ttsSupported) {
-        // Auto-play the latest AI message
-        setCurrentSpeakingId(lastMessage.messageId);
-        speak(lastMessage.content, true); // Auto-play enabled
-      }
-    }
-  }, [messages, speak, ttsSupported]);
+    if (!ttsSupported || messages.length === 0) return;
 
-  // Update current speaking ID when speech starts/stops
+    const lastMessage = messages[messages.length - 1];
+    if (
+      lastMessage.messageType === 'ai' &&
+      lastMessage.content &&
+      lastMessage.messageId !== lastMessageIdRef.current
+    ) {
+      lastMessageIdRef.current = lastMessage.messageId;
+      stop();
+      setTimeout(() => {
+        setCurrentSpeakingId(lastMessage.messageId);
+        speak(lastMessage.content);
+      }, 400);
+    }
+  }, [messages, ttsSupported, speak, stop]);
+
+  // Xóa currentSpeakingId khi đọc xong
   useEffect(() => {
     if (!isSpeaking) {
       setCurrentSpeakingId(null);
     }
   }, [isSpeaking]);
 
-  const displayInput = isListening ? (interimTranscript || '') : inputMessage;
+  const displayInput = isListening ? interimTranscript || '' : inputMessage;
 
   const sendMessage = async (content: string) => {
-    const cleanMessage = content.trim();
-    if (!cleanMessage || isLoading) return;
+    const clean = content.trim();
+    if (!clean || isLoading) return;
 
-    // Stop any current speech before sending new message
-    stop();
-
+    stop(); 
     setIsLoading(true);
     setShowQuickPhrases(false);
 
     try {
-      const tempUserMessage: ChatMessageWithTranslation = {
+      const tempUserMsg: ChatMessageWithTranslation = {
         messageId: Date.now(),
-        conversationId: conversationId,
-        content: cleanMessage,
+        conversationId,
+        content: clean,
         timestamp: new Date().toISOString(),
         messageType: 'user',
         sender: 'user'
       };
-      setMessages(prev => [...prev, tempUserMessage]);
+      setMessages(prev => [...prev, tempUserMsg]);
       setInputMessage('');
 
-      const response: ChatResponsePair = await koreanChatApi.sendMessage(conversationId, { content: cleanMessage });
-
+      const response: ChatResponsePair = await koreanChatApi.sendMessage(conversationId, { content: clean });
       const aiMessageWithTranslation: ChatMessageWithTranslation = {
         ...response.aiMessage,
         translation: (response.aiMessage as ChatMessageWithTranslation).translation || ''
       };
 
+      // Gộp lại: thay thế userMsg tạm thời và thêm AI msg
       setMessages(prev =>
-        prev.map(msg => (msg.messageId === tempUserMessage.messageId ? response.userMessage as ChatMessageWithTranslation : msg))
-        .concat(aiMessageWithTranslation)
+        prev
+          .map(msg => (msg.messageId === tempUserMsg.messageId ? response.userMessage as ChatMessageWithTranslation : msg))
+          .concat(aiMessageWithTranslation)
       );
-    } catch (error) {
-      console.error('Lỗi khi gửi tin nhắn:', error);
-      if (axios.isAxiosError(error) && error.response) {
-        alert(`Không thể gửi tin nhắn: ${error.response.data.message || error.message}`);
+    } catch (err) {
+      console.error('Lỗi khi gửi tin nhắn:', err);
+      if (axios.isAxiosError(err) && err.response) {
+        alert(`Không thể gửi tin nhắn: ${err.response.data.message || err.message}`);
       } else {
-        alert(`Không thể gửi tin nhắn: ${error instanceof Error ? error.message : 'Lỗi không xác định'}`);
+        alert(`Không thể gửi tin nhắn: ${err instanceof Error ? err.message : 'Lỗi không xác định'}`);
       }
     } finally {
       setIsLoading(false);
@@ -170,7 +183,7 @@ export default function KoreanChatInterface({
     }
   };
 
-  const handleMicroClick = async () => {
+  const handleMicroClick = () => {
     if (isListening) {
       stopListening();
       resetTranscript();
@@ -197,40 +210,37 @@ export default function KoreanChatInterface({
 
   const handleSpeakerClick = (messageId: number, text: string) => {
     if (currentSpeakingId === messageId) {
-      // Currently speaking this message - toggle play/pause
+      // Đang click cùng tin nhắn => toggle
       toggle();
     } else {
-      // Speaking different message or not speaking - start this message
-      setCurrentSpeakingId(messageId);
-      speak(text, true);
+      // Chuyển sang đọc tin nhắn mới
+      stop();
+      setTimeout(() => {
+        setCurrentSpeakingId(messageId);
+        speak(text);
+      }, 300);
     }
   };
 
   const getSpeakerIcon = (messageId: number) => {
     if (currentSpeakingId === messageId) {
-      if (isSpeaking && !isPaused) {
-        return '🔊'; // Currently playing
-      } else if (isPaused) {
-        return '⏸️'; // Paused
-      }
+      if (isSpeaking && !isPaused) return '🔊'; // đang đọc
+      if (isPaused) return '⏸️'; // dừng tạm
     }
-    return '🔈'; // Not playing
+    return '🔈'; // chưa đọc
   };
 
   const getSpeakerTitle = (messageId: number) => {
     if (currentSpeakingId === messageId) {
-      if (isSpeaking && !isPaused) {
-        return 'Nhấn để dừng';
-      } else if (isPaused) {
-        return 'Nhấn để tiếp tục';
-      }
+      if (isSpeaking && !isPaused) return 'Nhấn để dừng';
+      if (isPaused) return 'Nhấn để tiếp tục';
     }
     return 'Nhấn để đọc';
   };
 
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
-      {/* Simple Header */}
+      {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -258,8 +268,16 @@ export default function KoreanChatInterface({
             </div>
             
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full" />
               <span className="text-sm text-gray-600 dark:text-gray-300">AI online</span>
+              
+              {/* Optional debug button */}
+              <button
+                onClick={() => speak('안녕하세요, 테스트 문장입니다!')}
+                className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+              >
+                Test TTS
+              </button>
             </div>
           </div>
         </div>
@@ -271,73 +289,86 @@ export default function KoreanChatInterface({
           {messages.length === 0 && (
             <div className="text-center py-12">
               <div className="text-4xl mb-4">🤖</div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Bắt đầu trò chuyện
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Chọn gợi ý hoặc nhập tin nhắn để bắt đầu
-              </p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Bắt đầu trò chuyện</h3>
+              <p className="text-gray-600 dark:text-gray-400">Chọn gợi ý hoặc nhập tin nhắn để bắt đầu</p>
               {ttsSupported && (
                 <p className="text-sm text-green-600 dark:text-green-400 mt-2">
-                  🔊 AI sẽ tự động đọc câu trả lời
+                  🎤 AI sẽ tự động đọc câu trả lời với hiệu ứng karaoke
                 </p>
               )}
             </div>
           )}
 
-          {messages.map((message) => (
+          {messages.map(msg => (
             <div
-              key={message.messageId}
-              className={`flex ${message.messageType === 'user' ? 'justify-end' : 'justify-start'}`}
+              key={msg.messageId}
+              className={`flex ${msg.messageType === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-md px-4 py-3 rounded-lg ${
-                  message.messageType === 'user'
-                    ? 'bg-green-500 text-white'
-                    : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
-                }`}
+                className={
+                  msg.messageType === 'user'
+                    ? 'max-w-md px-4 py-3 rounded-lg bg-green-500 text-white'
+                    : 'max-w-md px-4 py-3 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
+                }
               >
-                <p className="text-sm leading-relaxed">{message.content}</p>
-                
-                {/* Translation for AI messages */}
-                {message.messageType === 'ai' && message.translation && (
+                {/* Karaoke text for AI message when speaking */}
+                <div className="text-sm leading-relaxed">
+                  {msg.messageType === 'ai' && currentSpeakingId === msg.messageId && isSpeaking ? (
+                    <KaraokeText
+                      text={msg.content}
+                      words={words}
+                      currentWordIndex={currentWordIndex}
+                      isSpeaking={isSpeaking}
+                    />
+                  ) : (
+                    <span>{msg.content}</span>
+                  )}
+                </div>
+
+                {/* AI translation */}
+                {msg.messageType === 'ai' && msg.translation && (
                   <div className="mt-2">
                     <button
-                      onClick={() => toggleTranslation(message.messageId)}
+                      onClick={() => toggleTranslation(msg.messageId)}
                       className="text-xs text-green-600 dark:text-green-400 hover:underline"
                     >
-                      {translationVisible[message.messageId] ? 'Ẩn bản dịch' : 'Hiển thị bản dịch'}
+                      {translationVisible[msg.messageId] ? 'Ẩn bản dịch' : 'Hiển thị bản dịch'}
                     </button>
                     
-                    {translationVisible[message.messageId] && (
+                    {translationVisible[msg.messageId] && (
                       <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded text-xs text-gray-600 dark:text-gray-300">
-                        {message.translation}
+                        {msg.translation}
                       </div>
                     )}
                   </div>
                 )}
 
                 <div className="flex items-center justify-between mt-2">
-                  <span className={`text-xs ${
-                    message.messageType === 'user' ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    {new Date(message.timestamp).toLocaleTimeString('vi-VN', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
+                  <span
+                    className={
+                      msg.messageType === 'user'
+                        ? 'text-xs text-green-100'
+                        : 'text-xs text-gray-500 dark:text-gray-400'
+                    }
+                  >
+                    {new Date(msg.timestamp).toLocaleTimeString('vi-VN', {
+                      hour: '2-digit',
+                      minute: '2-digit'
                     })}
                   </span>
-                  
-                  {message.messageType === 'ai' && ttsSupported && (
+
+                  {/* Loa đọc */}
+                  {msg.messageType === 'ai' && ttsSupported && (
                     <button
-                      onClick={() => handleSpeakerClick(message.messageId, message.content)}
-                      className={`ml-2 p-1 rounded transition-all duration-200 ${
-                        currentSpeakingId === message.messageId && isSpeaking
-                          ? 'bg-green-100 dark:bg-green-900/30'
+                      onClick={() => handleSpeakerClick(msg.messageId, msg.content)}
+                      title={getSpeakerTitle(msg.messageId)}
+                      className={`ml-2 p-1 rounded text-lg transition-all ${
+                        currentSpeakingId === msg.messageId && isSpeaking
+                          ? 'bg-green-100 dark:bg-green-900/30 animate-pulse'
                           : 'hover:bg-gray-100 dark:hover:bg-gray-600'
                       }`}
-                      title={getSpeakerTitle(message.messageId)}
                     >
-                      {getSpeakerIcon(message.messageId)}
+                      {getSpeakerIcon(msg.messageId)}
                     </button>
                   )}
                 </div>
@@ -345,9 +376,10 @@ export default function KoreanChatInterface({
             </div>
           ))}
 
+          {/* Loading indicator */}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white dark:bg-gray-800 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
@@ -362,18 +394,18 @@ export default function KoreanChatInterface({
         </div>
       </div>
 
-      {/* Quick Phrases */}
+      {/* Quick phrases */}
       {showQuickPhrases && (
         <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
           <div className="max-w-4xl mx-auto px-4 py-3">
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Gợi ý:</p>
             <div className="flex flex-wrap gap-2">
-              {quickPhrases[scenario].map((phrase, index) => (
+              {quickPhrases[scenario].map((phrase, idx) => (
                 <button
-                  key={index}
+                  key={idx}
+                  disabled={isLoading || isListening}
                   onClick={() => sendMessage(phrase)}
                   className="text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
-                  disabled={isLoading || isListening}
                 >
                   {phrase}
                 </button>
@@ -399,11 +431,7 @@ export default function KoreanChatInterface({
                     handleSendButtonClick();
                   }
                 }}
-                placeholder={
-                  isListening
-                    ? "🎤 Đang ghi âm..."
-                    : "Nhập tin nhắn tiếng Hàn..."
-                }
+                placeholder={isListening ? '🎤 Đang ghi âm...' : 'Nhập tin nhắn tiếng Hàn...'}
                 className={`w-full resize-none border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 ${
                   isListening
                     ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-600'
@@ -417,12 +445,12 @@ export default function KoreanChatInterface({
               {speechRecognitionSupported && (
                 <button
                   onClick={handleMicroClick}
-                  className={`absolute right-2 top-2 p-2 rounded ${
+                  disabled={isLoading}
+                  className={`absolute right-2 top-2 p-2 rounded text-lg ${
                     isListening
                       ? 'bg-green-500 text-white'
                       : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
                   }`}
-                  disabled={isLoading}
                 >
                   {isListening ? '🛑' : '🎤'}
                 </button>
@@ -438,7 +466,7 @@ export default function KoreanChatInterface({
             </Button>
           </div>
 
-          {/* Status */}
+          {/* Error status */}
           {isListening && (
             <div className="mt-2 text-sm text-green-600 dark:text-green-400">
               🎤 Đang lắng nghe...
@@ -448,16 +476,12 @@ export default function KoreanChatInterface({
           {speechError && !isListening && (
             <div className="mt-2 text-sm text-red-600 dark:text-red-400">
               ⚠️ {speechError}
-              <button
-                onClick={() => {
-                  resetTranscript();
-                  startListening();
-                }}
-                className="ml-2 underline"
-                disabled={isListening || isLoading}
-              >
-                Thử lại
-              </button>
+            </div>
+          )}
+
+          {ttsError && (
+            <div className="mt-2 text-sm text-red-600 dark:text-red-400">
+              ⚠️ {ttsError}
             </div>
           )}
         </div>

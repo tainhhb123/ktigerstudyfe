@@ -1,187 +1,163 @@
+// filepath: d:\ktigerstudyproject\ktigerstudyfe-main\src\hooks\useTextToSpeech.ts
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface TextToSpeechHook {
-  speak: (text: string, autoPlay?: boolean) => void;
+  speak: (text: string) => void;
   stop: () => void;
-  toggle: () => void; // New: toggle play/pause
+  toggle: () => void;
   isSpeaking: boolean;
   isPaused: boolean;
   isSupported: boolean;
   error: string | null;
-  currentText: string;
+  currentWordIndex: number;
+  words: string[];
 }
 
 export const useTextToSpeech = (): TextToSpeechHook => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentText, setCurrentText] = useState('');
+  const [currentWordIndex, setCurrentWordIndex] = useState(-1);
+  const [words, setWords] = useState<string[]>([]);
+
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const voicesLoadedRef = useRef(false);
+  const currentTextRef = useRef<string>('');
 
   const isSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-  // Load voices when available
+  // Chuẩn bị voice sẵn
   useEffect(() => {
-    if (!isSupported) return;
-
-    const loadVoices = () => {
-      const voices = speechSynthesis.getVoices();
-      if (voices.length > 0) {
-        voicesLoadedRef.current = true;
-      }
-    };
-
-    // Load voices immediately if available
-    loadVoices();
-
-    // Listen for voices changed event
-    speechSynthesis.addEventListener('voiceschanged', loadVoices);
-
-    return () => {
-      speechSynthesis.removeEventListener('voiceschanged', loadVoices);
-    };
+    if (isSupported) {
+      speechSynthesis.getVoices();
+      const handleVoicesChange = () => {
+        speechSynthesis.getVoices();
+      };
+      speechSynthesis.addEventListener('voiceschanged', handleVoicesChange);
+      return () => {
+        speechSynthesis.removeEventListener('voiceschanged', handleVoicesChange);
+      };
+    }
   }, [isSupported]);
 
-  const getBestKoreanVoice = useCallback(() => {
+  // Tìm giọng tiếng Hàn
+  const getKoreanVoice = useCallback(() => {
     const voices = speechSynthesis.getVoices();
-    
-    // Priority order for Korean voices
-    const priorities = [
-      'ko-KR', // Standard Korean
-      'ko', // Generic Korean
-      'kr' // Alternative Korean code
-    ];
-
-    for (const priority of priorities) {
-      const voice = voices.find(v => 
-        v.lang.toLowerCase().includes(priority.toLowerCase()) ||
-        v.name.toLowerCase().includes('korean') ||
-        v.name.toLowerCase().includes('한국')
-      );
-      if (voice) return voice;
-    }
-
-    // Fallback to any voice if no Korean found
-    return voices[0] || null;
+    const koreanVoice = voices.find(
+      (v) => v.lang.startsWith('ko') || v.name.toLowerCase().includes('korean')
+    );
+    return koreanVoice || voices[0];
   }, []);
 
-  const speak = useCallback((text: string, autoPlay: boolean = false) => {
-    if (!isSupported) {
-      setError('Trình duyệt không hỗ trợ text-to-speech');
-      return;
-    }
+  // Bắt đầu nói
+  const speak = useCallback(
+    (text: string) => {
+      // Loại bỏ icon/emoji
+      const cleanedText = text.replace(/\p{Extended_Pictographic}/gu, '').trim();
+      if (!isSupported || !cleanedText) return;
 
-    if (!text.trim()) return;
+      // Dừng speech cũ
+      if (speechSynthesis.speaking || speechSynthesis.pending) {
+        speechSynthesis.cancel();
+      }
+      
+      // Tách từ trước khi tạo utterance
+      const wordsArray = cleanedText.split(/\s+/).filter(Boolean);
+      setWords(wordsArray);
+      setCurrentWordIndex(-1);
+      setError(null);
+      currentTextRef.current = cleanedText;
 
-    // Stop any current speech
-    stop();
-
-    try {
-      const utterance = new SpeechSynthesisUtterance(text);
+      // Tạo utterance
+      const utterance = new SpeechSynthesisUtterance(cleanedText);
       utteranceRef.current = utterance;
-      setCurrentText(text);
 
-      // Wait for voices to load before setting voice
-      const setVoiceAndSpeak = () => {
-        const koreanVoice = getBestKoreanVoice();
-        if (koreanVoice) {
-          utterance.voice = koreanVoice;
-        }
+      utterance.voice = getKoreanVoice();
+      utterance.rate = 0.9; // Chậm hơn để dễ theo dõi
+      utterance.pitch = 1;
+      utterance.volume = 1;
 
-        // Optimized settings for Korean learning
-        utterance.lang = 'ko-KR';
-        utterance.rate = 0.7; // Slower for better comprehension
-        utterance.pitch = 1.0;
-        utterance.volume = 0.8;
-
-        utterance.onstart = () => {
-          setIsSpeaking(true);
-          setIsPaused(false);
-          setError(null);
-        };
-
-        utterance.onend = () => {
-          setIsSpeaking(false);
-          setIsPaused(false);
-          setCurrentText('');
-        };
-
-        utterance.onpause = () => {
-          setIsPaused(true);
-        };
-
-        utterance.onresume = () => {
-          setIsPaused(false);
-        };
-
-        utterance.onerror = (event) => {
-          console.error('Speech error:', event.error);
-          setError(`Lỗi đọc văn bản: ${event.error}`);
-          setIsSpeaking(false);
-          setIsPaused(false);
-          setCurrentText('');
-        };
-
-        // Auto play or manual trigger
-        if (autoPlay) {
-          speechSynthesis.speak(utterance);
+      // Đánh dấu từng "word boundary"
+      utterance.onboundary = (event) => {
+        if (event.name === 'word') {
+          const charIndex = event.charIndex;
+          let sum = 0;
+          let foundIndex = 0;
+          
+          // Tính index dựa trên charIndex
+          for (let i = 0; i < wordsArray.length; i++) {
+            if (charIndex <= sum + wordsArray[i].length) {
+              foundIndex = i;
+              break;
+            }
+            sum += wordsArray[i].length + 1; // +1 cho dấu cách
+          }
+          setCurrentWordIndex(foundIndex);
         }
       };
 
-      // If voices are already loaded, set voice immediately
-      if (voicesLoadedRef.current || speechSynthesis.getVoices().length > 0) {
-        setVoiceAndSpeak();
-      } else {
-        // Wait for voices to load
-        const handleVoicesChanged = () => {
-          setVoiceAndSpeak();
-          speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
-        };
-        speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
-      }
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        setIsPaused(false);
+        setCurrentWordIndex(0); // Bắt đầu từ từ đầu tiên
+      };
 
-    } catch (error) {
-      console.error('Error in text-to-speech:', error);
-      setError('Không thể đọc văn bản');
-      setIsSpeaking(false);
-      setIsPaused(false);
-      setCurrentText('');
-    }
-  }, [isSupported, getBestKoreanVoice]);
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setCurrentWordIndex(-1);
+      };
 
+      utterance.onpause = () => {
+        setIsPaused(true);
+      };
+
+      utterance.onresume = () => {
+        setIsPaused(false);
+      };
+
+      utterance.onerror = (e) => {
+        if (e.error !== 'interrupted' && e.error !== 'canceled') {
+          setError(`Lỗi: ${e.error}`);
+        }
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setCurrentWordIndex(-1);
+      };
+
+      speechSynthesis.speak(utterance);
+    },
+    [isSupported, getKoreanVoice]
+  );
+
+  // Dừng nói
   const stop = useCallback(() => {
     if (speechSynthesis.speaking || speechSynthesis.pending) {
       speechSynthesis.cancel();
     }
     setIsSpeaking(false);
     setIsPaused(false);
-    setCurrentText('');
+    setCurrentWordIndex(-1);
+    setWords([]);
     utteranceRef.current = null;
+    currentTextRef.current = '';
   }, []);
 
+  // Tạm dừng / tiếp tục / đọc lại
   const toggle = useCallback(() => {
-    if (!isSupported) return;
-
     if (isSpeaking && !isPaused) {
-      // Currently speaking - pause it
       speechSynthesis.pause();
       setIsPaused(true);
     } else if (isPaused) {
-      // Currently paused - resume it
       speechSynthesis.resume();
       setIsPaused(false);
-    } else if (currentText && utteranceRef.current) {
-      // Has text but not speaking - start speaking
-      speechSynthesis.speak(utteranceRef.current);
+    } else if (currentTextRef.current) {
+      speak(currentTextRef.current);
     }
-  }, [isSupported, isSpeaking, isPaused, currentText]);
+  }, [isSpeaking, isPaused, speak]);
 
-  // Cleanup on unmount
+  // Dọn dẹp
   useEffect(() => {
-    return () => {
-      stop();
-    };
+    return () => stop();
   }, [stop]);
 
   return {
@@ -192,6 +168,7 @@ export const useTextToSpeech = (): TextToSpeechHook => {
     isPaused,
     isSupported,
     error,
-    currentText
+    currentWordIndex,
+    words
   };
 };
