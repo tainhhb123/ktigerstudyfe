@@ -1,4 +1,3 @@
-
 //src/pages/Learn/Exercise.tsx
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,23 +9,8 @@ import {
   getSentenceRewritingByExerciseId,
 } from "../../services/ExerciseApi";
 import { saveUserExerciseResult } from "../../services/UserExerciseResultApi";
-import { addUserXP } from "../../services/UserXPApi";
+import { completeLesson } from "../../services/LessonApi";
 import LevelUpPopup from "../../components/learning-path/LevelUpPopup";
-
-// Thêm API update UserProgress
-async function updateUserProgress(userId: number, lessonId: number) {
-  try {
-    const res = await fetch("/api/user-progress/complete", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, lessonId }),
-    });
-    if (!res.ok) throw new Error("Cập nhật tiến trình học thất bại");
-    return await res.json();
-  } catch (err) {
-    console.error(err);
-  }
-}
 
 interface MultipleChoiceQuestion {
   questionId: number;
@@ -61,12 +45,12 @@ export default function Exercise({
     ? userIdProp
     : Number(localStorage.getItem("userId"));
 
-  const [questions, setQuestions] = useState<QuestionItem[]>([]);
+  const [questions, setQuestions] = useState<QuestionItem[]>([]);     // Tất cả câu hỏi
   const [loading, setLoading] = useState(true);
-  const [currentList, setCurrentList] = useState<QuestionItem[]>([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [wrongList, setWrongList] = useState<QuestionItem[]>([]);
-  const [phase, setPhase] = useState<"main" | "review" | "done">("main");
+  const [currentList, setCurrentList] = useState<QuestionItem[]>([]);  // Danh sách đang làm
+  const [currentIdx, setCurrentIdx] = useState(0);                    // Câu hiện tại
+  const [wrongList, setWrongList] = useState<QuestionItem[]>([]);     // Câu sai
+  const [phase, setPhase] = useState<"main" | "review" | "done">("main"); // Giai đoạn
   const [questionKey, setQuestionKey] = useState(0);
   // ➕ Popup lên cấp
   const [levelUpData, setLevelUpData] = useState<null | {
@@ -75,11 +59,11 @@ export default function Exercise({
     currentBadge: string;
   }>(null);
 
-  const correctCountFirst = useRef<Map<number, number>>(new Map());
-  const finishedFirstRound = useRef(false);
-  const pendingSavedExercises = useRef<Set<number>>(new Set());
-  // (1) Thêm biến ref để lưu level trước đó
-  const prevLevelRef = useRef<number | null>(null);
+  // Refs để lưu trữ không bị reset khi re-render
+  const correctCountFirst = useRef<Map<number, number>>(new Map());   // Đếm câu đúng lần đầu
+  const finishedFirstRound = useRef(false);                           // Đã làm xong lượt đầu
+  const pendingSavedExercises = useRef<Set<number>>(new Set());       // Bài đã lưu
+  const prevLevelRef = useRef<number | null>(null);                   // Level cũ để check level up
 
   useEffect(() => {
     async function fetchQuestions() {
@@ -117,68 +101,83 @@ export default function Exercise({
     fetchQuestions();
   }, [lessonId]);
 
-  // (2) Khi vào phase "done", lưu điểm và cộng XP, show popup nếu lên cấp
+  // ✅ Thay thế useEffect cũ bằng logic mới
   useEffect(() => {
-    if (
-      phase === "done" &&
-      questions.length > 0 &&
-      userId &&
-      !isNaN(userId)
-    ) {
-      // Lấy level cũ trước khi cộng XP (chỉ lấy cho bài đầu tiên)
-      if (prevLevelRef.current === null) {
-        fetch(`/api/user-xp/${userId}`)
-          .then((res) => res.json())
-          .then((data) => {
-            prevLevelRef.current = data.levelNumber;
+    if (phase === "done" && questions.length > 0 && userId && !isNaN(userId)) {
+      const processCompletion = async () => {
+        try {
+          // 1. Lưu kết quả từng exercise vào UserExerciseResult
+          const groups: { [exerciseId: number]: QuestionItem[] } = {};
+          questions.forEach((q) => {
+            const eid = q.exerciseId;
+            if (!groups[eid]) groups[eid] = [];
+            groups[eid].push(q);
           });
-      }
-      // Lưu điểm từng bài tập như cũ
-      const groups: { [exerciseId: number]: QuestionItem[] } = {};
-      questions.forEach((q) => {
-        const eid = q.exerciseId;
-        if (!groups[eid]) groups[eid] = [];
-        groups[eid].push(q);
-      });
-      Object.entries(groups).forEach(([eidStr, qArr]) => {
-        const eid = Number(eidStr);
-        if (pendingSavedExercises.current.has(eid)) return;
-        const correct = correctCountFirst.current.get(eid) || 0;
-        const total = qArr.length;
-        const score = Math.round((correct / total) * 100);
-        saveUserExerciseResult({
-          userId,
-          exerciseId: eid,
-          score,
-          dateComplete: new Date().toISOString(),
-        })
-          .then(() => {
+          
+          const exerciseScores: number[] = [];
+          
+          // Lưu kết quả từng exercise
+          for (const [eidStr, qArr] of Object.entries(groups)) {
+            const eid = Number(eidStr);
+            if (pendingSavedExercises.current.has(eid)) continue;
+            
+            const correct = correctCountFirst.current.get(eid) || 0;
+            const total = qArr.length;
+            const exerciseScore = Math.round((correct / total) * 100);
+            
+            exerciseScores.push(exerciseScore);
+            
+            // Lưu vào UserExerciseResult
+            await saveUserExerciseResult({
+              userId,
+              exerciseId: eid,
+              score: exerciseScore,
+              dateComplete: new Date().toISOString(),
+            });
+            
             pendingSavedExercises.current.add(eid);
-            // ➕ Gọi API cộng điểm vào UserXP
-            return addUserXP({ userId, xpToAdd: score });
-          })
-          .then((data) => {
-            // Nếu response dạng object, kiểm tra các field, nếu không có thì không render popup
-            if (
-              prevLevelRef.current !== null &&
-              typeof data === "object" &&
-              data.levelNumber !== undefined &&
-              data.currentTitle !== undefined &&
-              data.currentBadge !== undefined &&
-              data.levelNumber > prevLevelRef.current
-            ) {
+          }
+          
+          // 2. Tính điểm trung bình cho lesson
+          const lessonScore = Math.round(
+            exerciseScores.reduce((sum, score) => sum + score, 0) / exerciseScores.length
+          );
+
+          // 3. ✅ Gọi API hoàn thành lesson (sẽ kiểm tra và chỉ cộng XP nếu lần đầu)
+          console.log("🔍 Calling completeLesson API...");
+          const result = await completeLesson(userId, Number(lessonId), lessonScore);
+          
+          console.log("🔍 completeLesson result:", result);
+          
+          // 4. Hiển thị level up nếu có
+          if (result.xpAdded && result.xpData) {
+            const xpData = result.xpData;
+            if (xpData.levelNumber > (prevLevelRef.current || 0)) {
               setLevelUpData({
-                levelNumber: data.levelNumber,
-                currentTitle: data.currentTitle,
-                currentBadge: data.currentBadge,
+                levelNumber: xpData.levelNumber,
+                currentTitle: xpData.currentTitle,
+                currentBadge: xpData.currentBadge,
               });
-              prevLevelRef.current = data.levelNumber;
+              prevLevelRef.current = xpData.levelNumber;
             }
-          })
-          .catch(console.error);
-      });
-      // ➕ Gọi API cập nhật tiến trình học khi hoàn thành bài
-      updateUserProgress(userId, Number(lessonId));
+          }
+          
+          // 5. ✅ Emit event để Lesson.tsx refresh và hiển thị thông báo
+          window.dispatchEvent(new CustomEvent('lessonCompleted', {
+            detail: { 
+              lessonId: Number(lessonId), 
+              isFirstTime: result.isFirstTime,
+              xpAdded: result.xpAdded,
+              score: lessonScore
+            }
+          }));
+          
+        } catch (error) {
+          console.error('❌ Error completing lesson:', error);
+        }
+      };
+      
+      processCompletion();
     }
   }, [phase, questions.length, userId, lessonId]);
 
@@ -249,7 +248,6 @@ export default function Exercise({
           currentTitle={levelUpData.currentTitle}
           currentBadge={levelUpData.currentBadge}
           onClose={() => setLevelUpData(null)}
-          
         />
       )}
       {/* Phần chính */}

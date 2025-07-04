@@ -50,10 +50,13 @@ export default function Lesson() {
   const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState<any>(null);
+  
+  // ✅ Thêm state để hiển thị thông báo completion
+  const [completionMessage, setCompletionMessage] = useState<string>("");
+  const [showCompletionMessage, setShowCompletionMessage] = useState(false);
 
-  useEffect(() => {
-    console.log("🔍 DEBUG - useEffect triggered with:", { levelId, userId });
-    
+  // ✅ Tách logic fetch thành function riêng
+  const fetchLessons = () => {
     if (levelId && userId) {
       setLoading(true);
       console.log("📊 Fetching lessons for levelId:", levelId, "userId:", userId);
@@ -95,6 +98,47 @@ export default function Lesson() {
       console.warn("⚠️ Missing levelId or userId:", { levelId, userId });
       setLoading(false);
     }
+  };
+
+  // ✅ useEffect ban đầu
+  useEffect(() => {
+    console.log("🔍 DEBUG - useEffect triggered with:", { levelId, userId });
+    fetchLessons();
+  }, [levelId, userId]);
+
+  // ✅ Thêm listener để refresh khi hoàn thành bài học
+  useEffect(() => {
+    const handleLessonCompleted = (event: any) => {
+      console.log("🎉 Lesson completed event received:", event.detail);
+      
+      const { lessonId, isFirstTime, xpAdded, score } = event.detail;
+      
+      // ✅ Hiển thị thông báo phù hợp
+      if (isFirstTime && xpAdded) {
+        setCompletionMessage(`🎉 Chúc mừng! Bạn đã hoàn thành bài học và nhận được ${score} XP!`);
+      } else {
+        setCompletionMessage(`✅ Bài học đã hoàn thành trước đó. Điểm số: ${score} (không có XP bổ sung)`);
+      }
+      
+      // ✅ Hiển thị thông báo
+      setShowCompletionMessage(true);
+      
+      // ✅ Ẩn thông báo sau 4 giây
+      setTimeout(() => {
+        setShowCompletionMessage(false);
+        setCompletionMessage("");
+      }, 4000);
+      
+      // ✅ Refresh danh sách bài học để cập nhật trạng thái
+      fetchLessons();
+    };
+
+    // Lắng nghe event từ Exercise.tsx
+    window.addEventListener('lessonCompleted', handleLessonCompleted);
+    
+    return () => {
+      window.removeEventListener('lessonCompleted', handleLessonCompleted);
+    };
   }, [levelId, userId]);
 
   // Thay đổi bài học hiện tại theo scroll
@@ -127,6 +171,20 @@ export default function Lesson() {
 
   return (
     <div className="bg-white min-h-screen">
+      {/* ✅ Thông báo completion */}
+      {showCompletionMessage && (
+        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-[60] animate-bounce">
+          <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-4 rounded-xl shadow-2xl max-w-md mx-auto text-center">
+            <div className="font-bold text-lg mb-1">
+              {completionMessage.includes("🎉") ? "🎉 Hoàn thành!" : "✅ Đã hoàn thành"}
+            </div>
+            <div className="text-sm opacity-90">
+              {completionMessage}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sticky Header */}
       <StickyRoadmapHeader
         section={current ? `Bài số ${lessons.indexOf(current) + 1}` : ""}
