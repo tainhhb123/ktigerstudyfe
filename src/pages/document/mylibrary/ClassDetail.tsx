@@ -304,6 +304,12 @@ export default function ClassDetail() {
                                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                     className="space-y-4 overflow-hidden"
                                 >
+                                    <div className="block">
+                                        <span className="text-gray-700 font-medium">Mã lớp học:</span>
+                                        <span className="ml-2 text-gray-900">{cls.classId}</span>
+                                    </div>
+
+
                                     <label className="block">
                                         <span className="text-gray-700">Tên lớp</span>
                                         <input
