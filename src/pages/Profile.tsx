@@ -333,7 +333,7 @@ const Profile = () => {
         <div className="relative mb-4 sm:mb-0 sm:mr-8">
           <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500">
             <img 
-              src={user.avatarImage || "/images/user/owner.jpg"} 
+              src={user.avatarImage || "/src/assets/hoHan.png"} 
               alt={user.fullName} 
               className="w-full h-full object-cover" 
             />

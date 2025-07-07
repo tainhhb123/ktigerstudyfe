@@ -72,10 +72,6 @@ export default function FlashCard({ lessonId }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center px-2 py-4">
-
-
-  
-
       <div className="w-full max-w-3xl mt-6">
         {vocabularies.length > 0 ? (
           <FlashcardPlayer
