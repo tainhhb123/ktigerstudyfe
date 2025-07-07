@@ -22,7 +22,7 @@ interface DocumentListTableProps {
   keyword: string;
   selectedListId: number | null;
   onSelectList: (id: number | null) => void;
-  onDeleteList: (id: number) => void; // <-- nhận prop này từ cha
+  onDeleteList: (id: number) => void;
   compact?: boolean; // hide header/pagination
 }
 
@@ -51,17 +51,24 @@ export default function DocumentListTable({
   // Hàm fetch dữ liệu phân trang
   const fetchData = () => {
     setLoading(true);
+    
+    // Sử dụng API mới: chỉ có /public/paged (tìm kiếm tất cả tài liệu)
     const baseUrl = `/api/document-lists/public/paged`;
+    
     axios
       .get<Paged<DocumentListResponse>>(baseUrl, {
         params: {
-          keyword,
+          keyword: keyword.trim(), // Tìm kiếm theo title hoặc tên tác giả
           page: data.number,
           size: pageSize,
         },
       })
       .then((res) => setData(res.data))
-      .catch((err) => console.error("Lỗi khi fetch dữ liệu:", err))
+      .catch((err) => {
+        console.error("Lỗi khi fetch dữ liệu:", err);
+        // Hiển thị thông báo lỗi cho user
+        alert("Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại!");
+      })
       .finally(() => setLoading(false));
   };
 
@@ -70,6 +77,12 @@ export default function DocumentListTable({
     fetchData();
     // eslint-disable-next-line
   }, [keyword, data.number]);
+
+  // Trigger refetch khi có thay đổi (sau khi xóa)
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line
+  }, [selectedListId]); // Refetch khi selectedListId thay đổi
 
   const { content, totalElements, totalPages, number: currentPage } = data;
 
@@ -107,6 +120,11 @@ export default function DocumentListTable({
         <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
           <span className="font-semibold text-gray-700 dark:text-white">
             Tổng số tài liệu: {totalElements}
+            {keyword && (
+              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                (Tìm kiếm: "{keyword}")
+              </span>
+            )}
           </span>
           {selectedListId == null && (
             <div className="flex items-center space-x-2">
@@ -239,7 +257,7 @@ export default function DocumentListTable({
                 colSpan={4}
                 className="py-6 text-center text-gray-500 dark:text-gray-400"
               >
-                Không có tài liệu
+                {keyword ? `Không tìm thấy tài liệu nào với từ khóa "${keyword}"` : "Không có tài liệu"}
               </td>
             </TableRow>
           )}
