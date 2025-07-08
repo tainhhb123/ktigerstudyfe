@@ -4,9 +4,9 @@ import { Link, useLocation } from "react-router-dom";
 // Assume these icons are imported from an icon library
 import {
   ChevronDownIcon,
-  GridIcon,
+  // GridIcon,
   HorizontaLDots,
-  UserCircleIcon,
+  // UserCircleIcon,
   UserIcon,
   DocsIcon,
   PencilIcon,
@@ -22,11 +22,11 @@ type NavItem = {
 const ACTIVE_COLOR = "bg-[rgba(19,110,97,0.08)] text-[#136E61]";
 
 const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "Trang tổng quát",
-    path: "/admin",
-  },
+  // {
+  //   icon: <GridIcon />,
+  //   name: "Trang tổng quát",
+  //   path: "/admin",
+  // },
 
   {
     icon: <UserIcon />,
@@ -46,18 +46,18 @@ const navItems: NavItem[] = [
 
   {
     icon: <DocsIcon />,
-    name: "Quản lí tài liệu chia sẻ",
+    name: "Quản lí tài liệu ",
     subItems: [{ name: "Danh sách tài liệu học viên chia sẻ", path: "/admin/tailieuhocvien", pro: false },
               { name: "Báo cáo tài liệu", path: "/admin/baocaotailieu", pro: false },
     ],
 
   },
   
-  {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/admin/profile",
-  },
+  // {
+  //   icon: <UserCircleIcon />,
+  //   name: "User Profile",
+  //   path: "/admin/profile",
+  // },
   // {
   //   name: "Forms",
   //   icon: <ListIcon />,
