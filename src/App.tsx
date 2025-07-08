@@ -29,7 +29,7 @@ import DocumentReports from "./pages/Admin/DocumentManager/DocumentReports";
 import LessonListPage from "./pages/Admin/LessonManager/LessonListPage";
 import LessonDetailPage from "./pages/Admin/LessonManager/LessonDetailPage";
 import ChatAI from "./pages/KoreanChatPage";
-
+import AccountFrozen from "./pages/AcountFrozen";
 
 // Document pages & layout
 import AppLayoutDocument from "./layout/document/AppLayoutDocument";
@@ -145,8 +145,7 @@ export default function App() {
         <Route path = "forgot-password" element={<ForgotPasswordForm />} />
         <Route path="reset-password" element={<ResetPasswordForm/>} />
         <Route path="*" element={<NotFound />} />
-
-
+        <Route path="/account-frozen" element={<AccountFrozen />} />
       </Routes>
     </BrowserRouter>
   );
