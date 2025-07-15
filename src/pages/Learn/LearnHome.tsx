@@ -120,103 +120,16 @@ const placementQuestions = [
         question: "Nghe và chọn từ đúng:",
         audioUrl: "https://res.cloudinary.com/di6d1g736/video/upload/v1751510273/009_mp3cut.net_nytnm7.mp3",
         options: [
-            "A. 사과 (táo)",
-            "B. 바나나 (chuối)",
-            "C. 물 (nước)",
-            "D. 밥 (cơm)",
+            "A. 화 씨는 회사원입니까?",
+            "B. 화 씨는 회사원입니다",
+            "C. 화 씨는 교사입니까?",
+            "D. 화 씨는 교사입니다",
         ],
-        correct: 2,
-        level: 3,
-        instruction: "다음 음성을 듣고 맞는 단어를 고르십시오. / Nghe âm thanh và chọn từ đúng."
-    },
-        {
-        id: 8,
-        type: "listening",
-        question: "Nghe và chọn từ đúng:",
-        audioUrl: "/audio/sample1.mp3",
-        options: [
-            "A. 사과 (táo)",
-            "B. 바나나 (chuối)",
-            "C. 물 (nước)",
-            "D. 밥 (cơm)",
-        ],
-        correct: 2,
-        level: 3,
-        instruction: "다음 음성을 듣고 맞는 단어를 고르십시오. / Nghe âm thanh và chọn từ đúng."
-    },
-        {
-        id: 9,
-        type: "listening",
-        question: "Nghe và chọn từ đúng:",
-        audioUrl: "/audio/sample1.mp3",
-        options: [
-            "A. 사과 (táo)",
-            "B. 바나나 (chuối)",
-            "C. 물 (nước)",
-            "D. 밥 (cơm)",
-        ],
-        correct: 2,
-        level: 3,
-        instruction: "다음 음성을 듣고 맞는 단어를 고르십시오. / Nghe âm thanh và chọn từ đúng."
-    },
-        {
-        id: 10,
-        type: "listening",
-        question: "Nghe và chọn từ đúng:",
-        audioUrl: "/audio/sample1.mp3",
-        options: [
-            "A. 사과 (táo)",
-            "B. 바나나 (chuối)",
-            "C. 물 (nước)",
-            "D. 밥 (cơm)",
-        ],
-        correct: 2,
+        correct: 1,
         level: 3,
         instruction: "다음 음성을 듣고 맞는 단어를 고르십시오. / Nghe âm thanh và chọn từ đúng."
     },
     
-    {
-        id: 4,
-        type: "multiple_choice",
-        question: "Chọn cách chia động từ đúng: 먹다 (ăn) → 과거형",
-        options: [
-            "A. 먹어요",
-            "B. 먹었어요",
-            "C. 먹을 거예요",
-            "D. 먹고 있어요",
-        ],
-        correct: 1,
-        level: 4,
-        instruction: "다음 동사의 과거형을 고르십시오. / Chọn dạng quá khứ đúng của động từ."
-    },
-    {
-        id: 5,
-        type: "multiple_choice",
-        question: "그 사람이 어제 도서관에서 책을 읽고 있었어요. Câu này diễn tả:",
-        options: [
-            "A. Hành động đang diễn ra trong quá khứ",
-            "B. Hành động sẽ xảy ra trong tương lai",
-            "C. Hành động đã hoàn thành",
-            "D. Hành động lặp lại",
-        ],
-        correct: 0,
-        level: 5,
-        instruction: "다음 문장의 시제를 파악하십시오. / Xác định thì của câu sau đây."
-    },
-    {
-        id: 6,
-        type: "multiple_choice",
-        question: "문법 '-(으)ㄹ 텐데' được dùng để:",
-        options: [
-            "A. Diễn tả dự đoán với sắc thái lo lắng",
-            "B. Diễn tả điều kiện",
-            "C. Diễn tả nguyên nhân",
-            "D. Diễn tả mục đích",
-        ],
-        correct: 0,
-        level: 6,
-        instruction: "다음 문법의 용법을 고르십시오. / Chọn cách sử dụng đúng của ngữ pháp sau đây."
-    },
 ];
 
 const levelRecommendations = [
@@ -296,14 +209,14 @@ export default function LearnHome() {
         // Tính điểm: mỗi câu đúng = 10 điểm
         const score = correctAnswers * 10;
 
-        // ✅ Tính cấp độ đề xuất dựa trên số câu đúng
+      
         let recommendedLevel = 1;
-        if (correctAnswers >= 6) recommendedLevel = 6;      // 6/6 câu đúng
-        else if (correctAnswers >= 5) recommendedLevel = 5; // 5/6 câu đúng
-        else if (correctAnswers >= 4) recommendedLevel = 4; // 4/6 câu đúng
-        else if (correctAnswers >= 3) recommendedLevel = 3; // 3/6 câu đúng
-        else if (correctAnswers >= 2) recommendedLevel = 2; // 2/6 câu đúng
-        else recommendedLevel = 1;                          // 0-1/6 câu đúng
+        if (correctAnswers >= 9) recommendedLevel = 6;     
+        else if (correctAnswers >= 8) recommendedLevel = 5; 
+        else if (correctAnswers >= 7) recommendedLevel = 4; 
+        else if (correctAnswers >= 6) recommendedLevel = 3; 
+        else if (correctAnswers >= 4) recommendedLevel = 2; 
+        else recommendedLevel = 1;     
 
         return { score, recommendedLevel, correctAnswers };
     };
@@ -337,7 +250,7 @@ export default function LearnHome() {
 
     const startLearning = (level: number) => {
         // Chuyển đến trang học theo cấp độ
-        navigate(`/learn/levels?level=${level}`);
+        navigate(`/learn/lesson?levelId=${level}`);
     };
 
     const retakeTest = () => {
@@ -382,9 +295,8 @@ export default function LearnHome() {
                         <div className="flex items-center justify-center gap-2 text-sm">
                             <span>⏱️ Thời gian: ~3 phút</span>
                             <span>•</span>
-                            <span>📝 6 câu hỏi</span>
-                            <span>•</span>
-                            <span>🎧 Có bài nghe</span>
+                            <span>📝 9 câu hỏi</span>
+                   
                         </div>
                     </div>
 
@@ -395,12 +307,7 @@ export default function LearnHome() {
                         >
                             🚀 Bắt đầu kiểm tra
                         </button>
-                        <button
-                            onClick={() => startLearning(1)}
-                            className="bg-gray-100 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-200 transition-all"
-                        >
-                            🌱 Bắt đầu từ cấp 1
-                        </button>
+                    
                     </div>
                 </motion.div>
             </div>
