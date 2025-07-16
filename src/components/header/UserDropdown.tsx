@@ -3,6 +3,15 @@ import { useState, useEffect } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link, useNavigate } from "react-router-dom";
+import { getLeaderboard } from "../../services/LeadBoardApi"; // ✅ Import API leaderboard
+
+// ✅ Import interface từ LeaderBoard hoặc tạo interface riêng
+interface LeaderboardItem {
+    fullName: string;
+    currentTitle: string;
+    currentBadge: string;
+    totalXP: number;
+}
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,6 +20,7 @@ export default function UserDropdown() {
     email: string;
     avatarImage?: string; 
     userId?: number;
+    currentTitle?: string;
     } | null>(null);
   const navigate = useNavigate(); 
 
@@ -34,18 +44,28 @@ export default function UserDropdown() {
   // ✅ Sửa lại function fetchUserData
   const fetchUserData = async (userId: number) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/users/${userId}`);
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      
-      // ✅ Sửa lại: dùng 'data' thay vì 'userData', và 'avatarImage' thay vì 'avataImage'
-      setUser((prevUser) => prevUser ? ({
-        ...prevUser,
-        avatarImage: data.avatarImage  // ✅ Sửa: data.avatarImage
-      }) : null);
-      
+        // ✅ Gọi cả 2 API
+        const [userResponse, leaderboardData] = await Promise.all([
+            fetch(`http://localhost:8080/api/users/${userId}`),
+            getLeaderboard() // ✅ Sử dụng API leaderboard
+        ]);
+        
+        const userData = await userResponse.json();
+        
+        // ✅ Tìm user trong leaderboard với type rõ ràng
+        const currentUserInLeaderboard = leaderboardData.find(
+            (item: LeaderboardItem) => item.fullName === userData.fullName
+        );
+        
+        console.log("User data:", userData);
+        console.log("User in leaderboard:", currentUserInLeaderboard);
+        
+        setUser((prevUser) => prevUser ? ({
+            ...prevUser,
+            avatarImage: userData.avatarImage,
+            currentTitle: currentUserInLeaderboard?.currentTitle || "Học viên mới"
+        }) : null);
+        
     } catch (error) {
       console.error("Lỗi khi fetch user data:", error);
     }
@@ -126,6 +146,11 @@ export default function UserDropdown() {
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
             {user?.email || "example@email.com"}
           </span>
+          {user?.currentTitle && (
+            <span className="mt-1 inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                {user.currentTitle}
+            </span>
+        )}
         </div>
 
         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
