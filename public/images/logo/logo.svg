@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="80" viewBox="0 0 360 100">
+  <rect x="10" y="25" width="50" height="50" rx="10" fill="none" stroke="#00FFF3" stroke-width="3" transform="rotate(45 35 50)"/>
+  <text x="75" y="65" fill="black" font-family="Arial, sans-serif" font-size="36" font-weight="bold">K-Tiger Study</text>
+</svg>
