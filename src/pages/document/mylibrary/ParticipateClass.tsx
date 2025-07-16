@@ -180,14 +180,14 @@ const [joinPassword, setJoinPassword] = useState<string>("");
                             className="block"
                         >
                             <div className="flex items-center space-x-3">
-                                <img
+                                {/* <img
                                     src={c.avatarImage ?? "/images/avatars/default.png"}
                                     alt={c.userFullName}
                                     className="w-10 h-10 rounded-full object-cover"
-                                />
+                                /> */}
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-800">{c.className}</h3>
-                                    <p className="text-sm text-gray-500">Giảng viên: {c.userFullName}</p>
+                                    {/* <p className="text-sm text-gray-500">Giảng viên: {c.userFullName}</p> */}
                                 </div>
                             </div>
                             <p className="text-gray-400 text-xs mt-2">

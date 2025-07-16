@@ -289,7 +289,7 @@ export default function LearnHome() {
                     <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-2xl mb-6">
                         <h2 className="text-2xl font-bold mb-3">🎯 Kiểm tra trình độ</h2>
                         <p className="text-blue-100 mb-4">
-                            Làm 6 câu hỏi nhanh để chúng tôi đánh giá trình độ và gợi ý cấp độ
+                            Làm 9 câu hỏi nhanh để chúng tôi đánh giá trình độ và gợi ý cấp độ
                             học phù hợp nhất cho bạn
                         </p>
                         <div className="flex items-center justify-center gap-2 text-sm">

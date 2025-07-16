@@ -7,19 +7,45 @@ import { authService } from '../../../services/authService';
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState<{ fullName: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ 
+    fullName: string; 
+    email: string; 
+    avatarImage?: string; 
+    userId?: number; 
+  } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       try {
-        setUser(JSON.parse(userStr));
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+
+        // Fetch avatar từ API
+        if (userData.userId) {
+          fetchUserData(userData.userId);
+        }
       } catch (err) {
         console.error("Lỗi đọc user từ localStorage:", err);
       }
     }
   }, []);
+
+  const fetchUserData = async (userId: number) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/users/${userId}`);
+      const userData = await response.json();
+      
+      setUser((prevUser) => prevUser ? ({
+        ...prevUser,
+        avatarImage: userData.avatarImage
+      }) : null);
+      
+    } catch (error) {
+      console.error("Lỗi khi fetch user data:", error);
+    }
+  };
 
   const handleLogout = () => {
     // Xóa tất cả dữ liệu liên quan đến đăng nhập
@@ -50,7 +76,14 @@ export default function UserDropdown() {
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src="/images/user/owner.jpg" alt="User" />
+          <img 
+            src={user?.avatarImage || "/images/user/owner.jpg"} 
+            alt="User" 
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = "/images/user/owner.jpg";
+            }}
+          />
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">
