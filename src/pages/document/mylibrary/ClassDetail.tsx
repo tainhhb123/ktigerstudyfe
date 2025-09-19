@@ -135,16 +135,37 @@ export default function ClassDetail() {
         }
     };
 
-    // --- Search users (debounced) ---
+    // --- Search users by email (debounced) ---
     const doSearchUsers = debounce((q: string) => {
         if (!q.trim()) return setSearchUsers([]);
         setSearchingUsers(true);
-        fetch(`${API}/users/search?keyword=${encodeURIComponent(q)}&page=0&size=5`)
-            .then(r => r.json())
-            .then((page: any) => setSearchUsers(page.content))
+
+        fetch(`${API}/users/email/${encodeURIComponent(q)}`)
+            .then(async r => {
+                if (!r.ok) {
+                    // Nếu không tìm thấy (404) thì clear list
+                    if (r.status === 404) return null;
+                    throw new Error("Search failed");
+                }
+                return r.json();
+            })
+            .then((user: any | null) => {
+                if (user) {
+                    // Đưa vào array để map() vẫn hoạt động
+                    setSearchUsers([user]);
+                } else {
+                    setSearchUsers([]);
+                }
+            })
+            .catch(err => {
+                console.error("Search error:", err);
+                setSearchUsers([]);
+            })
             .finally(() => setSearchingUsers(false));
     }, 300);
+
     useEffect(() => { doSearchUsers(searchUserQ); }, [searchUserQ]);
+
 
     const handleAddMember = async (u: UserSearchResult) => {
         try {

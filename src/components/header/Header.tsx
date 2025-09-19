@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ThemeToggleButton } from "../common/ThemeToggleButton";
 import NotificationDropdown from "./NotificationDropdown";
 import UserDropdown from "./UserDropdown";
-import { Link } from "react-router-dom";om";
+import { Link } from "react-router-dom";
 
 interface HeaderProps {
   onClick?: () => void;
@@ -75,9 +75,8 @@ const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
         </div>
 
         <div
-          className={`${
-            isApplicationMenuOpen ? "flex" : "hidden"
-          } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-none lg:justify-end lg:px-0`}
+          className={`${isApplicationMenuOpen ? "flex" : "hidden"
+            } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-none lg:justify-end lg:px-0`}
         >
           <div className="flex items-center gap-2 text-white">
             <ThemeToggleButton />

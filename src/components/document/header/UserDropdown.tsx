@@ -1,30 +1,67 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Dropdown } from '../ui/dropdown/Dropdown';
-import { DropdownItem } from '../ui/dropdown/DropdownItem';
-import { authService } from '../../../services/authService';
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Dropdown } from "../ui/dropdown/Dropdown";
+import { DropdownItem } from "../ui/dropdown/DropdownItem";
+import { authService } from "../../../services/authService";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<{ fullName: string; email: string } | null>(null);
   const navigate = useNavigate();
 
-  const toggleDropdown = () => setIsOpen(open => !open);
-  const closeDropdown = () => setIsOpen(false);
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        setUser(JSON.parse(userStr));
+      } catch (err) {
+        console.error("Lỗi đọc user từ localStorage:", err);
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    // Xóa tất cả dữ liệu liên quan đến đăng nhập
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("fullName");
+    localStorage.removeItem("user");
+    sessionStorage.clear();
+
+    // Chuyển hướng về trang đăng nhập sau khi đăng xuất
+    navigate("/signin");
+  };
+
+  function toggleDropdown() {
+    setIsOpen(!isOpen);
+  }
+
+  function closeDropdown() {
+    setIsOpen(false);
+  }
 
   return (
     <div className="relative">
       {/* Toggle button */}
       <button
         onClick={toggleDropdown}
-        className="flex items-center text-gray-700 dark:text-gray-400"
+        className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
-        <span className="mr-3 h-11 w-11 overflow-hidden rounded-full">
-          <img src="/images/user/owner.jpg" alt="User avatar" />
+        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
+          <img src="/images/user/owner.jpg" alt="User" />
         </span>
-        <span className="block mr-1 font-medium text-theme-sm">Lyly111</span>
+
+        <span className="block mr-1 font-medium text-theme-sm">
+          {user?.fullName?.split(" ")[0] || "User"}
+        </span>
         <svg
-          className={`stroke-current transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-          width="18" height="20" viewBox="0 0 18 20" fill="none"
+          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+            }`}
+          width="18"
+          height="20"
+          viewBox="0 0 18 20"
+          fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
@@ -37,16 +74,18 @@ export default function UserDropdown() {
         </svg>
       </button>
 
-      {/* Dropdown menu */}
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
-        className="absolute right-0 mt-2 w-64 rounded-2xl border bg-white p-3 shadow-lg dark:border-gray-800 dark:bg-gray-900"
+        className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
       >
-        {/* User info */}
-        <div className="pb-4 border-b dark:border-gray-800">
-          <p className="font-medium text-gray-700 dark:text-gray-300">Musharof Chowdhury</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">randomuser@pimjo.com</p>
+        <div>
+          <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
+            {user?.fullName || "User Name"}
+          </span>
+          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
+            {user?.email || "example@email.com"}
+          </span>
         </div>
 
         {/* Menu items */}
