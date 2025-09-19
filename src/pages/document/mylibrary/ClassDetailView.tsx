@@ -97,13 +97,13 @@ export default function ClassDetailView() {
             <div className="max-w-7xl mx-auto lg:flex lg:space-x-8">
                 {/* -------- Left: Documents -------- */}
                 <div className="w-full lg:w-8/12 space-y-6">
-                    <input
+                    {/* <input
                         type="text"
                         placeholder="Tìm kiếm tài liệu của bạn…"
                         value={docSearchQ}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => setDocSearchQ(e.target.value)}
                         className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
-                    />
+                    /> */}
 
                     <h2 className="text-2xl font-semibold">Tài liệu trong lớp</h2>
                     {filteredDocs.length === 0 ? (
@@ -150,7 +150,7 @@ export default function ClassDetailView() {
                         <h3 className="text-xl font-semibold mb-4">
                             Thành viên ({filteredMembers.length})
                         </h3>
-                        <input
+                        {/* <input
                             type="text"
                             placeholder="Tìm kiếm người dùng…"
                             value={memberSearchQ}
@@ -158,7 +158,7 @@ export default function ClassDetailView() {
                                 setMemberSearchQ(e.target.value)
                             }
                             className="w-full mb-4 p-2 border rounded focus:ring-2 focus:ring-blue-400"
-                        />
+                        /> */}
 
                         {filteredMembers.length === 0 ? (
                             <p className="text-gray-500">Không tìm thấy thành viên nào.</p>

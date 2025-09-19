@@ -16,3 +16,13 @@ export async function getLessonsByLevelIdWithProgress(levelId: string | number, 
   });
   return res.data; // [{lessonId, lessonName, isLessonCompleted, isLocked, ...}]
 }
+
+// ✅ Gửi dữ liệu đúng format
+export async function completeLesson(userId: number, lessonId: number, score: number) {
+  const res = await axios.post("http://localhost:8080/api/lessons/complete", {
+    userId,
+    lessonId,
+    score
+  });
+  return res.data;
+}

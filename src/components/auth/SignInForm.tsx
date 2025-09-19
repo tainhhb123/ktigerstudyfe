@@ -8,7 +8,12 @@ import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import axios, { AxiosError } from "axios";
 import { authService } from "../../services/authService";
+import { GoogleLogin } from '@react-oauth/google'; // ✅ Chỉ import GoogleLogin
 
+// ✅ API Base URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+
+// ✅ Type definitions
 interface SignInResponse {
   userId: number;
   email: string;
@@ -17,6 +22,14 @@ interface SignInResponse {
   role: "ADMIN" | "USER";
 }
 
+interface GoogleSignInResponse {
+  userId: number;
+  email: string;
+  fullName: string;
+  role: "ADMIN" | "USER";
+  isNewUser: boolean;
+  message: string;
+}
 
 const SignInForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -24,10 +37,12 @@ const SignInForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
+  // ✅ Regular email/password login - Updated with redirect
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
@@ -39,71 +54,155 @@ const SignInForm: React.FC = () => {
 
     setLoading(true);
     try {
-      const res = await axios.post<SignInResponse>(
-        "http://localhost:8080/api/auth/signin",
-        { email, password }
-      );
+      const res = await axios.post<SignInResponse>(`${API_BASE_URL}/auth/signin`, {
+        email,
+        password
+      });
 
       const { token, role, userId, fullName, email: userEmail } = res.data;
 
-        const userData = {
-        userId,
-        fullName,
-        email: userEmail,  
-        role,
-        token,
-      };
+      // Save auth data
+      saveAuthData({ userId, fullName, email: userEmail, role, token });
 
-      // Lưu token, role và userId qua authService
-      authService.setToken(token, keepLoggedIn);
-      authService.setRole(role, keepLoggedIn);
-      authService.setUserId(userId, keepLoggedIn);
-     
+      // Navigate based on role
+      navigateByRole(role);
 
-      // Tuỳ chọn: lưu thêm thông tin profile để hiển thị sau này
-      const profile = { userId, fullName, email: userEmail };
-      const profileKey = "userProfile";
-      if (keepLoggedIn) {
-        localStorage.setItem(profileKey, JSON.stringify(profile));
-        localStorage.setItem("authToken", token);
-        localStorage.setItem("user", JSON.stringify(userData));
-      } else {
-        sessionStorage.setItem(profileKey, JSON.stringify(profile));
-        sessionStorage.setItem("authToken", token);
-        sessionStorage.setItem("userRole", role);
-        localStorage.setItem("user", JSON.stringify(userData));
-      }
-
-  
-      console.log("userId đã lưu:", authService.getUserId());
-      console.log("role đã lưu:", authService.getRole());
-      console.log("token đã lưu:", authService.getToken());
-      
-     localStorage.setItem("userId", String(userId));
-      localStorage.setItem("authToken", token);
-      localStorage.setItem("userRole", role);
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      console.log("userId đã lưu vào localStorage:", userId);
-      console.log("fullName đã lưu vào localStorage:", fullName);
-      console.log("email đã lưu vào localStorage:", email);
-      console.log("role đã lưu vào localStorage:", role);
-      console.log("token đã lưu vào localStorage:", token);
-
-      // Điều hướng theo role
-      if (role === "ADMIN") {
-        navigate("/admin");
-      } else {
-        navigate("/learn");
-      }
     } catch (err) {
       const axiosErr = err as AxiosError<{ message: string }>;
-      setError(
-        axiosErr.response?.data?.message ||
-        "Đăng nhập thất bại. Vui lòng kiểm tra lại."
-      );
+      
+      // ✅ NEW: Redirect to frozen page if account is frozen
+      if (axiosErr.response?.status === 403) {
+        // Save user info for frozen page context
+        const errorMessage = axiosErr.response?.data?.message || "Tài khoản đã bị đóng băng";
+        localStorage.setItem("frozenAccountEmail", email);
+        localStorage.setItem("frozenAccountMessage", errorMessage);
+        
+        // Redirect to frozen account page
+        navigate("/account-frozen");
+        return;
+      } else if (axiosErr.response?.status === 401) {
+        setError("🔒 " + (axiosErr.response?.data?.message || "Email hoặc mật khẩu không đúng"));
+      } else {
+        setError("⚠️ " + (axiosErr.response?.data?.message || "Đăng nhập thất bại"));
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ✅ Google OAuth login success handler
+  const handleGoogleSuccess = async (credentialResponse: { credential?: string }) => {
+    if (!credentialResponse.credential) {
+      setError("Đăng nhập Google thất bại");
+      return;
+    }
+
+    setGoogleLoading(true);
+    setError("");
+
+    try {
+      console.log("=== GOOGLE LOGIN START ===");
+      console.log("Sending Google token to backend...");
+
+      // Send Google token to backend
+      const res = await axios.post<GoogleSignInResponse>(`${API_BASE_URL}/auth/google-signin`, {
+        googleToken: credentialResponse.credential
+      });
+
+      const { userId, fullName, email: userEmail, role, isNewUser, message } = res.data;
+
+      console.log("Google signin response:", res.data);
+
+      // Save auth data (simple token for now)
+      const simpleToken = "google-token-" + userId + "-" + Date.now();
+      saveAuthData({ userId, fullName, email: userEmail, role, token: simpleToken });
+
+      // Show welcome message
+      if (isNewUser) {
+        alert(`🎉 Chào mừng ${fullName}!\n${message}`);
+      } else {
+        alert(`👋 Chào mừng trở lại, ${fullName}!`);
+      }
+
+      // Navigate based on role
+      navigateByRole(role);
+
+    } catch (err) {
+      console.error("=== GOOGLE LOGIN ERROR ===");
+      console.error("Error:", err);
+      const axiosErr = err as AxiosError<{ message: string }>;
+      
+      // ✅ NEW: Redirect to frozen page if account is frozen
+      if (axiosErr.response?.data?.message?.includes("đóng băng") || 
+          axiosErr.response?.data?.message?.includes("frozen") ||
+          axiosErr.response?.status === 403) {
+        
+        // Save error context for frozen page
+        const errorMessage = axiosErr.response?.data?.message || "Tài khoản đã bị đóng băng";
+        localStorage.setItem("frozenAccountMessage", errorMessage);
+        
+        // Redirect to frozen account page
+        navigate("/account-frozen");
+        return;
+      } else {
+        setError("⚠️ " + (axiosErr.response?.data?.message || "Đăng nhập Google thất bại"));
+      }
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  // ✅ Google OAuth login error handler
+  const handleGoogleError = () => {
+    console.error("Google login failed");
+    setError("Đăng nhập Google thất bại. Vui lòng thử lại.");
+  };
+
+  // ✅ Helper function to save auth data
+  const saveAuthData = (userData: {
+    userId: number;
+    fullName: string;
+    email: string;
+    role: string;
+    token: string;
+  }) => {
+    const { userId, fullName, email, role, token } = userData;
+
+    // Save via authService
+    authService.setToken(token, keepLoggedIn);
+    authService.setRole(role, keepLoggedIn);
+    authService.setUserId(userId, keepLoggedIn);
+
+    // Save to storage for compatibility
+    const profile = { userId, fullName, email };
+    const completeUserData = { userId, fullName, email, role, token };
+
+    if (keepLoggedIn) {
+      localStorage.setItem("userProfile", JSON.stringify(profile));
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("user", JSON.stringify(completeUserData));
+    } else {
+      sessionStorage.setItem("userProfile", JSON.stringify(profile));
+      sessionStorage.setItem("authToken", token);
+      sessionStorage.setItem("userRole", role);
+    }
+
+    // Additional localStorage saves (for compatibility)
+    localStorage.setItem("userId", String(userId));
+    localStorage.setItem("fullName", fullName);
+    localStorage.setItem("authToken", token);
+    localStorage.setItem("userRole", role);
+    localStorage.setItem("user", JSON.stringify(completeUserData));
+
+    console.log("Auth data saved:", { userId, fullName, email, role });
+  };
+
+  // ✅ Helper function to navigate by role
+  const navigateByRole = (role: string) => {
+    if (role === "ADMIN") {
+      navigate("/admin");
+    } else {
+      navigate("/learn");
     }
   };
 
@@ -123,10 +222,43 @@ const SignInForm: React.FC = () => {
         <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
           Đăng Nhập
         </h1>
-        <p className="mb-5 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
           Nhập email và mật khẩu để đăng nhập!
         </p>
 
+        {/* ✅ Google Sign In Button */}
+        <div className="mb-6">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            useOneTap={false}
+            theme="outline"
+            size="large"
+            text="signin_with"
+            shape="rectangular"
+            logo_alignment="left"
+            width="100%"
+          />
+          {googleLoading && (
+            <p className="text-center text-sm text-blue-600 mt-2 animate-pulse">
+              🔄 Đang xử lý đăng nhập Google...
+            </p>
+          )}
+        </div>
+
+        {/* ✅ Divider */}
+        <div className="relative mb-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+              Hoặc đăng nhập bằng email
+            </span>
+          </div>
+        </div>
+
+        {/* ✅ Regular Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email */}
           <div>
@@ -138,6 +270,7 @@ const SignInForm: React.FC = () => {
               placeholder="Nhập email của bạn"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={googleLoading}
             />
           </div>
 
@@ -152,6 +285,7 @@ const SignInForm: React.FC = () => {
                 placeholder="Nhập mật khẩu"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={googleLoading}
               />
               <span
                 onClick={() => setShowPassword(!showPassword)}
@@ -173,42 +307,52 @@ const SignInForm: React.FC = () => {
                 checked={keepLoggedIn}
                 onChange={setKeepLoggedIn}
                 className="w-5 h-5"
+                disabled={googleLoading}
               />
               <span className="text-gray-700 dark:text-gray-400">
                 Ghi nhớ đăng nhập
               </span>
             </div>
             <Link
-              to="/reset-password"
+              to="/forgot-password"
               className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
             >
               Quên mật khẩu?
             </Link>
           </div>
 
-          {/* Lỗi */}
+          {/* Error message */}
           {error && (
-            <div className="text-center text-sm text-red-500">{error}</div>
+            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">
+              ⚠️ {error}
+            </div>
           )}
 
-          {/* Nút đăng nhập */}
+          {/* Submit button */}
           <div>
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               size="sm"
               className="w-full"
             >
-              {loading ? "Đang đăng nhập..." : "Đăng Nhập"}
+              {loading ? (
+                <>
+                  <span className="animate-spin mr-2">⏳</span>
+                  Đang đăng nhập...
+                </>
+              ) : (
+                "Đăng Nhập"
+              )}
             </Button>
           </div>
         </form>
 
-        <p className="mt-5 text-sm text-center text-gray-700 dark:text-gray-400">
+        <p className="mt-6 text-sm text-center text-gray-700 dark:text-gray-400">
           Chưa có tài khoản?{" "}
           <Link
             to="/signup"
-            className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+            className="text-brand-500 hover:text-brand-600 dark:text-brand-400 font-medium"
           >
             Đăng Ký
           </Link>

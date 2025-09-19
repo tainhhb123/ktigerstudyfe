@@ -28,7 +28,8 @@ import StudentDocument from "./pages/Admin/DocumentManager/DocumentPage";
 import DocumentReports from "./pages/Admin/DocumentManager/DocumentReports";
 import LessonListPage from "./pages/Admin/LessonManager/LessonListPage";
 import LessonDetailPage from "./pages/Admin/LessonManager/LessonDetailPage";
-
+import ChatAI from "./pages/KoreanChatPage";
+import AccountFrozen from "./pages/AcountFrozen";
 
 // Document pages & layout
 import AppLayoutDocument from "./layout/document/AppLayoutDocument";
@@ -57,6 +58,9 @@ import LeaderBoard from "./pages/Learn/LeaderBoard";
 import Lesson from "./pages/Learn/Lesson";
 import LessonDetail from "./pages/Learn/LessonDetail";
 import Profile from "./pages/Profile";
+import ChangePasswordForm from "./components/auth/ChangePasswordForm";
+import ForgotPasswordForm from "./components/auth/ForgotPasswordForm";
+import ResetPasswordForm from "./components/auth/ResetPasswordForm";
 
 
 export default function App() {
@@ -83,10 +87,7 @@ export default function App() {
 
           <Route path="danhsachbaihoc" element={<LessonListPage />} />
           <Route path="lessons/:lessonId/" element={<LessonDetailPage />} />
-
-
-
-
+          <Route path="chatai" element={<ChatAI />} />
 
           <Route path="alerts" element={<Alerts />} />
           <Route path="avatars" element={<Avatars />} />
@@ -97,6 +98,7 @@ export default function App() {
           <Route path="line-chart" element={<LineChart />} />
           <Route path="bar-chart" element={<BarChart />} />
         </Route>
+
 
         {/* === Document Layout (với wildcard *) === */}
         <Route path="documents/*" element={<AppLayoutDocument />}>
@@ -126,18 +128,24 @@ export default function App() {
           <Route path="lesson" element={<Lesson />} />
           <Route path="lesson-detail" element={<LessonDetail />} />
           <Route path="leaderboard" element={<LeaderBoard />} />
+          <Route path="chatai" element={<ChatAI />} />
 
         </Route>
         <Route path="/*" element={<LearnAppLayout />}>
-          <Route path="profile" element={<Profile />} />
+
+          <Route path="profile" element={<Profile />} />      
+          <Route path="profile/change-password" element={<ChangePasswordForm />} />
+
+        
         </Route>
 
         {/* === Auth & Fallback === */}
         <Route path="signin" element={<SignIn />} />
         <Route path="signup" element={<SignUp />} />
+        <Route path = "forgot-password" element={<ForgotPasswordForm />} />
+        <Route path="reset-password" element={<ResetPasswordForm/>} />
         <Route path="*" element={<NotFound />} />
-
-
+        <Route path="/account-frozen" element={<AccountFrozen />} />
       </Routes>
     </BrowserRouter>
   );

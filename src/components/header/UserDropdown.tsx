@@ -3,22 +3,73 @@ import { useState, useEffect } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link, useNavigate } from "react-router-dom";
+import { getLeaderboard } from "../../services/LeadBoardApi"; // ✅ Import API leaderboard
+
+// ✅ Import interface từ LeaderBoard hoặc tạo interface riêng
+interface LeaderboardItem {
+    fullName: string;
+    currentTitle: string;
+    currentBadge: string;
+    totalXP: number;
+}
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState<{ fullName: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ 
+    fullName: string;
+    email: string;
+    avatarImage?: string; 
+    userId?: number;
+    currentTitle?: string;
+    } | null>(null);
   const navigate = useNavigate(); 
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
     if (userStr) {
       try {
-        setUser(JSON.parse(userStr));
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+
+        // ✅ Fetch avatar từ API
+        if (userData.userId) {
+          fetchUserData(userData.userId);
+        }
       } catch (err) {
         console.error("Lỗi đọc user từ localStorage:", err);
-      }
+      } 
     }
   }, []);
+
+  // ✅ Sửa lại function fetchUserData
+  const fetchUserData = async (userId: number) => {
+    try {
+        // ✅ Gọi cả 2 API
+        const [userResponse, leaderboardData] = await Promise.all([
+            fetch(`http://localhost:8080/api/users/${userId}`),
+            getLeaderboard() // ✅ Sử dụng API leaderboard
+        ]);
+        
+        const userData = await userResponse.json();
+        
+        // ✅ Tìm user trong leaderboard với type rõ ràng
+        const currentUserInLeaderboard = leaderboardData.find(
+            (item: LeaderboardItem) => item.fullName === userData.fullName
+        );
+        
+        console.log("User data:", userData);
+        console.log("User in leaderboard:", currentUserInLeaderboard);
+        
+        setUser((prevUser) => prevUser ? ({
+            ...prevUser,
+            avatarImage: userData.avatarImage,
+            currentTitle: currentUserInLeaderboard?.currentTitle || "Học viên mới"
+        }) : null);
+        
+    } catch (error) {
+      console.error("Lỗi khi fetch user data:", error);
+    }
+  };
 
   const handleLogout = () => {
     // Xóa tất cả dữ liệu liên quan đến đăng nhập
@@ -47,8 +98,17 @@ export default function UserDropdown() {
         onClick={toggleDropdown}
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
+        {/* ✅ Sửa lại img để hiển thị avatar thực */}
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img src="/images/user/owner.jpg" alt="User" />
+          <img 
+            src={user?.avatarImage || "/images/user/owner.jpg"} 
+            alt="User" 
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              // ✅ Fallback khi avatar lỗi
+              e.currentTarget.src = "/images/user/owner.jpg";
+            }}
+          />
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">
@@ -86,6 +146,11 @@ export default function UserDropdown() {
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
             {user?.email || "example@email.com"}
           </span>
+          {user?.currentTitle && (
+            <span className="mt-1 inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                {user.currentTitle}
+            </span>
+        )}
         </div>
 
         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
@@ -111,7 +176,7 @@ export default function UserDropdown() {
                   fill=""
                 />
               </svg>
-              Profile
+              Thông tin cá nhân
             </DropdownItem>
           </li>
           <li>
@@ -136,7 +201,7 @@ export default function UserDropdown() {
                   fill=""
                 />
               </svg>
-              Account settings
+              Cài đặt tài khoản
             </DropdownItem>
           </li>
           <li>
@@ -161,7 +226,7 @@ export default function UserDropdown() {
                   fill=""
                 />
               </svg>
-              Support
+              Hỗ trợ
             </DropdownItem>
           </li>
         </ul>
@@ -184,7 +249,7 @@ export default function UserDropdown() {
               fill=""
             />
           </svg>
-          Sign out
+          Đăng Xuất
         </button>
       </Dropdown>
     </div>

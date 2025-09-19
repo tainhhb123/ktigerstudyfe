@@ -20,7 +20,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
-    name: "Trang chủ tài liệu, lớp học",
+    name: "Trang chủ tài liệu",
     path: "/documents",
   },
   {

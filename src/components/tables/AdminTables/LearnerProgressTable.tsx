@@ -9,8 +9,8 @@ interface UserProgress {
   avatarImage: string;
   fullName: string;
   joinDate: string;
-  levelName: string;
-  lessonName: string;
+  currentLevel: string;
+  currentLesson: string;
 }
 
 interface Paged<T> {
@@ -45,31 +45,25 @@ export default function StudentProgressTable({ keyword }: StudentProgressTablePr
   useEffect(() => {
     setLoading(true);
     axios
-      .get<Paged<UserProgress>>(
-        `/api/user-progress/paged?page=${data.number}&size=${pageSize}`
-      )
+      .get<Paged<UserProgress>>(`/api/user-progress`, {
+        params: {
+          keyword,
+          page: data.number,
+          size: pageSize,
+        },
+      })
       .then((res) => setData(res.data))
       .catch(() =>
         setData({ content: [], totalElements: 0, totalPages: 1, number: 0, size: pageSize })
       )
       .finally(() => setLoading(false));
-  }, [data.number]);
+  }, [data.number, keyword]);
 
   const { content, totalElements, totalPages, number: currentPage } = data;
 
   // Client-side filter
-  const filtered = useMemo(
-    () =>
-      keyword.trim()
-        ? content.filter(
-            (u) =>
-              u.fullName.toLowerCase().includes(keyword.toLowerCase()) ||
-              u.levelName.toLowerCase().includes(keyword.toLowerCase()) ||
-              u.lessonName.toLowerCase().includes(keyword.toLowerCase())
-          )
-        : content,
-    [keyword, content]
-  );
+  // Không cần filter phía client nữa vì đã filter ở backend
+  const filtered = content;
 
   // Generate pagination with ellipsis
   const pages = useMemo<(number | string)[]>(() => {
@@ -176,10 +170,10 @@ export default function StudentProgressTable({ keyword }: StudentProgressTablePr
                     {u.joinDate}
                   </TableCell>
                   <TableCell className="px-5 py-4 text-center border-r border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">
-                    {u.levelName}
+                    {u.currentLevel}
                   </TableCell>
                   <TableCell className="px-5 py-4 text-center text-gray-600 dark:text-gray-400">
-                    {u.lessonName}
+                    {u.currentLesson}
                   </TableCell>
                 </TableRow>
               ))

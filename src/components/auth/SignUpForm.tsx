@@ -33,7 +33,7 @@ export default function SignUpForm() {
     }
     setLoading(true);
     try {
-      await axios.post("http://localhost:8080/api/auth/signup", {
+      await axios.post("/api/auth/signup", {
         fullName,
         email,
         password,
@@ -41,7 +41,7 @@ export default function SignUpForm() {
       alert("Đăng ký thành công! Vui lòng đăng nhập.");
       navigate("/signin");
     } catch (err) {
-      const error = err as AxiosError<any>;
+      const error = err as AxiosError<{ message?: string }>;
       setError(
         error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại."
       );

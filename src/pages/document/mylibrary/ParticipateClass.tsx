@@ -3,6 +3,8 @@ import React, { JSX, useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import PageMeta from "../../../components/document/common/PageMeta";
 import { authService } from "../../../services/authService";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 
 interface ClassUserResponse {
     classUserId: number;
@@ -23,7 +25,13 @@ export default function ParticipateClass(): JSX.Element {
 
     const [classes, setClasses] = useState<ClassUserResponse[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+
     const [error, setError] = useState<string | null>(null);
+    const [joinClassId, setJoinClassId] = useState<number>(0);
+const [joinPassword, setJoinPassword] = useState<string>("");
+
 
     const tabs = [
         { label: "Tài liệu", path: "/documents/Library/tai-lieu" },
@@ -62,6 +70,39 @@ export default function ParticipateClass(): JSX.Element {
         }
     };
 
+    const handleJoin = async () => {
+    if (!me) {
+        alert("Bạn cần đăng nhập để tham gia lớp học.");
+        return;
+    }
+    if (!joinClassId || !joinPassword.trim()) {
+        alert("Vui lòng nhập đầy đủ Class ID và mật khẩu.");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/class-users/join?classId=${joinClassId}&userId=${me}&password=${encodeURIComponent(joinPassword)}`, {
+            method: "POST",
+        });
+
+        if (res.ok) {
+            const newClass = await res.json();
+            alert("✅ Tham gia lớp học thành công!");
+            setClasses((prev) => [...prev, newClass]);
+            setJoinClassId(0);
+            setJoinPassword("");
+        } else if (res.status === 400) {
+            alert("❌ Lớp học không tồn tại hoặc mật khẩu sai.");
+        } else {
+            alert("⚠️ Lỗi không xác định.");
+        }
+    } catch (e) {
+        alert("Lỗi khi kết nối đến máy chủ.");
+        console.error(e);
+    }
+};
+
+
     return (
         <div className="min-h-screen font-sans p-6 bg-gray-50">
             <PageMeta
@@ -85,6 +126,43 @@ export default function ParticipateClass(): JSX.Element {
                         </Link>
                     ))}
                 </nav>
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="number"
+                            placeholder="Nhập Class ID"
+                            className="border border-gray-300 rounded-lg px-3 py-1 text-sm"
+                            value={joinClassId}
+                            onChange={(e) => setJoinClassId(Number(e.target.value))}
+                        />
+                        <div className="relative">
+                           <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Mật khẩu lớp"
+                                className="border border-gray-300 rounded-lg px-3 py-1 text-sm pr-10 [&::-ms-reveal]:hidden [&::-ms-clear]:hidden [&::-webkit-credentials-auto-fill-button]:hidden"
+                                value={joinPassword}
+                                onChange={(e) => setJoinPassword(e.target.value)}
+                            />
+
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                title={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                            >
+                                {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                            </button>
+                        </div>
+                        <button
+                            onClick={handleJoin}
+                            className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-1.5 rounded-lg"
+                        >
+                            Tham gia
+                        </button>
+                    </div>
+
+
+
+
             </div>
 
             {/* Nội dung */}
@@ -102,14 +180,14 @@ export default function ParticipateClass(): JSX.Element {
                             className="block"
                         >
                             <div className="flex items-center space-x-3">
-                                <img
+                                {/* <img
                                     src={c.avatarImage ?? "/images/avatars/default.png"}
                                     alt={c.userFullName}
                                     className="w-10 h-10 rounded-full object-cover"
-                                />
+                                /> */}
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-800">{c.className}</h3>
-                                    <p className="text-sm text-gray-500">Giảng viên: {c.userFullName}</p>
+                                    {/* <p className="text-sm text-gray-500">Giảng viên: {c.userFullName}</p> */}
                                 </div>
                             </div>
                             <p className="text-gray-400 text-xs mt-2">

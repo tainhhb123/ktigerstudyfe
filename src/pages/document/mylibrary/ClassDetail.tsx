@@ -1,4 +1,3 @@
-// src/pages/ClassDetail.tsx
 import React, { useEffect, useState, ChangeEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PageMeta from "../../../components/document/common/PageMeta";

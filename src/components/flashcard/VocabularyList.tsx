@@ -36,7 +36,9 @@
                 <div>{v.meaning}</div>
                 {v.example && (
                   <div className="text-sm text-gray-500 italic mt-1">
-                    {v.example}
+                    {v.example.split('\n').map((line, index) => (
+                      <div key={index}>{line}</div>
+                    ))}
                   </div>
                 )}
               </div>

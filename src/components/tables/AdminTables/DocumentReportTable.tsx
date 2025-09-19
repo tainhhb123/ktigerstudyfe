@@ -5,7 +5,7 @@ import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/tab
 
 interface DocumentReport {
   reportId: number;
-  userName: string;
+  fullName: string;
   listTitle: string;
   listId: number;
   reason: string;
@@ -37,17 +37,21 @@ export default function DocumentReportTable({ keyword = "" }: DocumentReportTabl
     setLoading(true);
     axios
       .get<Paged<DocumentReport>>(`/api/document-reports/paged?page=${data.number}&size=${pageSize}`)
-      .then((res) => setData(res.data))
+      .then((res) => {
+        console.log('API document-reports data:', res.data);
+        setData(res.data);
+      })
       .catch(() => setData({ content: [], totalElements: 0, totalPages: 1, number: 0, size: pageSize }))
       .finally(() => setLoading(false));
   }, [data.number]);
 
   const filteredReports = useMemo(
-    () => data.content.filter(
-      (r) =>
-        r.userName.toLowerCase().includes(keyword.toLowerCase()) ||
-        r.listTitle.toLowerCase().includes(keyword.toLowerCase())
-    ),
+    () =>
+      data.content.filter(
+        (r) =>
+          (r.fullName?.toLowerCase() ?? "").includes(keyword.toLowerCase()) ||
+          (r.listTitle?.toLowerCase() ?? "").includes(keyword.toLowerCase())
+      ),
     [data.content, keyword]
   );
 
@@ -135,7 +139,7 @@ export default function DocumentReportTable({ keyword = "" }: DocumentReportTabl
             ) : filteredReports.length > 0 ? (
               filteredReports.map((r) => (
                 <TableRow key={r.reportId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{r.userName}</TableCell>
+                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{r.fullName}</TableCell>
                   <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{r.listTitle}</TableCell>
                   <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{r.reason}</TableCell>
                   <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{new Date(r.reportDate).toLocaleString()}</TableCell>

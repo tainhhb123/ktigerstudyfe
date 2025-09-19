@@ -20,10 +20,10 @@ interface MultipleChoice {
 
 interface MultipleChoiceTableProps {
   lessonId: number;
-  exerciseId?: number;
+  exerciseId: number;  // ✅ Bắt buộc, không có default value
 }
 
-export default function MultipleChoiceTable({ lessonId, exerciseId = 1 }: MultipleChoiceTableProps) {
+export default function MultipleChoiceTable({ lessonId, exerciseId }: MultipleChoiceTableProps) {
   const [items, setItems] = useState<MultipleChoice[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,20 +39,32 @@ export default function MultipleChoiceTable({ lessonId, exerciseId = 1 }: Multip
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const fetchQuestions = async () => {
-    if (!lessonId) return;
+    if (!lessonId || !exerciseId) {
+      console.warn("Missing lessonId or exerciseId");
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     
     try {
+      // ✅ Có thể filter theo cả lessonId và exerciseId nếu API hỗ trợ
       const response = await axios.get(`/api/mcq/lesson/${lessonId}/paged`, {
         params: {
           searchTerm,
           page: pageNumber,
-          size: 10
+          size: 10,
+          exerciseId: exerciseId  // ✅ Thêm exerciseId vào params nếu API hỗ trợ
         }
       });
       
-      setItems(response.data.content || []);
+      // ✅ Hoặc filter ở frontend nếu API chưa hỗ trợ
+      let questions = response.data.content || [];
+      if (exerciseId) {
+        questions = questions.filter((q: MultipleChoice) => q.exerciseId === exerciseId);
+      }
+      
+      setItems(questions);
       setTotalPages(response.data.totalPages || 0);
     } catch (error) {
       console.error('Error fetching questions:', error);
@@ -65,7 +77,7 @@ export default function MultipleChoiceTable({ lessonId, exerciseId = 1 }: Multip
 
   useEffect(() => {
     fetchQuestions();
-  }, [lessonId, pageNumber, searchTerm]);
+  }, [lessonId, exerciseId, pageNumber, searchTerm]);  // ✅ Thêm exerciseId vào dependency
 
   const paginationPages = useMemo(() => {
     const pages: (number | string)[] = [];
