@@ -1,3 +1,4 @@
+//src/services/LessonApi.ts
 import axios from "axios";
 
 // Lấy danh sách bài học theo level
@@ -19,10 +20,8 @@ export async function getLessonsByLevelIdWithProgress(levelId: string | number, 
 
 // ✅ Gửi dữ liệu đúng format
 export async function completeLesson(userId: number, lessonId: number, score: number) {
-  const res = await axios.post("http://localhost:8080/api/lessons/complete", {
-    userId,
-    lessonId,
-    score
+  const res = await axios.post("http://localhost:8080/api/lessons/complete", null, {
+    params: { userId, lessonId, score },
   });
   return res.data;
 }

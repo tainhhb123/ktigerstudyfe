@@ -1,3 +1,5 @@
+
+//src/pages/Learn/Lesson.tsx
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import LearningPath from "../../components/learning-path/LearningPath";
@@ -202,7 +204,7 @@ export default function Lesson() {
         <div
           key={lesson.lessonId}
           id={`lesson-${lesson.lessonId}`}
-          className="max-w-xl mx-auto pb-32"
+          className="max-w-xl mx-auto pb-10"
         >
           <LearningPath
             lesson={lesson}

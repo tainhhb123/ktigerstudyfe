@@ -1,74 +1,123 @@
 import { useEffect, useRef, useState } from "react";
 
-import { Link } from "react-router-dom";
-import { FileText } from "lucide-react";
-import { useSidebar } from "../../context/SidebarContext";
+import { Link, useLocation } from "react-router-dom";
+import { FileText, Menu, X } from "lucide-react";
 import { ThemeToggleButton } from "../../components/common/ThemeToggleButton";
 import NotificationDropdown from "../../components/header/NotificationDropdown";
 import UserDropdown from "../../components/header/UserDropdown";
-import { ChatBot } from "../../icons";
+
+type NavItem = {
+  name: string;
+  path: string;
+};
+
+const navItems: NavItem[] = [
+  {
+    name: "Trang chủ",
+    path: "/learn",
+  },
+  {
+    name: "Học",
+    path: "/learn/level",
+  },
+  {
+    name: "Bảng xếp hạng",
+    path: "/learn/leaderboard",
+  },
+  {
+    name: "Chat AI",
+    path: "/learn/chatai",
+  },
+];
 
 const AppHeader: React.FC = () => {
-  const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
-  const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
-
-  const handleToggle = () => {
-    if (window.innerWidth >= 1024) {
-      toggleSidebar();
-    } else {
-      toggleMobileSidebar();
-    }
-  };
-
-  const toggleApplicationMenu = () => {
-    setApplicationMenuOpen(!isApplicationMenuOpen);
-  };
-
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
-        event.preventDefault();
-        inputRef.current?.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+  const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 flex w-full bg-white border-gray-200 z-999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
-      <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
+    <header className="sticky top-0 flex w-full bg-white border-b border-gray-200 z-50 dark:border-gray-800 dark:bg-gray-900">
+      <div className="flex items-center justify-between w-full px-4 py-3 lg:px-6 lg:py-4">
+        {/* Logo */}
+        <Link to="/learn" className="flex items-center shrink-0">
+          <img
+            className="h-8 lg:h-10 dark:hidden"
+            src="/images/logo/logo.svg"
+            alt="Logo"
+          />
+          <img
+            className="h-8 lg:h-10 hidden dark:block"
+            src="/images/logo/logo-dark.svg"
+            alt="Logo"
+          />
+        </Link>
 
-        <div
-          className={`${isApplicationMenuOpen ? "flex" : "hidden"
-            } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
-        >
-          <div className="flex items-center gap-2 2xsm:gap-3">
+        {/* Desktop Navigation Menu */}
+        <nav className="hidden lg:flex items-center gap-1">
+          {navItems.map((item) => (
             <Link
-              to="/documents"
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition"
-              title="Tài liệu"
+              key={item.path}
+              to={item.path}
+              className={`px-4 py-2 rounded-lg transition-colors font-medium ${
+                isActive(item.path)
+                  ? 'bg-brand-500 text-white'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
             >
-              <FileText className="w-5 h-5 text-gray-700" />
+              {item.name}
             </Link>
-         
-            {/* <!-- Dark Mode Toggler --> */}
-            <ThemeToggleButton />
-            {/* <!-- Dark Mode Toggler --> */}
-            <NotificationDropdown />
-            {/* <!-- Notification Menu Area --> */}
-          </div>
-          {/* <!-- User Area --> */}
+          ))}
+        </nav>
+
+        {/* Right side icons */}
+        <div className="flex items-center gap-2 lg:gap-3">
+          <Link
+            to="/documents"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            title="Tài liệu"
+          >
+            <FileText className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+          </Link>
+          <ThemeToggleButton />
+          <NotificationDropdown />
           <UserDropdown />
+          
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+            ) : (
+              <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Navigation Menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-lg">
+          <nav className="flex flex-col p-4 gap-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`px-4 py-3 rounded-lg transition-colors font-medium text-center ${
+                  isActive(item.path)
+                    ? 'bg-brand-500 text-white'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      )}
     </header>
   );
 };
