@@ -21,6 +21,10 @@ const navItems: NavItem[] = [
     path: "/learn/level",
   },
   {
+    name: "Thi TOPIK",
+    path: "/learn/topik",
+  },
+  {
     name: "Bảng xếp hạng",
     path: "/learn/leaderboard",
   },

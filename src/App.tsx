@@ -9,6 +9,10 @@ import LearnAppLayout from "./layout/learn/AppLayout";
 import Home from "./pages/Dashboard/Home";
 
 import LearnHome from "./pages/Learn/LearnHome";
+import TopikExamList from "./pages/Learn/TopikExamList";
+import TopikExamDetail from "./pages/Learn/TopikExamDetail";
+import ExamAttempt from "./pages/Learn/ExamAttempt";
+import TopikExamResult from "./pages/Learn/TopikExamResult";
 import UserProfiles from "./pages/UserProfiles";
 import Calendar from "./pages/Calendar";
 import Blank from "./pages/Blank";
@@ -129,7 +133,10 @@ export default function App() {
           <Route path="lesson-detail" element={<LessonDetail />} />
           <Route path="leaderboard" element={<LeaderBoard />} />
           <Route path="chatai" element={<ChatAI />} />
-
+          <Route path="topik" element={<TopikExamList />} />
+          <Route path="topik/exam/:examId" element={<TopikExamDetail />} />
+          <Route path="topik/attempt/:attemptId" element={<ExamAttempt />} />
+          <Route path="topik/result/:attemptId" element={<TopikExamResult />} />
         </Route>
         <Route path="/*" element={<LearnAppLayout />}>
 
