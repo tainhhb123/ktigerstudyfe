@@ -227,12 +227,12 @@ export default function Exercise({
     }
   };
 
-  if (loading || !currentList[currentIdx]) return <p>Đang tải câu hỏi...</p>;
+  if (loading || !currentList[currentIdx]) return <p style={{ color: '#666666' }}>Đang tải câu hỏi...</p>;
   const current = currentList[currentIdx];
 
   if (!userId || isNaN(userId)) {
     return (
-      <div className="text-center text-red-600 font-bold mt-10">
+      <div className="text-center font-bold mt-10" style={{ color: '#FF5252' }}>
         Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.<br />
         (userId không hợp lệ)
       </div>
@@ -253,7 +253,7 @@ export default function Exercise({
       {/* Phần chính */}
       {phase === "done" ? (
         <div className="p-6 text-center">
-          <h2 className="text-2xl font-bold text-green-600 mb-2">
+          <h2 className="text-2xl font-bold mb-2" style={{ color: '#4CAF50' }}>
             🎉 Hoàn thành bài tập!
           </h2>
           <div className="mb-2">
@@ -264,9 +264,9 @@ export default function Exercise({
                 return acc;
               }, {})
             ).map(([eid, total]) => (
-              <div key={eid}>
+              <div key={eid} style={{ color: '#333333' }}>
                 Bài tập ID <b>{eid}</b>: Đúng lần đầu:{" "}
-                <b>
+                <b style={{ color: '#FF6B35' }}>
                   {correctCountFirst.current.get(+eid) || 0}/{total} ({
                     Math.round(
                       ((correctCountFirst.current.get(+eid) || 0) / total) * 100
@@ -277,15 +277,15 @@ export default function Exercise({
               </div>
             ))}
           </div>
-          <div className="mb-4 text-gray-500 text-sm">
+          <div className="mb-4 text-sm" style={{ color: '#666666' }}>
             Tất cả câu hỏi đã được làm đúng, bạn đã hoàn thành bài tập này.
           </div>
         </div>
       ) : (
         // Câu hỏi bình thường
         <div className="p-4 space-y-4">
-          <div className="mb-2 text-sm text-gray-500">
-            Câu {currentIdx + 1} / {currentList.length} {phase === "review" && <span>(Làm lại các câu sai)</span>}
+          <div className="mb-2 text-sm" style={{ color: '#666666' }}>
+            Câu {currentIdx + 1} / {currentList.length} {phase === "review" && <span style={{ color: '#FF6B35' }}>(Làm lại các câu sai)</span>}
           </div>
           <AnimatePresence mode="wait">
             {current.type === "multiple" && (

@@ -239,28 +239,29 @@ export default function KoreanChatInterface({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
+    <div className="flex flex-col h-screen" style={{ backgroundColor: '#FFF8F0' }}>
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #BDBDBD' }}>
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={onBack}
-                className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                className="px-3 py-2 rounded-lg text-sm font-medium transition-all"
+                style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}
               >
                 ← Quay lại
-              </Button>
+              </button>
               
               <div className="flex items-center space-x-3">
-                <span className="text-2xl">{scenarioConfig[scenario].icon}</span>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl" style={{ backgroundColor: '#FFE8DC' }}>
+                  {scenarioConfig[scenario].icon}
+                </div>
                 <div>
-                  <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h1 className="text-lg font-semibold" style={{ color: '#333333' }}>
                     {scenarioConfig[scenario].title}
                   </h1>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <span className="text-sm" style={{ color: '#666666' }}>
                     {difficultyConfig[difficulty].icon} {difficultyConfig[difficulty].title}
                   </span>
                 </div>
@@ -268,31 +269,25 @@ export default function KoreanChatInterface({
             </div>
             
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full" />
-              <span className="text-sm text-gray-600 dark:text-gray-300">AI online</span>
-              
-              {/* Optional debug button */}
-              <button
-                onClick={() => speak('안녕하세요, 테스트 문장입니다!')}
-                className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
-              >
-                Test TTS
-              </button>
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#4CAF50' }} />
+              <span className="text-sm" style={{ color: '#4CAF50' }}>AI online</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+      <div className="flex-1 overflow-y-auto" style={{ backgroundColor: '#FFF8F0' }}>
         <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
           {messages.length === 0 && (
             <div className="text-center py-12">
-              <div className="text-4xl mb-4">🤖</div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Bắt đầu trò chuyện</h3>
-              <p className="text-gray-600 dark:text-gray-400">Chọn gợi ý hoặc nhập tin nhắn để bắt đầu</p>
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-4xl" style={{ backgroundColor: '#FFE8DC' }}>
+                🤖
+              </div>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: '#333333' }}>Bắt đầu trò chuyện</h3>
+              <p style={{ color: '#666666' }}>Chọn gợi ý hoặc nhập tin nhắn để bắt đầu</p>
               {ttsSupported && (
-                <p className="text-sm text-green-600 dark:text-green-400 mt-2">
+                <p className="text-sm mt-2" style={{ color: '#4CAF50' }}>
                   🎤 AI sẽ tự động đọc câu trả lời với hiệu ứng karaoke
                 </p>
               )}
@@ -305,11 +300,12 @@ export default function KoreanChatInterface({
               className={`flex ${msg.messageType === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={
-                  msg.messageType === 'user'
-                    ? 'max-w-md px-4 py-3 rounded-lg bg-green-500 text-white'
-                    : 'max-w-md px-4 py-3 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
-                }
+                className="max-w-md px-4 py-3 rounded-2xl shadow-sm"
+                style={{
+                  backgroundColor: msg.messageType === 'user' ? '#FF6B35' : '#FFFFFF',
+                  color: msg.messageType === 'user' ? '#FFFFFF' : '#333333',
+                  border: msg.messageType === 'user' ? 'none' : '1px solid #BDBDBD'
+                }}
               >
                 {/* Karaoke text for AI message when speaking */}
                 <div className="text-sm leading-relaxed">
@@ -330,13 +326,14 @@ export default function KoreanChatInterface({
                   <div className="mt-2">
                     <button
                       onClick={() => toggleTranslation(msg.messageId)}
-                      className="text-xs text-green-600 dark:text-green-400 hover:underline"
+                      className="text-xs hover:underline"
+                      style={{ color: '#4CAF50' }}
                     >
                       {translationVisible[msg.messageId] ? 'Ẩn bản dịch' : 'Hiển thị bản dịch'}
                     </button>
                     
                     {translationVisible[msg.messageId] && (
-                      <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded text-xs text-gray-600 dark:text-gray-300">
+                      <div className="mt-2 p-2 rounded text-xs" style={{ backgroundColor: '#FFF8F0', color: '#666666' }}>
                         {msg.translation}
                       </div>
                     )}
@@ -345,11 +342,8 @@ export default function KoreanChatInterface({
 
                 <div className="flex items-center justify-between mt-2">
                   <span
-                    className={
-                      msg.messageType === 'user'
-                        ? 'text-xs text-green-100'
-                        : 'text-xs text-gray-500 dark:text-gray-400'
-                    }
+                    className="text-xs"
+                    style={{ color: msg.messageType === 'user' ? 'rgba(255,255,255,0.7)' : '#999999' }}
                   >
                     {new Date(msg.timestamp).toLocaleTimeString('vi-VN', {
                       hour: '2-digit',
@@ -362,11 +356,10 @@ export default function KoreanChatInterface({
                     <button
                       onClick={() => handleSpeakerClick(msg.messageId, msg.content)}
                       title={getSpeakerTitle(msg.messageId)}
-                      className={`ml-2 p-1 rounded text-lg transition-all ${
-                        currentSpeakingId === msg.messageId && isSpeaking
-                          ? 'bg-green-100 dark:bg-green-900/30 animate-pulse'
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-600'
-                      }`}
+                      className="ml-2 p-1 rounded-full text-lg transition-all"
+                      style={{
+                        backgroundColor: currentSpeakingId === msg.messageId && isSpeaking ? '#E8F5E9' : 'transparent'
+                      }}
                     >
                       {getSpeakerIcon(msg.messageId)}
                     </button>
@@ -379,12 +372,12 @@ export default function KoreanChatInterface({
           {/* Loading indicator */}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3">
+              <div className="rounded-2xl px-4 py-3 shadow-sm" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
                 <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">AI đang trả lời...</span>
+                  <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#FF6B35' }}></div>
+                  <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#FF6B35', animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#FF6B35', animationDelay: '0.2s' }}></div>
+                  <span className="text-sm ml-2" style={{ color: '#666666' }}>AI đang trả lời...</span>
                 </div>
               </div>
             </div>
@@ -396,16 +389,17 @@ export default function KoreanChatInterface({
 
       {/* Quick phrases */}
       {showQuickPhrases && (
-        <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <div style={{ backgroundColor: '#FFFFFF', borderTop: '1px solid #BDBDBD' }}>
           <div className="max-w-4xl mx-auto px-4 py-3">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Gợi ý:</p>
+            <p className="text-sm mb-2" style={{ color: '#666666' }}>Gợi ý:</p>
             <div className="flex flex-wrap gap-2">
               {quickPhrases[scenario].map((phrase, idx) => (
                 <button
                   key={idx}
                   disabled={isLoading || isListening}
                   onClick={() => sendMessage(phrase)}
-                  className="text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
+                  className="text-sm px-3 py-1.5 rounded-full transition-all"
+                  style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}
                 >
                   {phrase}
                 </button>
@@ -416,7 +410,7 @@ export default function KoreanChatInterface({
       )}
 
       {/* Input */}
-      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+      <div style={{ backgroundColor: '#FFFFFF', borderTop: '1px solid #BDBDBD' }}>
         <div className="max-w-4xl mx-auto p-4">
           <div className="flex space-x-3">
             <div className="flex-1 relative">
@@ -432,11 +426,12 @@ export default function KoreanChatInterface({
                   }
                 }}
                 placeholder={isListening ? '🎤 Đang ghi âm...' : 'Nhập tin nhắn tiếng Hàn...'}
-                className={`w-full resize-none border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                  isListening
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-600'
-                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600'
-                } text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400`}
+                className="w-full resize-none rounded-xl px-4 py-3 focus:outline-none focus:ring-2"
+                style={{
+                  backgroundColor: isListening ? '#FFE8DC' : '#FFF8F0',
+                  border: isListening ? '2px solid #FF6B35' : '1px solid #BDBDBD',
+                  color: '#333333'
+                }}
                 rows={2}
                 disabled={isLoading}
                 readOnly={isListening}
@@ -446,41 +441,46 @@ export default function KoreanChatInterface({
                 <button
                   onClick={handleMicroClick}
                   disabled={isLoading}
-                  className={`absolute right-2 top-2 p-2 rounded text-lg ${
-                    isListening
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
-                  }`}
+                  className="absolute right-3 top-3 p-2 rounded-full text-lg transition-all"
+                  style={{
+                    backgroundColor: isListening ? '#FF6B35' : '#FFE8DC',
+                    color: isListening ? '#FFFFFF' : '#FF6B35'
+                  }}
                 >
                   {isListening ? '🛑' : '🎤'}
                 </button>
               )}
             </div>
 
-            <Button
+            <button
               onClick={handleSendButtonClick}
               disabled={!displayInput.trim() || isLoading}
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg disabled:opacity-50"
+              className="px-6 py-3 rounded-xl font-medium transition-all"
+              style={{
+                backgroundColor: !displayInput.trim() || isLoading ? '#E0E0E0' : '#FF6B35',
+                color: !displayInput.trim() || isLoading ? '#999999' : '#FFFFFF',
+                cursor: !displayInput.trim() || isLoading ? 'not-allowed' : 'pointer'
+              }}
             >
               {isLoading ? 'Đang gửi...' : 'Gửi'}
-            </Button>
+            </button>
           </div>
 
           {/* Error status */}
           {isListening && (
-            <div className="mt-2 text-sm text-green-600 dark:text-green-400">
+            <div className="mt-2 text-sm" style={{ color: '#4CAF50' }}>
               🎤 Đang lắng nghe...
             </div>
           )}
 
           {speechError && !isListening && (
-            <div className="mt-2 text-sm text-red-600 dark:text-red-400">
+            <div className="mt-2 text-sm" style={{ color: '#FF5252' }}>
               ⚠️ {speechError}
             </div>
           )}
 
           {ttsError && (
-            <div className="mt-2 text-sm text-red-600 dark:text-red-400">
+            <div className="mt-2 text-sm" style={{ color: '#FF5252' }}>
               ⚠️ {ttsError}
             </div>
           )}

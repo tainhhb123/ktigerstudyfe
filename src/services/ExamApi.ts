@@ -9,6 +9,7 @@ import {
   ExamAttemptRequest,
   UserAnswerResponse,
   UserAnswerRequest,
+  ExamResultResponse,
 } from '../types/exam';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -92,8 +93,8 @@ export const examAttemptApi = {
   },
 
   // Get exam result
-  getResult: async (attemptId: number): Promise<any> => {
-    const response = await api.get(`/api/exam-attempts/${attemptId}/result`);
+  getResult: async (attemptId: number): Promise<ExamResultResponse> => {
+    const response = await api.get<ExamResultResponse>(`/api/exam-attempts/${attemptId}/result`);
     return response.data;
   },
 };

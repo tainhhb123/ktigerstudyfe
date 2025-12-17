@@ -10,41 +10,35 @@ function StickyRoadmapHeader({
   section,
   title,
   onGuide,
-  bgColorClass,
 }: {
   section: string;
   title: string;
   onGuide: () => void;
-  bgColorClass: string;
+  bgColorClass?: string;
 }) {
   return (
     <div className="sticky top-[75px] z-50 w-full">
       <div
-        className={`${bgColorClass} px-6 py-5 rounded-b-2xl shadow-lg flex items-center justify-between transition-colors duration-500 text-xl font-semibold`}
+        className="px-6 py-5 rounded-b-2xl shadow-lg flex items-center justify-between transition-colors duration-500 text-xl font-semibold"
+        style={{ backgroundColor: '#FF6B35' }}
       >
         <div className="font-bold text-white">{section}</div>
         <button
-          className="bg-white text-xs px-4 py-2 rounded font-bold"
+          className="text-xs px-4 py-2 rounded font-bold transition-colors"
+          style={{ backgroundColor: '#FFFFFF', color: '#FF6B35' }}
           onClick={onGuide}
         >
           Hướng dẫn
         </button>
       </div>
-      <div className="bg-white px-6 py-2">
-        <div className="font-semibold text-base text-gray-700">{title}</div>
+      <div className="px-6 py-2" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="font-semibold text-base" style={{ color: '#333333' }}>{title}</div>
       </div>
     </div>
   );
 }
 
 export default function Lesson() {
-  const colorList = [
-    "bg-blue-500",
-    "bg-yellow-400",
-    "bg-purple-500",
-    "bg-red-500",
-    "bg-green-500",
-  ];
   const [searchParams] = useSearchParams();
   const levelId = searchParams.get("levelId");
   const userId = Number(localStorage.getItem("userId"));
@@ -164,19 +158,22 @@ export default function Lesson() {
   }, [lessons]);
 
   if (loading)
-    return <div className="text-center py-20">Đang tải bài học...</div>;
+    return <div className="text-center py-20" style={{ color: '#666666' }}>Đang tải bài học...</div>;
   
   console.log("📊 Current lessons state:", lessons, "Length:", lessons.length);
   
   if (!lessons.length)
-    return <div className="text-center py-20">Không có bài học nào cho cấp độ này!</div>;
+    return <div className="text-center py-20" style={{ color: '#666666' }}>Không có bài học nào cho cấp độ này!</div>;
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
       {/* ✅ Thông báo completion */}
       {showCompletionMessage && (
         <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-[60] animate-bounce">
-          <div className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-4 rounded-xl shadow-2xl max-w-md mx-auto text-center">
+          <div 
+            className="text-white px-6 py-4 rounded-xl shadow-2xl max-w-md mx-auto text-center"
+            style={{ background: 'linear-gradient(to right, #4CAF50, #FF6B35)' }}
+          >
             <div className="font-bold text-lg mb-1">
               {completionMessage.includes("🎉") ? "🎉 Hoàn thành!" : "✅ Đã hoàn thành"}
             </div>
@@ -192,11 +189,7 @@ export default function Lesson() {
         section={current ? `Bài số ${lessons.indexOf(current) + 1}` : ""}
         title={current ? current.lessonName : ""}
         onGuide={() => alert("Xem hướng dẫn")}
-        bgColorClass={
-          current
-            ? colorList[lessons.indexOf(current) % colorList.length]
-            : "bg-blue-500"
-        }
+
       />
 
       {/* Danh sách bài học */}

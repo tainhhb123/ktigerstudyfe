@@ -16,25 +16,22 @@ export default function LessonDetail() {
   const lessonId = searchParams.get("lessonId");
   const [activeTab, setActiveTab] = useState("vocab"); // mặc định Vocabulary
 
-  if (!lessonId) return <div>Không có bài học nào.</div>;
+  if (!lessonId) return <div style={{ color: '#666666' }}>Không có bài học nào.</div>;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
       {/* Tabs cố định phía trên */}
-      <div className="fixed top-19 left-78 right-7 z-50 bg-white shadow-md">
-
-        <div className="flex justify-around border-b border-gray-200 w-full">
-
-
+      <div className="fixed top-19 left-78 right-7 z-50 shadow-md" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="flex justify-around w-full" style={{ borderBottom: '1px solid #BDBDBD' }}>
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              className={`flex-1 flex flex-col items-center py-3 transition text-sm font-medium
-                ${
-                  activeTab === tab.key
-                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                    : "text-gray-500 hover:bg-gray-100"
-                }`}
+              className="flex-1 flex flex-col items-center py-3 transition text-sm font-medium"
+              style={{
+                color: activeTab === tab.key ? '#FF6B35' : '#666666',
+                backgroundColor: activeTab === tab.key ? '#FFE8DC' : 'transparent',
+                borderBottom: activeTab === tab.key ? '3px solid #FF6B35' : '3px solid transparent'
+              }}
               onClick={() => setActiveTab(tab.key)}
             >
               <div className="text-xl">{tab.icon}</div>

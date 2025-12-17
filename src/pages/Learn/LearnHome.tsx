@@ -263,51 +263,55 @@ export default function LearnHome() {
     // Intro Screen
     if (currentStep === "intro") {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
+            <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#FFF8F0' }}>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-8 text-center"
+                    className="max-w-2xl w-full rounded-3xl shadow-2xl p-8 text-center"
+                    style={{ backgroundColor: '#FFFFFF' }}
                 >
                     <div className="mb-6">
                         <div className="mb-4">
-                            <img 
-                            src={hoHanImage}
-                            className="w-28 h-28 mx-auto object-contain rounded-full shadow-lg"
-                            />
-
-                           
+                            <div className="w-28 h-28 mx-auto rounded-full shadow-lg flex items-center justify-center" style={{ backgroundColor: '#FFE8DC' }}>
+                                <img 
+                                    src={hoHanImage}
+                                    className="w-24 h-24 object-contain"
+                                    alt="Ho Han"
+                                />
+                            </div>
                         </div>
-                        <h1 className="text-4xl font-bold text-gray-800 mb-2">
-                            Chào mừng đến với KTiger Study
+                        <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: '#333333' }}>
+                            Chào mừng đến với{" "}
+                            <span style={{ color: '#FF6B35' }}>K-Tiger</span>
+                            <span style={{ color: '#4CAF50' }}>Study</span>
                         </h1>
-                        <p className="text-lg text-gray-600">
+                        <p className="text-lg" style={{ color: '#666666' }}>
                             Hành trình học tiếng Hàn của bạn bắt đầu từ đây!
                         </p>
                     </div>
 
-                    <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-2xl mb-6">
-                        <h2 className="text-2xl font-bold mb-3">🎯 Kiểm tra trình độ</h2>
-                        <p className="text-blue-100 mb-4">
+                    <div className="p-6 rounded-2xl mb-6" style={{ backgroundColor: '#FF6B35' }}>
+                        <h2 className="text-2xl font-bold mb-3 text-white">🎯 Kiểm tra trình độ</h2>
+                        <p className="mb-4" style={{ color: '#FFE8DC' }}>
                             Làm 9 câu hỏi nhanh để chúng tôi đánh giá trình độ và gợi ý cấp độ
                             học phù hợp nhất cho bạn
                         </p>
-                        <div className="flex items-center justify-center gap-2 text-sm">
-                            <span>⏱️ Thời gian: ~3 phút</span>
-                            <span>•</span>
-                            <span>📝 9 câu hỏi</span>
-                   
+                        <div className="flex items-center justify-center gap-3 text-sm text-white">
+                            <span className="px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>⏱️ ~3 phút</span>
+                            <span className="px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>📝 9 câu hỏi</span>
                         </div>
                     </div>
 
                     <div className="flex gap-4 justify-center">
                         <button
                             onClick={() => setCurrentStep("test")}
-                            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                            className="text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                            style={{ backgroundColor: '#4CAF50' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2E7D32'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
                         >
                             🚀 Bắt đầu kiểm tra
                         </button>
-                    
                     </div>
                 </motion.div>
             </div>
@@ -319,79 +323,70 @@ export default function LearnHome() {
         const question = placementQuestions[currentQuestion];
 
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
+            <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#FFF8F0' }}>
                 <motion.div
                     key={currentQuestion}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="max-w-3xl w-full bg-white rounded-3xl shadow-2xl p-8"
+                    className="max-w-3xl w-full rounded-3xl shadow-2xl p-6 md:p-8"
+                    style={{ backgroundColor: '#FFFFFF' }}
                 >
                     {/* Progress Bar */}
                     <div className="mb-6">
                         <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-600">
+                            <span className="text-sm font-semibold" style={{ color: '#333333' }}>
                                 Câu {currentQuestion + 1} / {placementQuestions.length}
                             </span>
-                            <span className="text-sm font-medium text-blue-600">
+                            <span className="text-sm font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}>
                                 Cấp độ {question.level}
                             </span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full rounded-full h-3" style={{ backgroundColor: '#E0E0E0' }}>
                             <div
-                                className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                                className="h-3 rounded-full transition-all duration-300"
                                 style={{
-                                    width: `${
-                                        ((currentQuestion + 1) / placementQuestions.length) *
-                                        100
-                                    }%`,
+                                    width: `${((currentQuestion + 1) / placementQuestions.length) * 100}%`,
+                                    background: 'linear-gradient(90deg, #FF6B35 0%, #4CAF50 100%)'
                                 }}
                             ></div>
                         </div>
                     </div>
 
-                    {/* ✅ Instruction Box - Giống như TOPIK */}
-                  {/* ✅ Instruction - Text bình thường */}
-                <div className="mb-6">
-                    <p className="text-gray-700 text-xl font-bold  leading-relaxed">
-                        {question.instruction}
-                    </p>
-                </div>
+                    {/* Instruction */}
+                    <div className="mb-6 p-4 rounded-xl" style={{ backgroundColor: '#FFF8F0', borderLeft: '4px solid #FF6B35' }}>
+                        <p className="text-lg font-bold leading-relaxed" style={{ color: '#333333' }}>
+                            {question.instruction}
+                        </p>
+                    </div>
 
                     {/* Question */}
-                    <div className="mb-8">
-                        {/* <div className="flex items-center gap-2 mb-4">
-                            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                                {currentQuestion + 1}
-                            </div>
-                            <div className="h-px bg-gray-300 flex-1"></div>
-                        </div> */}
-                        
+                    <div className="mb-6">
                         <h2 
-                            className="text-lg text-gray-800 mb-4"
+                            className="text-lg leading-relaxed"
+                            style={{ color: '#333333' }}
                             dangerouslySetInnerHTML={{ __html: question.question }}
                         />
 
                         {/* Audio Player for listening questions */}
                         {question.type === "listening" && (
-                            <div className="mb-6">
+                            <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: '#FFF8F0' }}>
                                 <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-8 h-8 bg-yellow-500 text-white rounded-full flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl" style={{ backgroundColor: '#FF6B35' }}>
                                         🎧
                                     </div>
-                                    <span className="font-medium text-yellow-800">Phần nghe</span>
+                                    <span className="font-semibold" style={{ color: '#FF6B35' }}>Phần nghe</span>
                                 </div>
                                 
-                                {/* Audio player giống MultipleChoiceQuestion */}
                                 <audio
                                     controls
-                                    className="w-full rounded-md"
+                                    className="w-full rounded-lg"
                                     style={{ display: "block", width: "100%" }}
                                 >
                                     <source src={question.audioUrl} type="audio/mpeg" />
                                     Trình duyệt của bạn không hỗ trợ audio.
                                 </audio>
                                 
-                                <p className="text-sm text-gray-600 mt-2">
+                                <p className="text-sm mt-2" style={{ color: '#666666' }}>
                                     💡 Bạn có thể nghe lại nhiều lần bằng cách sử dụng thanh điều khiển
                                 </p>
                             </div>
@@ -404,12 +399,24 @@ export default function LearnHome() {
                             <button
                                 key={index}
                                 onClick={() => handleAnswer(index)}
-                                className="w-full p-4 text-left rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all group flex items-center gap-3"
+                                className="w-full p-4 text-left rounded-xl border-2 transition-all group flex items-center gap-3"
+                                style={{ borderColor: '#BDBDBD', backgroundColor: '#FFFFFF' }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = '#FF6B35';
+                                    e.currentTarget.style.backgroundColor = '#FFE8DC';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = '#BDBDBD';
+                                    e.currentTarget.style.backgroundColor = '#FFFFFF';
+                                }}
                             >
-                                <div className="w-8 h-8 border-2 border-gray-300 rounded-full flex items-center justify-center text-sm font-bold group-hover:border-blue-400 group-hover:bg-blue-100 group-hover:text-blue-600">
+                                <div 
+                                    className="w-8 h-8 border-2 rounded-full flex items-center justify-center text-sm font-bold transition-all"
+                                    style={{ borderColor: '#BDBDBD', color: '#666666' }}
+                                >
                                     {String.fromCharCode(65 + index)}
                                 </div>
-                                <span className="font-medium text-gray-800 group-hover:text-blue-600">
+                                <span className="font-medium" style={{ color: '#333333' }}>
                                     {option}
                                 </span>
                             </button>
@@ -432,63 +439,65 @@ export default function LearnHome() {
         const recommendation = levelRecommendations[testResult.recommendedLevel - 1];
 
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
+            <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#FFF8F0' }}>
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="max-w-4xl w-full bg-white rounded-3xl shadow-2xl p-8"
+                    className="max-w-4xl w-full rounded-3xl shadow-2xl p-6 md:p-8"
+                    style={{ backgroundColor: '#FFFFFF' }}
                 >
                     <div className="text-center mb-8">
-                        <div className="text-6xl mb-4">🎉</div>
-                        <h1 className="text-4xl font-bold text-gray-800 mb-2">
+                        <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-5xl" style={{ backgroundColor: '#FFE8DC' }}>
+                            🎉
+                        </div>
+                        <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: '#333333' }}>
                             Kết quả kiểm tra trình độ
                         </h1>
-                        <p className="text-lg text-gray-600">
+                        <p className="text-lg" style={{ color: '#666666' }}>
                             Bạn đã hoàn thành bài kiểm tra! Đây là kết quả và đề xuất của chúng tôi
                         </p>
                     </div>
 
                     {/* Score Card */}
-                    <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-2xl mb-6">
-                        <div className="grid grid-cols-3 gap-4 text-center">
-                            <div>
+                    <div className="p-6 rounded-2xl mb-6" style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}>
+                        <div className="grid grid-cols-3 gap-4 text-center text-white">
+                            <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
                                 <div className="text-3xl font-bold">{testResult.score}</div>
-                                <div className="text-blue-100">Điểm số</div>
+                                <div style={{ color: '#FFE8DC' }}>Điểm số</div>
                             </div>
-                            <div>
+                            <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
                                 <div className="text-3xl font-bold">
                                     {testResult.correctAnswers}/{placementQuestions.length}
                                 </div>
-                                <div className="text-blue-100">Câu đúng</div>
+                                <div style={{ color: '#FFE8DC' }}>Câu đúng</div>
                             </div>
-                            <div>
+                            <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
                                 <div className="text-3xl font-bold">
-                                    {Math.round(
-                                        (testResult.correctAnswers / placementQuestions.length) *
-                                            100
-                                    )}
-                                    %
+                                    {Math.round((testResult.correctAnswers / placementQuestions.length) * 100)}%
                                 </div>
-                                <div className="text-blue-100">Tỷ lệ đúng</div>
+                                <div style={{ color: '#FFE8DC' }}>Tỷ lệ đúng</div>
                             </div>
                         </div>
                     </div>
 
                     {/* Recommended Level */}
                     <div
-                        className={`${recommendation.color} text-white p-6 rounded-2xl mb-6`}
+                        className="text-white p-6 rounded-2xl mb-6"
+                        style={{ backgroundColor: '#4CAF50' }}
                     >
                         <div className="flex items-center gap-4 mb-4">
-                            <div className="text-4xl">{recommendation.icon}</div>
+                            <div className="w-16 h-16 rounded-full flex items-center justify-center text-3xl" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
+                                {recommendation.icon}
+                            </div>
                             <div>
                                 <h2 className="text-2xl font-bold">{recommendation.title}</h2>
-                                <p className="text-white/90">
+                                <p style={{ color: 'rgba(255,255,255,0.9)' }}>
                                     {recommendation.description}
                                 </p>
                             </div>
                         </div>
-                        <div className="bg-white/20 p-4 rounded-xl">
-                            <p className="text-white/90 text-sm">
+                        <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
+                            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.95)' }}>
                                 💡 <strong>Gợi ý:</strong> Bạn nên bắt đầu học từ cấp độ này để có
                                 nền tảng vững chắc và tiến bộ một cách hiệu quả nhất.
                             </p>
@@ -497,32 +506,33 @@ export default function LearnHome() {
 
                     {/* All Levels Overview */}
                     <div className="mb-8">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">
+                        <h3 className="text-xl font-bold mb-4" style={{ color: '#333333' }}>
                             🗺️ Tổng quan tất cả cấp độ
                         </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {levelRecommendations.map((level, index) => (
                                 <div
                                     key={index}
-                                    className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                                        level.level === testResult.recommendedLevel
-                                            ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
-                                            : "border-gray-200 hover:border-gray-300"
-                                    }`}
+                                    className="p-4 rounded-xl border-2 transition-all cursor-pointer"
+                                    style={{
+                                        borderColor: level.level === testResult.recommendedLevel ? '#FF6B35' : '#BDBDBD',
+                                        backgroundColor: level.level === testResult.recommendedLevel ? '#FFE8DC' : '#FFFFFF',
+                                        boxShadow: level.level === testResult.recommendedLevel ? '0 4px 12px rgba(255,107,53,0.2)' : 'none'
+                                    }}
                                     onClick={() => startLearning(level.level)}
                                 >
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className="text-2xl">{level.icon}</span>
-                                        <span className="font-semibold text-gray-800">
+                                        <span className="font-semibold" style={{ color: '#333333' }}>
                                             Cấp {level.level}
                                         </span>
                                         {level.level === testResult.recommendedLevel && (
-                                            <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                                            <span className="text-white text-xs px-2 py-1 rounded-full" style={{ backgroundColor: '#FF6B35' }}>
                                                 Đề xuất
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-sm text-gray-600">
+                                    <p className="text-sm" style={{ color: '#666666' }}>
                                         {level.description}
                                     </p>
                                 </div>
@@ -531,16 +541,22 @@ export default function LearnHome() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-4 justify-center">
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
                         <button
                             onClick={() => startLearning(testResult.recommendedLevel)}
-                            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                            className="text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                            style={{ backgroundColor: '#FF6B35' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E55A2B'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF6B35'}
                         >
                             🚀 Bắt đầu học cấp {testResult.recommendedLevel}
                         </button>
                         <button
                             onClick={retakeTest}
-                            className="bg-gray-100 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-200 transition-all"
+                            className="px-8 py-4 rounded-xl font-semibold text-lg transition-all"
+                            style={{ backgroundColor: '#E0E0E0', color: '#333333' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#BDBDBD'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#E0E0E0'}
                         >
                             🔄 Làm lại test
                         </button>

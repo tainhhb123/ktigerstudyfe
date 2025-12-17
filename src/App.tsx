@@ -8,6 +8,7 @@ import LearnAppLayout from "./layout/learn/AppLayout";
 
 import Home from "./pages/Dashboard/Home";
 
+import TopikWritingSection from './pages/Learn/TopikWritingSection';
 import LearnHome from "./pages/Learn/LearnHome";
 import TopikExamList from "./pages/Learn/TopikExamList";
 import TopikExamDetail from "./pages/Learn/TopikExamDetail";
@@ -137,6 +138,7 @@ export default function App() {
           <Route path="topik/exam/:examId" element={<TopikExamDetail />} />
           <Route path="topik/attempt/:attemptId" element={<ExamAttempt />} />
           <Route path="topik/result/:attemptId" element={<TopikExamResult />} />
+          <Route path="topik/writing/:attemptId" element={<TopikWritingSection />} />
         </Route>
         <Route path="/*" element={<LearnAppLayout />}>
 

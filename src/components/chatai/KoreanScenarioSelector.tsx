@@ -79,60 +79,62 @@ export default function KoreanScenarioSelector({ onSelectScenario }: KoreanScena
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen transition-colors" style={{ backgroundColor: '#FFF8F0' }}>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-green-700 dark:text-green-300 mb-2">
-            Trò chuyện tiếng Hàn với AI 🇰🇷
+          <h1 className="text-3xl md:text-4xl font-bold mb-3">
+            <span style={{ color: '#FF6B35' }}>Trò chuyện tiếng Hàn</span>
+            <span style={{ color: '#4CAF50' }}> với AI</span>
+            <span className="ml-2">🇰🇷</span>
           </h1>
-          <p className="text-lg text-green-700 dark:text-green-200 mb-2">
+          <p className="text-lg mb-3" style={{ color: '#666666' }}>
             Luyện tập hội thoại tiếng Hàn thực tế cùng AI
           </p>
-          <div className="flex items-center justify-center space-x-2 text-sm text-green-600 dark:text-green-400">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+          <div className="flex items-center justify-center space-x-2 text-sm" style={{ color: '#4CAF50' }}>
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#4CAF50' }}></span>
             <span>Giáo viên AI đã sẵn sàng</span>
           </div>
         </div>
 
         {/* Scenario Selection */}
         <div className="mb-10">
-          <h2 className="text-xl font-bold text-green-800 dark:text-green-200 mb-4 text-center">
+          <h2 className="text-xl font-bold mb-4 text-center" style={{ color: '#333333' }}>
             🎯 Chọn tình huống giao tiếp
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {scenarios.map((scenario) => (
               <div
                 key={scenario.id}
-                className={`relative rounded-xl border-2 p-5 cursor-pointer transition
-                  ${
-                    selectedScenario === scenario.id
-                      ? 'border-green-600 bg-green-100 dark:bg-green-800'
-                      : 'border-green-200 bg-white hover:border-green-400 dark:border-green-700 dark:bg-gray-800 dark:hover:border-green-400'
-                  }
-                `}
+                className="relative rounded-2xl border-2 p-5 cursor-pointer transition-all duration-200 hover:shadow-lg"
+                style={{
+                  backgroundColor: selectedScenario === scenario.id ? '#FFE8DC' : '#FFFFFF',
+                  borderColor: selectedScenario === scenario.id ? '#FF6B35' : '#BDBDBD',
+                  boxShadow: selectedScenario === scenario.id ? '0 4px 12px rgba(255,107,53,0.2)' : 'none'
+                }}
                 onClick={() => setSelectedScenario(scenario.id)}
               >
                 <div className="text-3xl mb-2 text-center">{scenario.icon}</div>
-                <h3 className="text-lg font-bold text-green-800 dark:text-green-100 mb-1 text-center">
+                <h3 className="text-lg font-bold mb-1 text-center" style={{ color: '#333333' }}>
                   {scenario.title}
                 </h3>
-                <p className="text-sm text-green-700 dark:text-green-200 mb-2 text-center">
+                <p className="text-sm mb-3 text-center" style={{ color: '#666666' }}>
                   {scenario.description}
                 </p>
                 <div className="flex flex-wrap gap-1 justify-center">
                   {scenario.examples.map((example, index) => (
                     <span
                       key={index}
-                      className="text-xs bg-green-50 text-green-800 px-2 py-1 rounded-full border border-green-100 dark:bg-green-900 dark:text-green-100 dark:border-green-800"
+                      className="text-xs px-2 py-1 rounded-full"
+                      style={{ backgroundColor: '#FFF8F0', color: '#FF6B35', border: '1px solid #FFE8DC' }}
                     >
                       {example}
                     </span>
                   ))}
                 </div>
                 {selectedScenario === scenario.id && (
-                  <div className="absolute top-2 right-2">
-                    <span className="text-green-600 dark:text-green-200 text-lg font-bold">✓</span>
+                  <div className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FF6B35' }}>
+                    <span className="text-white text-sm font-bold">✓</span>
                   </div>
                 )}
               </div>
@@ -142,31 +144,33 @@ export default function KoreanScenarioSelector({ onSelectScenario }: KoreanScena
 
         {/* Difficulty Selection */}
         <div className="mb-10">
-          <h2 className="text-xl font-bold text-green-800 dark:text-green-200 mb-4 text-center">
+          <h2 className="text-xl font-bold mb-4 text-center" style={{ color: '#333333' }}>
             📊 Chọn trình độ của bạn
           </h2>
           <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
             {difficulties.map((difficulty) => (
               <div
                 key={difficulty.id}
-                className={`relative border-2 rounded-xl p-5 cursor-pointer transition
-                  ${
-                    selectedDifficulty === difficulty.id
-                      ? 'border-green-600 bg-green-100 dark:bg-green-800'
-                      : 'border-green-200 bg-white hover:border-green-400 dark:border-green-700 dark:bg-gray-800 dark:hover:border-green-400'
-                  }
-                `}
+                className="relative border-2 rounded-2xl p-5 cursor-pointer transition-all duration-200 hover:shadow-lg"
+                style={{
+                  backgroundColor: selectedDifficulty === difficulty.id ? '#E8F5E9' : '#FFFFFF',
+                  borderColor: selectedDifficulty === difficulty.id ? '#4CAF50' : '#BDBDBD',
+                  boxShadow: selectedDifficulty === difficulty.id ? '0 4px 12px rgba(76,175,80,0.2)' : 'none'
+                }}
                 onClick={() => setSelectedDifficulty(difficulty.id)}
               >
                 <div className="text-center">
                   <div className="text-2xl mb-2">{difficulty.icon}</div>
-                  <div className={`inline-block px-4 py-2 rounded-full text-sm font-semibold mb-2 border-2 ${difficulty.color}`}>
+                  <div 
+                    className="inline-block px-4 py-2 rounded-full text-sm font-semibold mb-2"
+                    style={{ backgroundColor: '#4CAF50', color: '#FFFFFF' }}
+                  >
                     {difficulty.title}
                   </div>
-                  <p className="text-sm text-green-700 dark:text-green-200">{difficulty.description}</p>
+                  <p className="text-sm" style={{ color: '#666666' }}>{difficulty.description}</p>
                   {selectedDifficulty === difficulty.id && (
-                    <div className="mt-2">
-                      <span className="text-green-600 dark:text-green-200 text-lg font-bold">✓</span>
+                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: '#4CAF50' }}>
+                      <span className="text-white text-sm font-bold">✓</span>
                     </div>
                   )}
                 </div>
@@ -177,20 +181,20 @@ export default function KoreanScenarioSelector({ onSelectScenario }: KoreanScena
 
         {/* Start Button */}
         <div className="text-center">
-          <Button
+          <button
             onClick={handleStart}
             disabled={!selectedScenario || !selectedDifficulty}
-            size="lg"
-            className={`px-10 py-3 text-lg font-semibold rounded-xl ${
-              selectedScenario && selectedDifficulty
-                ? 'bg-green-600 hover:bg-green-700 text-white'
-                : 'bg-green-100 text-green-400 cursor-not-allowed dark:bg-green-900 dark:text-green-700'
-            }`}
+            className="px-10 py-4 text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            style={{
+              backgroundColor: selectedScenario && selectedDifficulty ? '#FF6B35' : '#E0E0E0',
+              color: selectedScenario && selectedDifficulty ? '#FFFFFF' : '#999999',
+              cursor: selectedScenario && selectedDifficulty ? 'pointer' : 'not-allowed'
+            }}
           >
             🚀 Bắt đầu trò chuyện
-          </Button>
+          </button>
           {(!selectedScenario || !selectedDifficulty) && (
-            <p className="text-sm text-green-600 dark:text-green-300 mt-3">
+            <p className="text-sm mt-3" style={{ color: '#666666' }}>
               Vui lòng chọn tình huống và trình độ
             </p>
           )}

@@ -88,13 +88,13 @@ function LeaderBoard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFF8F0' }}>
         <div className="text-center">
           <div className="relative">
-            <div className="w-24 h-24 border-4 border-yellow-400 rounded-full animate-spin border-t-transparent mb-6"></div>
+            <div className="w-24 h-24 rounded-full animate-spin border-t-transparent mb-6" style={{ border: '4px solid #FF6B35' }}></div>
           </div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">🏆 Đang tải bảng xếp hạng</h2>
-          <p className="text-xl text-gray-600">Chuẩn bị những chiến binh học tập...</p>
+          <h2 className="text-3xl font-bold mb-2" style={{ color: '#333333' }}>🏆 Đang tải bảng xếp hạng</h2>
+          <p className="text-xl" style={{ color: '#666666' }}>Chuẩn bị những chiến binh học tập...</p>
         </div>
       </div>
     );
@@ -102,11 +102,11 @@ function LeaderBoard() {
 
   if (leaderboard.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFF8F0' }}>
         <div className="text-center">
           <div className="text-8xl mb-6">🏆</div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Chưa có dữ liệu</h2>
-          <p className="text-xl text-gray-600">Hãy bắt đầu học để trở thành người đầu tiên!</p>
+          <h2 className="text-3xl font-bold mb-4" style={{ color: '#333333' }}>Chưa có dữ liệu</h2>
+          <p className="text-xl" style={{ color: '#666666' }}>Hãy bắt đầu học để trở thành người đầu tiên!</p>
         </div>
       </div>
     );
@@ -147,26 +147,26 @@ function LeaderBoard() {
         `}
       </style>
 
-      <div className="min-h-screen bg-white relative overflow-hidden">
+      <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#FFF8F0' }}>
         <div className="relative z-10 py-12 px-4">
           <div className="max-w-7xl mx-auto">
             {/* Tiêu đề */}
             <div className="text-center mb-16">
               <div className="inline-block mb-14">
                 <div className="relative">
-                  <div className="w-32 h-32 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-2xl">
+                  <div className="w-32 h-32 rounded-full flex items-center justify-center shadow-2xl" style={{ background: 'linear-gradient(to right, #FF6B35, #FF8C5A)' }}>
                     <span className="text-6xl">🏆</span>
                   </div>
                 </div>
               </div>
 
               <h1 className="text-5xl font-black mb-4">
-                <span className="relative text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600">
+                <span className="relative" style={{ color: '#FF6B35' }}>
                   BẢNG XẾP HẠNG
                 </span>
               </h1>
-              <p className="text-2xl text-gray-700 mb-8">🌟 Những Chiến Binh Học Tập Xuất Sắc 🌟</p>
-              <div className="flex justify-center space-x-8 text-lg text-gray-600">
+              <p className="text-2xl mb-8" style={{ color: '#333333' }}>🌟 Những Chiến Binh Học Tập Xuất Sắc 🌟</p>
+              <div className="flex justify-center space-x-8 text-lg" style={{ color: '#666666' }}>
                 <span>🔥 {leaderboard.length} Học viên</span>
                 <span>💎 {leaderboard[0]?.totalXP?.toLocaleString() || 0} XP cao nhất</span>
                 <span>🚀 Cạnh tranh khốc liệt</span>
@@ -404,7 +404,7 @@ function LeaderBoard() {
 
             {/* Lời chúc mừng cuối cùng */}
             <div className="text-center mt-16">
-              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-8 inline-block shadow-2xl">
+              <div className="rounded-2xl p-8 inline-block shadow-2xl" style={{ background: 'linear-gradient(to right, #FF6B35, #FF8C5A)' }}>
                 <h3 className="text-2xl font-bold text-white">🎉 Chúc mừng tất cả các chiến binh! 🎉</h3>
                 <p className="text-lg text-white mt-2">
                   Mỗi người đều là một nhà vô địch trong hành trình học tập của riêng mình.

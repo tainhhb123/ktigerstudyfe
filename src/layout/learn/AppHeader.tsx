@@ -41,33 +41,32 @@ const AppHeader: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 flex w-full bg-white border-b border-gray-200 z-50 dark:border-gray-800 dark:bg-gray-900">
+    <header className="sticky top-0 flex w-full z-50 shadow-sm" style={{ backgroundColor: '#FFF8F0', borderBottom: '1px solid #BDBDBD' }}>
       <div className="flex items-center justify-between w-full px-4 py-3 lg:px-6 lg:py-4">
         {/* Logo */}
-        <Link to="/learn" className="flex items-center shrink-0">
-          <img
-            className="h-8 lg:h-10 dark:hidden"
-            src="/images/logo/logo.svg"
-            alt="Logo"
-          />
-          <img
-            className="h-8 lg:h-10 hidden dark:block"
-            src="/images/logo/logo-dark.svg"
-            alt="Logo"
-          />
+        <Link to="/learn" className="flex items-center shrink-0 gap-0.5">
+          <span className="text-2xl lg:text-3xl font-extrabold tracking-tight" style={{ color: '#FF6B35' }}>
+            K-Tiger
+          </span>
+          <span className="text-2xl lg:text-3xl font-extrabold tracking-tight" style={{ color: '#4CAF50' }}>
+            Study
+          </span>
         </Link>
 
         {/* Desktop Navigation Menu */}
-        <nav className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-2">
           {navItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              className={`px-4 py-2 rounded-lg transition-colors font-medium ${
+              className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 ${
                 isActive(item.path)
-                  ? 'bg-brand-500 text-white'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  ? 'text-white shadow-md'
+                  : 'text-gray-600 hover:text-[#FF6B35]'
               }`}
+              style={{
+                backgroundColor: isActive(item.path) ? '#FF6B35' : 'transparent',
+              }}
             >
               {item.name}
             </Link>
@@ -78,10 +77,11 @@ const AppHeader: React.FC = () => {
         <div className="flex items-center gap-2 lg:gap-3">
           <Link
             to="/documents"
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            className="w-9 h-9 flex items-center justify-center rounded-full transition-all"
+            style={{ backgroundColor: '#FFE8DC' }}
             title="Tài liệu"
           >
-            <FileText className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+            <FileText className="w-5 h-5" style={{ color: '#FF6B35' }} />
           </Link>
           <ThemeToggleButton />
           <NotificationDropdown />
@@ -90,12 +90,13 @@ const AppHeader: React.FC = () => {
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            className="lg:hidden w-9 h-9 flex items-center justify-center rounded-full transition-all"
+            style={{ backgroundColor: '#FFE8DC' }}
           >
             {isMobileMenuOpen ? (
-              <X className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+              <X className="w-5 h-5" style={{ color: '#FF6B35' }} />
             ) : (
-              <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+              <Menu className="w-5 h-5" style={{ color: '#FF6B35' }} />
             )}
           </button>
         </div>
@@ -103,18 +104,21 @@ const AppHeader: React.FC = () => {
 
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 right-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-lg">
+        <div 
+          className="lg:hidden absolute top-full left-0 right-0 shadow-lg"
+          style={{ backgroundColor: '#FFF8F0', borderBottom: '1px solid #BDBDBD' }}
+        >
           <nav className="flex flex-col p-4 gap-2">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`px-4 py-3 rounded-lg transition-colors font-medium text-center ${
-                  isActive(item.path)
-                    ? 'bg-brand-500 text-white'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`}
+                className="px-4 py-3 rounded-xl transition-all font-semibold text-center"
+                style={{
+                  backgroundColor: isActive(item.path) ? '#FF6B35' : '#FFE8DC',
+                  color: isActive(item.path) ? '#FFFFFF' : '#333333',
+                }}
               >
                 {item.name}
               </Link>

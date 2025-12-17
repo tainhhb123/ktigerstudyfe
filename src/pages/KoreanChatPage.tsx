@@ -39,18 +39,18 @@ export default function KoreanChatPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
         <div className="text-center">
           <div className="relative">
-            <div className="w-20 h-20 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-20 h-20 border-4 rounded-full animate-spin mx-auto mb-4" style={{ borderColor: '#FFE8DC', borderTopColor: '#FF6B35' }}></div>
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-2xl">🇰🇷</span>
             </div>
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-xl font-semibold mb-2" style={{ color: '#333333' }}>
             Giáo viên AI đang chuẩn bị...
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p style={{ color: '#666666' }}>
             Sắp có thể bắt đầu trò chuyện tiếng Hàn
           </p>
         </div>
