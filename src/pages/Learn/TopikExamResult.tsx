@@ -72,8 +72,8 @@ const TopikExamResult = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Đang tải kết quả...</p>
+          <div className="w-16 h-16 rounded-full animate-spin mx-auto mb-4" style={{ border: '4px solid #FF6B35', borderTopColor: 'transparent' }}></div>
+          <p style={{ color: '#666666' }}>Đang tải kết quả...</p>
         </div>
       </div>
     );
@@ -83,10 +83,11 @@ const TopikExamResult = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 text-lg">Không tìm thấy kết quả</p>
+          <p className="text-lg mb-4" style={{ color: '#666666' }}>Không tìm thấy kết quả</p>
           <button
             onClick={() => navigate('/learn/topik')}
-            className="mt-4 px-6 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600"
+            className="px-6 py-2 text-white rounded-lg transition"
+            style={{ backgroundColor: '#FF6B35' }}
           >
             Quay lại danh sách đề thi
           </button>
@@ -111,25 +112,26 @@ const TopikExamResult = () => {
   const isPassed = passPercentage >= 60; // TOPIK pass = 60%
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen py-8" style={{ backgroundColor: '#FFF8F0' }}>
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 mb-6">
+        <div className="rounded-xl p-8 mb-6" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <Award className={`w-16 h-16 ${isPassed ? 'text-green-500' : 'text-orange-500'}`} />
+              <Award className="w-16 h-16" style={{ color: isPassed ? '#4CAF50' : '#FF6B35' }} />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-3xl font-bold" style={{ color: '#333333' }}>
                   Kết quả bài thi
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                <p className="mt-1" style={{ color: '#666666' }}>
                   Attempt ID: {attemptId}
                 </p>
               </div>
             </div>
             <button
               onClick={() => navigate('/learn/topik')}
-              className="flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+              className="flex items-center gap-2 px-6 py-3 rounded-lg transition"
+              style={{ backgroundColor: '#FFF8F0', color: '#666666', border: '1px solid #BDBDBD' }}
             >
               <Home className="w-5 h-5" />
               Quay lại
@@ -138,38 +140,40 @@ const TopikExamResult = () => {
 
           {/* Overall Score */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-brand-50 dark:bg-brand-900/20 rounded-lg p-6 border-2 border-brand-200 dark:border-brand-800">
-              <div className="text-sm text-brand-600 dark:text-brand-400 mb-1">Tổng điểm</div>
-              <div className="text-4xl font-bold text-brand-700 dark:text-brand-300">
+            <div className="rounded-lg p-6" style={{ backgroundColor: '#FFE8DC', border: '2px solid #FF6B35' }}>
+              <div className="text-sm mb-1" style={{ color: '#FF6B35' }}>Tổng điểm</div>
+              <div className="text-4xl font-bold" style={{ color: '#FF6B35' }}>
                 {result.totalScore.toFixed(1)}
-                <span className="text-xl text-gray-500">/{totalPossibleScore}</span>
+                <span className="text-xl" style={{ color: '#999999' }}>/{totalPossibleScore}</span>
               </div>
             </div>
             
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6 border-2 border-green-200 dark:border-green-800">
-              <div className="text-sm text-green-600 dark:text-green-400 mb-1">Đúng</div>
-              <div className="text-4xl font-bold text-green-700 dark:text-green-300">
+            <div className="rounded-lg p-6" style={{ backgroundColor: '#E8F5E9', border: '2px solid #4CAF50' }}>
+              <div className="text-sm mb-1" style={{ color: '#4CAF50' }}>Đúng</div>
+              <div className="text-4xl font-bold" style={{ color: '#4CAF50' }}>
                 {result.correctAnswers}
-                <span className="text-xl text-gray-500">/{result.totalQuestions}</span>
+                <span className="text-xl" style={{ color: '#999999' }}>/{result.totalQuestions}</span>
               </div>
             </div>
             
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border-2 border-blue-200 dark:border-blue-800">
-              <div className="text-sm text-blue-600 dark:text-blue-400 mb-1">Tỷ lệ đúng</div>
-              <div className="text-4xl font-bold text-blue-700 dark:text-blue-300">
+            <div className="rounded-lg p-6" style={{ backgroundColor: '#E3F2FD', border: '2px solid #2196F3' }}>
+              <div className="text-sm mb-1" style={{ color: '#2196F3' }}>Tỷ lệ đúng</div>
+              <div className="text-4xl font-bold" style={{ color: '#2196F3' }}>
                 {((result.correctAnswers / result.totalQuestions) * 100).toFixed(1)}%
               </div>
             </div>
             
-            <div className={`rounded-lg p-6 border-2 ${
-              isPassed 
-                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
-                : 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
-            }`}>
-              <div className={`text-sm mb-1 ${isPassed ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}>
+            <div 
+              className="rounded-lg p-6"
+              style={{
+                backgroundColor: isPassed ? '#E8F5E9' : '#FFF3E0',
+                border: isPassed ? '2px solid #4CAF50' : '2px solid #FF6B35'
+              }}
+            >
+              <div className="text-sm mb-1" style={{ color: isPassed ? '#4CAF50' : '#FF6B35' }}>
                 Kết quả
               </div>
-              <div className={`text-3xl font-bold ${isPassed ? 'text-green-700 dark:text-green-300' : 'text-orange-700 dark:text-orange-300'}`}>
+              <div className="text-3xl font-bold" style={{ color: isPassed ? '#4CAF50' : '#FF6B35' }}>
                 {isPassed ? '✓ ĐẠT' : '✗ CHƯA ĐẠT'}
               </div>
             </div>
@@ -177,33 +181,33 @@ const TopikExamResult = () => {
         </div>
 
         {/* Section Scores */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        <div className="rounded-xl p-8 mb-6" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
+          <h2 className="text-xl font-bold mb-6 flex items-center gap-2" style={{ color: '#333333' }}>
             <BarChart3 className="w-6 h-6" />
             Điểm theo phần thi
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {sections.map(([sectionType, section]) => (
-              <div key={sectionType} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">{sectionType}</h3>
+              <div key={sectionType} className="rounded-lg p-6" style={{ border: '1px solid #BDBDBD' }}>
+                <h3 className="font-semibold mb-4" style={{ color: '#333333' }}>{sectionType}</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Điểm:</span>
-                    <span className="font-bold text-lg text-brand-600 dark:text-brand-400">
+                    <span className="text-sm" style={{ color: '#666666' }}>Điểm:</span>
+                    <span className="font-bold text-lg" style={{ color: '#FF6B35' }}>
                       {section.score.toFixed(1)} / {section.totalPoints}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Đúng:</span>
-                    <span className="font-semibold">{section.correctCount} / {section.totalCount}</span>
+                    <span className="text-sm" style={{ color: '#666666' }}>Đúng:</span>
+                    <span className="font-semibold" style={{ color: '#333333' }}>{section.correctCount} / {section.totalCount}</span>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <div className="w-full rounded-full h-3" style={{ backgroundColor: '#E0E0E0' }}>
                     <div 
-                      className="bg-brand-500 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${section.percentage}%` }}
+                      className="h-3 rounded-full transition-all duration-500"
+                      style={{ backgroundColor: '#FF6B35', width: `${section.percentage}%` }}
                     />
                   </div>
-                  <div className="text-center text-sm font-semibold text-brand-600 dark:text-brand-400">
+                  <div className="text-center text-sm font-semibold" style={{ color: '#FF6B35' }}>
                     {section.percentage.toFixed(1)}%
                   </div>
                 </div>
@@ -213,17 +217,18 @@ const TopikExamResult = () => {
         </div>
 
         {/* Question Details */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8">
+        <div className="rounded-xl p-8" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Chi tiết câu hỏi</h2>
+            <h2 className="text-xl font-bold" style={{ color: '#333333' }}>Chi tiết câu hỏi</h2>
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedSection('all')}
-                className={`px-4 py-2 rounded-lg transition ${
-                  selectedSection === 'all'
-                    ? 'bg-brand-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
+                className="px-4 py-2 rounded-lg transition"
+                style={{
+                  backgroundColor: selectedSection === 'all' ? '#FF6B35' : '#FFF8F0',
+                  color: selectedSection === 'all' ? '#FFFFFF' : '#666666',
+                  border: selectedSection === 'all' ? 'none' : '1px solid #BDBDBD'
+                }}
               >
                 Tất cả
               </button>
@@ -231,11 +236,12 @@ const TopikExamResult = () => {
                 <button
                   key={sectionType}
                   onClick={() => setSelectedSection(sectionType)}
-                  className={`px-4 py-2 rounded-lg transition ${
-                    selectedSection === sectionType
-                      ? 'bg-brand-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
+                  className="px-4 py-2 rounded-lg transition"
+                  style={{
+                    backgroundColor: selectedSection === sectionType ? '#FF6B35' : '#FFF8F0',
+                    color: selectedSection === sectionType ? '#FFFFFF' : '#666666',
+                    border: selectedSection === sectionType ? 'none' : '1px solid #BDBDBD'
+                  }}
                 >
                   {sectionType}
                 </button>
@@ -247,45 +253,47 @@ const TopikExamResult = () => {
             {filteredQuestions.map((question) => (
               <div 
                 key={question.questionId}
-                className={`border-2 rounded-lg p-6 ${
-                  getIsCorrect(question) 
-                    ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10' 
-                    : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10'
-                }`}
+                className="rounded-lg p-6"
+                style={{
+                  border: getIsCorrect(question) ? '2px solid #4CAF50' : '2px solid #FF5252',
+                  backgroundColor: getIsCorrect(question) ? '#F1F8F4' : '#FFEBEE'
+                }}
               >
                 <div className="flex items-start gap-4">
                   {getIsCorrect(question) ? (
-                    <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 flex-shrink-0 mt-1" />
+                    <CheckCircle className="w-6 h-6 flex-shrink-0 mt-1" style={{ color: '#4CAF50' }} />
                   ) : (
-                    <XCircle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-1" />
+                    <XCircle className="w-6 h-6 flex-shrink-0 mt-1" style={{ color: '#FF5252' }} />
                   )}
                   
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-sm font-semibold">
+                      <span className="px-3 py-1 rounded-full text-sm font-semibold" style={{ backgroundColor: '#FFF8F0', color: '#333333' }}>
                         Câu {question.questionNumber}
                       </span>
-                      <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+                      <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: '#E3F2FD', color: '#2196F3' }}>
                         {question.questionType}
                       </span>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className="text-sm" style={{ color: '#666666' }}>
                         {question.score}/{question.maxScore} điểm
                       </span>
                     </div>
                     
-                    <p className="text-gray-900 dark:text-white mb-3 font-medium">
+                    <p className="mb-3 font-medium" style={{ color: '#333333' }}>
                       {question.questionText}
                     </p>
                     
                     {question.questionType !== 'ESSAY' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Câu trả lời của bạn:</div>
-                          <div className={`p-3 rounded-lg ${
-                            getIsCorrect(question) 
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
-                              : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                          }`}>
+                          <div className="text-sm mb-1" style={{ color: '#666666' }}>Câu trả lời của bạn:</div>
+                          <div 
+                            className="p-3 rounded-lg"
+                            style={{
+                              backgroundColor: getIsCorrect(question) ? '#E8F5E9' : '#FFEBEE',
+                              color: getIsCorrect(question) ? '#4CAF50' : '#FF5252'
+                            }}
+                          >
                             {(() => {
                               const answer = question.userAnswer || '(Không trả lời)';
                               // Kiểm tra nếu là URL ảnh
@@ -308,8 +316,8 @@ const TopikExamResult = () => {
                         
                         {!getIsCorrect(question) && (
                           <div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Đáp án đúng:</div>
-                            <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                            <div className="text-sm mb-1" style={{ color: '#666666' }}>Đáp án đúng:</div>
+                            <div className="p-3 rounded-lg" style={{ backgroundColor: '#E8F5E9', color: '#4CAF50' }}>
                               {(() => {
                                 const answer = question.correctAnswer;
                                 // Kiểm tra nếu là URL ảnh
@@ -334,13 +342,13 @@ const TopikExamResult = () => {
                     )}
                     
                     {question.questionType === 'ESSAY' && (
-                      <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                        <p className="text-sm text-yellow-800 dark:text-yellow-300">
+                      <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: '#FFF8F0', border: '1px solid #FF6B35' }}>
+                        <p className="text-sm" style={{ color: '#FF6B35' }}>
                           ⚠️ Câu luận cần chấm thủ công bởi giáo viên
                         </p>
-                        <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                        <div className="mt-2 text-sm" style={{ color: '#333333' }}>
                           <strong>Câu trả lời của bạn:</strong>
-                          <p className="mt-1 p-3 bg-white dark:bg-gray-800 rounded">{question.userAnswer}</p>
+                          <p className="mt-1 p-3 rounded" style={{ backgroundColor: '#FFFFFF' }}>{question.userAnswer}</p>
                         </div>
                       </div>
                     )}
@@ -355,13 +363,15 @@ const TopikExamResult = () => {
         <div className="mt-6 flex justify-center gap-4">
           <button
             onClick={() => navigate('/learn/topik')}
-            className="px-8 py-3 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition font-semibold"
+            className="px-8 py-3 text-white rounded-lg transition font-semibold"
+            style={{ backgroundColor: '#FF6B35' }}
           >
             Làm đề khác
           </button>
           <button
             onClick={() => window.print()}
-            className="px-8 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition font-semibold"
+            className="px-8 py-3 rounded-lg transition font-semibold"
+            style={{ backgroundColor: '#FFF8F0', color: '#666666', border: '1px solid #BDBDBD' }}
           >
             In kết quả
           </button>

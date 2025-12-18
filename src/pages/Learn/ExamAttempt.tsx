@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, ChevronLeft, ChevronRight, List, Volume2, VolumeX } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight, List, Volume2 } from 'lucide-react';
 import { 
   examAttemptApi, 
   examSectionApi, 
@@ -12,6 +12,7 @@ import {
   ExamSectionResponse, 
   QuestionResponse
 } from '../../types/exam';
+import TopikWritingGrid from '../../components/exam/TopikWritingGrid';
 
 const ExamAttempt = () => {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -282,10 +283,10 @@ const ExamAttempt = () => {
 
   if (loading || !attempt || sections.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Đang tải bài thi...</p>
+          <div className="w-16 h-16 border-4 rounded-full animate-spin mx-auto mb-4" style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}></div>
+          <p style={{ color: '#666666' }}>Đang tải bài thi...</p>
         </div>
       </div>
     );
@@ -298,23 +299,27 @@ const ExamAttempt = () => {
   const progress = currentUniqueIndex >= 0 ? ((currentUniqueIndex + 1) / uniqueQuestions.length) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+      <div className="border-b sticky top-0 z-10" style={{ backgroundColor: '#FFFFFF', borderColor: '#BDBDBD' }}>
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-xl font-bold" style={{ color: '#333333' }}>
                 {currentSection.sectionType} - Phần {currentSectionIndex + 1}
               </h1>
-              <span className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}>
                 Câu {currentQuestion?.questionNumber || currentQuestionIndex + 1}/{uniqueQuestions.length}
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold ${
-                timeLeft < 300 ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-              }`}>
+              <div 
+                className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold"
+                style={{
+                  backgroundColor: timeLeft < 300 ? '#FFEBEE' : '#FFE8DC',
+                  color: timeLeft < 300 ? '#FF5252' : '#FF6B35'
+                }}
+              >
                 <Clock className="w-5 h-5" />
                 <span>{formatTime(timeLeft)}</span>
               </div>
@@ -322,10 +327,10 @@ const ExamAttempt = () => {
           </div>
           
           {/* Progress bar */}
-          <div className="mt-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="mt-3 w-full rounded-full h-2" style={{ backgroundColor: '#FFE8DC' }}>
             <div 
-              className="bg-brand-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
+              className="h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%`, backgroundColor: '#FF6B35' }}
             />
           </div>
         </div>
@@ -335,10 +340,10 @@ const ExamAttempt = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Question Panel */}
           <div className="lg:col-span-3">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8">
+            <div className="rounded-xl p-8" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
               {/* Audio Player (for Listening section) */}
               {currentSection.sectionType === 'LISTENING' && currentSection.audioUrl && (
-                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                <div className="mb-6 p-4 rounded-lg border-2" style={{ backgroundColor: '#E8F5E9', borderColor: '#4CAF50' }}>
                   <audio
                     ref={audioRef}
                     src={currentSection.audioUrl}
@@ -366,10 +371,10 @@ const ExamAttempt = () => {
 
                         {/* Shared Audio (for grouped questions) */}
                         {isGrouped && currentQuestion.audioUrl && (
-                          <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+                          <div className="mb-6 p-4 rounded-lg border-2" style={{ backgroundColor: '#E8F5E9', borderColor: '#4CAF50' }}>
                             <div className="flex items-center gap-2 mb-2">
-                              <Volume2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                              <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Audio cho nhóm câu hỏi</span>
+                              <Volume2 className="w-5 h-5" style={{ color: '#4CAF50' }} />
+                              <span className="text-sm font-medium" style={{ color: '#2E7D32' }}>Audio cho nhóm câu hỏi</span>
                             </div>
                             <audio
                               src={currentQuestion.audioUrl}
@@ -385,19 +390,20 @@ const ExamAttempt = () => {
                             <img 
                               src={currentQuestion.imageUrl} 
                               alt="Shared content for question group"
-                              className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-700"
+                              className="max-w-full h-auto rounded-lg border"
+                              style={{ borderColor: '#BDBDBD' }}
                             />
                           </div>
                         )}
 
                         {/* Shared Passage Text (for grouped questions) */}
                         {isGrouped && currentQuestion.passageText && (
-                          <div className="mb-6 p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <div className="mb-3 pb-2 border-b border-gray-300 dark:border-gray-600">
+                          <div className="mb-6 p-6 rounded-lg border" style={{ backgroundColor: '#FFF8F0', borderColor: '#BDBDBD' }}>
+                            <div className="mb-3 pb-2 border-b" style={{ borderColor: '#FFE8DC' }}>
                             
                             
                             </div>
-                            <p className="text-xl font-bold  whitespace-pre-wrap leading-relaxed">
+                            <p className="text-xl font-bold whitespace-pre-wrap leading-relaxed" style={{ color: '#333333' }}>
                               {currentQuestion.passageText}
                             </p>
                           </div>
@@ -409,15 +415,16 @@ const ExamAttempt = () => {
                             <img 
                               src={currentQuestion.imageUrl} 
                               alt={`Question ${currentQuestion.questionNumber}`}
-                              className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-700"
+                              className="max-w-full h-auto rounded-lg border"
+                              style={{ borderColor: '#BDBDBD' }}
                             />
                           </div>
                         )}
 
                         {/* Individual Passage Text (for single questions) */}
                         {!isGrouped && currentQuestion.passageText && (
-                          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
+                          <div className="mb-6 p-4 rounded-lg border" style={{ backgroundColor: '#FFF8F0', borderColor: '#BDBDBD' }}>
+                            <p className="whitespace-pre-wrap leading-relaxed" style={{ color: '#333333' }}>
                               {currentQuestion.passageText}
                             </p>
                           </div>
@@ -425,17 +432,30 @@ const ExamAttempt = () => {
 
                         {/* Render all questions in the group */}
                         {questionGroup.map((q, idx) => (
-                          <div key={q.questionId} className={idx > 0 ? 'mt-8 pt-6 border-t-2 border-gray-200 dark:border-gray-700' : ''}>
-                            {/* Question Text - Always show */}
-                            <div className="mb-6">
-                              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                                {q.questionNumber}. {q.questionText}
-                              </h2>
-                            </div>
+                          <div key={q.questionId} className={idx > 0 ? 'mt-8 pt-6 border-t-2' : ''} style={idx > 0 ? { borderColor: '#FFE8DC' } : {}}>
+                            {/* Use TopikWritingGrid for questions 53 and 54 in WRITING section */}
+                            {currentSection.sectionType === 'WRITING' && (q.questionNumber === 53 || q.questionNumber === 54) ? (
+                              <TopikWritingGrid
+                                questionNumber={q.questionNumber}
+                                maxCharacters={q.questionNumber === 53 ? 300 : 700}
+                                minCharacters={q.questionNumber === 53 ? 200 : 600}
+                                prompt={q.questionText || ''}
+                                imageUrl={q.imageUrl || undefined}
+                                value={textAnswers.get(q.questionId) || ''}
+                                onChange={(value) => handleTextAnswerChange(q.questionId, value)}
+                              />
+                            ) : (
+                              <>
+                                {/* Question Text - Always show */}
+                                <div className="mb-6">
+                                  <h2 className="text-xl font-bold mb-4" style={{ color: '#333333' }}>
+                                    {q.questionNumber}. {q.questionText}
+                                  </h2>
+                                </div>
 
-                            {/* Answer Choices */}
-                            <div>
-                              {q.questionType === 'SHORT' || q.questionType === 'ESSAY' ? (
+                                {/* Answer Choices */}
+                                <div>
+                                  {q.questionType === 'SHORT' || q.questionType === 'ESSAY' ? (
                                 // Text input for SHORT and ESSAY
                                 <div className="space-y-3">
                                   <div className="flex items-start gap-3">
@@ -452,109 +472,119 @@ const ExamAttempt = () => {
                                       }`}
                                     />
                                   </div>
-                                  <div className="flex items-center justify-between text-sm">
-                                    <div className="flex items-center gap-3">
-                                      <span className="text-gray-500 dark:text-gray-400">
-                                        {textAnswers.get(q.questionId)?.length || 0} ký tự
-                                        {q.questionType === 'ESSAY' && ' (tối thiểu 200)'}
-                                      </span>
-                                      {savingText.has(q.questionId) && (
-                                        <span className="text-brand-500 text-sm flex items-center gap-1">
-                                          <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
-                                          Đang lưu...
-                                        </span>
-                                      )}
-                                      {!savingText.has(q.questionId) && textAnswers.has(q.questionId) && (
-                                        <span className="text-green-600 dark:text-green-400 text-sm">✓ Đã lưu</span>
-                                      )}
-                                    </div>
-                                    <button
-                                      onClick={() => handleTextAnswerSave(q.questionId)}
-                                      disabled={savingText.has(q.questionId)}
-                                      className="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                      {savingText.has(q.questionId) ? 'Đang lưu...' : 'Lưu câu trả lời'}
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : q.choices && q.choices.length > 0 ? (
-                                (() => {
-                                  // Check if all choices are images
-                                  const hasImageChoices = q.choices.every(choice => 
-                          choice.choiceText.startsWith('http') && 
-                          (choice.choiceText.includes('cloudinary') || 
-                           choice.choiceText.match(/\.(jpg|jpeg|png|gif|webp)$/i))
-                        );
-
-                                  if (hasImageChoices) {
-                                    // Grid layout 2x2 for image choices
-                                    return (
-                                      <div className="grid grid-cols-2 gap-4">
-                                        {q.choices.map((choice) => (
-                                          <button
-                                            key={choice.choiceId}
-                                            onClick={() => handleAnswerSelect(q.questionId, choice.choiceId)}
-                                            className={`p-3 rounded-lg border-2 transition ${
-                                              selectedAnswers.get(q.questionId) === choice.choiceId
-                                                ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20'
-                                                : 'border-gray-200 dark:border-gray-700 hover:border-brand-300 dark:hover:border-brand-700'
-                                            }`}
-                                          >
-                                            <div className="flex flex-col gap-2">
-                                              <div className="flex items-center justify-between">
-                                                <span className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 font-semibold text-sm">
-                                                  {choice.choiceLabel}
-                                                </span>
-                                                {selectedAnswers.get(q.questionId) === choice.choiceId && (
-                                                  <span className="text-brand-500 text-xl">✓</span>
-                                                )}
-                                              </div>
-                                              <img 
-                                                src={choice.choiceText} 
-                                                alt={`Option ${choice.choiceLabel}`}
-                                                className="w-full h-auto max-h-64 object-contain rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900"
-                                                onError={(e) => {
-                                                  console.error('Image load error:', choice.choiceText);
-                                                  e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle"%3EError%3C/text%3E%3C/svg%3E';
-                                                }}
-                                              />
-                                            </div>
-                                          </button>
-                                        ))}
+                                      <div className="flex items-center justify-between text-sm">
+                                        <div className="flex items-center gap-3">
+                                          <span style={{ color: '#666666' }}>
+                                            {textAnswers.get(q.questionId)?.length || 0} ký tự
+                                            {q.questionType === 'ESSAY' && ' (tối thiểu 200)'}
+                                          </span>
+                                          {savingText.has(q.questionId) && (
+                                            <span className="text-sm flex items-center gap-1" style={{ color: '#FF6B35' }}>
+                                              <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}></div>
+                                              Đang lưu...
+                                            </span>
+                                          )}
+                                          {!savingText.has(q.questionId) && textAnswers.has(q.questionId) && (
+                                            <span className="text-sm" style={{ color: '#4CAF50' }}>✓ Đã lưu</span>
+                                          )}
+                                        </div>
+                                        <button
+                                          onClick={() => handleTextAnswerSave(q.questionId)}
+                                          disabled={savingText.has(q.questionId)}
+                                          className="px-4 py-2 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                          style={{ backgroundColor: '#FF6B35' }}
+                                          onMouseEnter={(e) => !savingText.has(q.questionId) && (e.currentTarget.style.backgroundColor = '#E55A2B')}
+                                          onMouseLeave={(e) => !savingText.has(q.questionId) && (e.currentTarget.style.backgroundColor = '#FF6B35')}
+                                        >
+                                          {savingText.has(q.questionId) ? 'Đang lưu...' : 'Lưu câu trả lời'}
+                                        </button>
                                       </div>
-                                    );
-                                  } else {
-                                    // List layout for text choices
-                                    return (
-                                      <div className="space-y-3">
-                                        {q.choices.map((choice) => (
-                                          <button
-                                            key={choice.choiceId}
-                                            onClick={() => handleAnswerSelect(q.questionId, choice.choiceId)}
-                                            className={`w-full text-left p-4 rounded-lg border-2 transition ${
-                                              selectedAnswers.get(q.questionId) === choice.choiceId
-                                                ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20'
-                                                : 'border-gray-200 dark:border-gray-700 hover:border-brand-300 dark:hover:border-brand-700'
-                                            }`}
-                                          >
-                                            <div className="flex items-start gap-3">
-                                              <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 font-semibold">
-                                                {choice.choiceLabel}
-                                              </span>
-                                              <span className="text-gray-900 dark:text-white flex-1">
-                                                {choice.choiceText}
-                                              </span>
-                                            </div>
-                                          </button>
+                                    </div>
+                                  ) : q.choices && q.choices.length > 0 ? (
+                                    (() => {
+                                      // Check if all choices are images
+                                      const hasImageChoices = q.choices.every(choice => 
+                              choice.choiceText.startsWith('http') && 
+                              (choice.choiceText.includes('cloudinary') || 
+                               choice.choiceText.match(/\.(jpg|jpeg|png|gif|webp)$/i))
+                            );
+
+                                      if (hasImageChoices) {
+                                        // Grid layout 2x2 for image choices
+                                        return (
+                                          <div className="grid grid-cols-2 gap-4">
+                                            {q.choices.map((choice) => (
+                                              <button
+                                                key={choice.choiceId}
+                                                onClick={() => handleAnswerSelect(q.questionId, choice.choiceId)}
+                                                className="p-3 rounded-lg border-2 transition"
+                                                style={{
+                                                  borderColor: selectedAnswers.get(q.questionId) === choice.choiceId ? '#FF6B35' : '#BDBDBD',
+                                                  backgroundColor: selectedAnswers.get(q.questionId) === choice.choiceId ? '#FFE8DC' : '#FFFFFF'
+                                                }}
+                                                onMouseEnter={(e) => selectedAnswers.get(q.questionId) !== choice.choiceId && (e.currentTarget.style.borderColor = '#FFE8DC')}
+                                                onMouseLeave={(e) => selectedAnswers.get(q.questionId) !== choice.choiceId && (e.currentTarget.style.borderColor = '#BDBDBD')}
+                                              >
+                                                <div className="flex flex-col gap-2">
+                                                  <div className="flex items-center justify-between">
+                                                    <span className="w-7 h-7 flex items-center justify-center rounded-full font-semibold text-sm" style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}>
+                                                      {choice.choiceLabel}
+                                                    </span>
+                                                    {selectedAnswers.get(q.questionId) === choice.choiceId && (
+                                                      <span className="text-xl" style={{ color: '#FF6B35' }}>✓</span>
+                                                    )}
+                                                  </div>
+                                                  <img 
+                                                    src={choice.choiceText} 
+                                                    alt={`Option ${choice.choiceLabel}`}
+                                                    className="w-full h-auto max-h-64 object-contain rounded-lg border"
+                                                    style={{ backgroundColor: '#FFFFFF', borderColor: '#BDBDBD' }}
+                                                    onError={(e) => {
+                                                      console.error('Image load error:', choice.choiceText);
+                                                      e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23ddd" width="100" height="100"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle"%3EError%3C/text%3E%3C/svg%3E';
+                                                    }}
+                                                  />
+                                                </div>
+                                              </button>
+                                            ))}
+                                          </div>
+                                        );
+                                      } else {
+                                        // List layout for text choices
+                                        return (
+                                          <div className="space-y-3">
+                                            {q.choices.map((choice) => (
+                                              <button
+                                                key={choice.choiceId}
+                                                onClick={() => handleAnswerSelect(q.questionId, choice.choiceId)}
+                                                className="w-full text-left p-4 rounded-lg border-2 transition"
+                                                style={{
+                                                  borderColor: selectedAnswers.get(q.questionId) === choice.choiceId ? '#FF6B35' : '#BDBDBD',
+                                                  backgroundColor: selectedAnswers.get(q.questionId) === choice.choiceId ? '#FFE8DC' : '#FFFFFF'
+                                                }}
+                                                onMouseEnter={(e) => selectedAnswers.get(q.questionId) !== choice.choiceId && (e.currentTarget.style.borderColor = '#FFE8DC')}
+                                                onMouseLeave={(e) => selectedAnswers.get(q.questionId) !== choice.choiceId && (e.currentTarget.style.borderColor = '#BDBDBD')}
+                                              >
+                                                <div className="flex items-start gap-3">
+                                                  <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full font-semibold" style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}>
+                                                    {choice.choiceLabel}
+                                                  </span>
+                                                  <span className="flex-1" style={{ color: '#333333' }}>
+                                                    {choice.choiceText}
+                                                  </span>
+                                                </div>
+                                              </button>
                                         ))}
                                       </div>
                                     );
                                   }
                                 })()
-                              ) : (
-                                <p className="text-gray-500 dark:text-gray-400">Không có đáp án</p>
-                              )}
-                            </div>
+                                  ) : (
+                                    <p style={{ color: '#666666' }}>Không có đáp án</p>
+                                  )}
+                                </div>
+                              </>
+                            )}
                           </div>
                         ))}
                       </>
@@ -563,11 +593,11 @@ const ExamAttempt = () => {
                 </>
               ) : (
                 <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">Không có câu hỏi cho phần thi này</p>
-                  <p className="text-sm text-gray-400 dark:text-gray-500">
+                  <p className="text-lg mb-4" style={{ color: '#666666' }}>Không có câu hỏi cho phần thi này</p>
+                  <p className="text-sm" style={{ color: '#999999' }}>
                     Vui lòng kiểm tra:
                   </p>
-                  <ul className="text-sm text-gray-400 dark:text-gray-500 mt-2 space-y-1">
+                  <ul className="text-sm mt-2 space-y-1" style={{ color: '#999999' }}>
                     <li>• Database đã có questions cho WRITING section chưa?</li>
                     <li>• Backend API /api/questions/section/{'{sectionId}'} hoạt động chưa?</li>
                     <li>• Kiểm tra Console (F12) để xem log chi tiết</li>
@@ -576,11 +606,14 @@ const ExamAttempt = () => {
               )}
 
               {/* Navigation Buttons */}
-              <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mt-8 pt-6 border-t" style={{ borderColor: '#BDBDBD' }}>
                 <button
                   onClick={handlePreviousQuestion}
                   disabled={currentQuestionIndex === 0}
-                  className="flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-6 py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: '#FFE8DC', color: '#666666' }}
+                  onMouseEnter={(e) => currentQuestionIndex !== 0 && (e.currentTarget.style.backgroundColor = '#FFDCC8')}
+                  onMouseLeave={(e) => currentQuestionIndex !== 0 && (e.currentTarget.style.backgroundColor = '#FFE8DC')}
                 >
                   <ChevronLeft className="w-5 h-5" />
                   Câu trước
@@ -591,7 +624,10 @@ const ExamAttempt = () => {
                   {currentQuestionIndex < questions.length - 1 && (
                     <button
                       onClick={handleNextQuestion}
-                      className="flex items-center gap-2 px-6 py-3 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition"
+                      className="flex items-center gap-2 px-6 py-3 text-white rounded-lg transition"
+                      style={{ backgroundColor: '#FF6B35' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E55A2B'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF6B35'}
                     >
                       Câu tiếp theo
                       <ChevronRight className="w-5 h-5" />
@@ -602,7 +638,10 @@ const ExamAttempt = () => {
                   {currentSectionIndex < sections.length - 1 ? (
                     <button
                       onClick={handleNextSection}
-                      className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold"
+                      className="px-6 py-3 text-white rounded-lg transition font-semibold"
+                      style={{ backgroundColor: '#4CAF50' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#45A049'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
                     >
                       Chuyển sang {sections[currentSectionIndex + 1]?.sectionType || 'phần tiếp theo'} →
                     </button>
@@ -610,7 +649,10 @@ const ExamAttempt = () => {
                     currentQuestionIndex === questions.length - 1 && (
                       <button
                         onClick={handleNextSection}
-                        className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold"
+                        className="px-6 py-3 text-white rounded-lg transition font-semibold"
+                        style={{ backgroundColor: '#FF5252' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E64747'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF5252'}
                       >
                         Nộp bài
                       </button>
@@ -623,10 +665,10 @@ const ExamAttempt = () => {
 
           {/* Question Navigator */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 sticky top-24">
+            <div className="rounded-xl border p-6 sticky top-24" style={{ backgroundColor: '#FFFFFF', borderColor: '#BDBDBD' }}>
               <div className="flex items-center gap-2 mb-4">
-                <List className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                <h3 className="font-semibold text-gray-900 dark:text-white">Danh sách câu hỏi</h3>
+                <List className="w-5 h-5" style={{ color: '#FF6B35' }} />
+                <h3 className="font-semibold" style={{ color: '#333333' }}>Danh sách câu hỏi</h3>
               </div>
               <div className="grid grid-cols-5 gap-2">
                 {uniqueQuestions.map((q) => {
@@ -638,27 +680,27 @@ const ExamAttempt = () => {
                     <button
                       key={q.questionId}
                       onClick={() => setCurrentQuestionIndex(questionIndex)}
-                      className={`aspect-square flex items-center justify-center rounded-lg text-sm font-semibold transition ${
-                        isActive
-                          ? 'bg-brand-500 text-white'
-                          : hasAnswer
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                          : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }`}
+                      className="aspect-square flex items-center justify-center rounded-lg text-sm font-semibold transition"
+                      style={{
+                        backgroundColor: isActive ? '#FF6B35' : hasAnswer ? '#E8F5E9' : '#FFE8DC',
+                        color: isActive ? '#FFFFFF' : hasAnswer ? '#2E7D32' : '#666666'
+                      }}
+                      onMouseEnter={(e) => !isActive && (e.currentTarget.style.backgroundColor = hasAnswer ? '#C8E6C9' : '#FFDCC8')}
+                      onMouseLeave={(e) => !isActive && (e.currentTarget.style.backgroundColor = hasAnswer ? '#E8F5E9' : '#FFE8DC')}
                     >
                       {q.questionNumber}
                     </button>
                   );
                 })}
               </div>
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 text-sm">
+              <div className="mt-4 pt-4 border-t text-sm" style={{ borderColor: '#BDBDBD' }}>
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-4 h-4 bg-green-100 dark:bg-green-900 rounded"></div>
-                  <span className="text-gray-600 dark:text-gray-400">Đã trả lời: {uniqueQuestions.filter(q => q.groupId ? hasGroupAnswer(q.groupId) : (selectedAnswers.has(q.questionId) || textAnswers.has(q.questionId))).length}</span>
+                  <div className="w-4 h-4 rounded" style={{ backgroundColor: '#E8F5E9' }}></div>
+                  <span style={{ color: '#666666' }}>Đã trả lời: {uniqueQuestions.filter(q => q.groupId ? hasGroupAnswer(q.groupId) : (selectedAnswers.has(q.questionId) || textAnswers.has(q.questionId))).length}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-gray-100 dark:bg-gray-700 rounded"></div>
-                  <span className="text-gray-600 dark:text-gray-400">Chưa trả lời: {uniqueQuestions.length - uniqueQuestions.filter(q => q.groupId ? hasGroupAnswer(q.groupId) : (selectedAnswers.has(q.questionId) || textAnswers.has(q.questionId))).length}</span>
+                  <div className="w-4 h-4 rounded" style={{ backgroundColor: '#FFE8DC' }}></div>
+                  <span style={{ color: '#666666' }}>Chưa trả lời: {uniqueQuestions.length - uniqueQuestions.filter(q => q.groupId ? hasGroupAnswer(q.groupId) : (selectedAnswers.has(q.questionId) || textAnswers.has(q.questionId))).length}</span>
                 </div>
               </div>
             </div>

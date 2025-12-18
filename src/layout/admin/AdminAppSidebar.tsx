@@ -46,6 +46,15 @@ const navItems: NavItem[] = [
 
   {
     icon: <DocsIcon />,
+    name: "Quản lí đề thi TOPIK",
+    subItems: [
+      { name: "Danh sách đề thi", path: "/admin/exams", pro: false, new: true },
+      { name: "Tạo đề thi mới", path: "/admin/exams/create", pro: false },
+    ],
+  },
+
+  {
+    icon: <DocsIcon />,
     name: "Quản lí tài liệu ",
     subItems: [{ name: "Danh sách tài liệu học viên chia sẻ", path: "/admin/tailieuhocvien", pro: false },
               { name: "Báo cáo tài liệu", path: "/admin/baocaotailieu", pro: false },

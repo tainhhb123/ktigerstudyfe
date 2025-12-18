@@ -35,6 +35,11 @@ import LessonListPage from "./pages/Admin/LessonManager/LessonListPage";
 import LessonDetailPage from "./pages/Admin/LessonManager/LessonDetailPage";
 import ChatAI from "./pages/KoreanChatPage";
 import AccountFrozen from "./pages/AcountFrozen";
+import ExamList from "./pages/Admin/ExamManager/ExamList";
+import ExamForm from "./pages/Admin/ExamManager/ExamForm";
+import SectionManager from "./pages/Admin/ExamManager/SectionManager";
+import QuestionManager from "./pages/Admin/ExamManager/QuestionManager";
+import QuestionForm from "./pages/Admin/ExamManager/QuestionForm";
 
 // Document pages & layout
 import AppLayoutDocument from "./layout/document/AppLayoutDocument";
@@ -93,6 +98,15 @@ export default function App() {
           <Route path="danhsachbaihoc" element={<LessonListPage />} />
           <Route path="lessons/:lessonId/" element={<LessonDetailPage />} />
           <Route path="chatai" element={<ChatAI />} />
+
+          {/* Exam Management Routes */}
+          <Route path="exams" element={<ExamList />} />
+          <Route path="exams/create" element={<ExamForm />} />
+          <Route path="exams/:examId/edit" element={<ExamForm />} />
+          <Route path="exams/:examId/sections" element={<SectionManager />} />
+          <Route path="sections/:sectionId/questions" element={<QuestionManager />} />
+          <Route path="sections/:sectionId/questions/create" element={<QuestionForm />} />
+          <Route path="sections/:sectionId/questions/:questionId/edit" element={<QuestionForm />} />
 
           <Route path="alerts" element={<Alerts />} />
           <Route path="avatars" element={<Avatars />} />
