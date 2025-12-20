@@ -11,6 +11,7 @@ import {
   UserAnswerRequest,
   ExamResultResponse,
 } from '../types/exam';
+import { WritingGradingRequest, WritingGradingResult } from './aiGradingService';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -140,6 +141,17 @@ export const userAnswerApi = {
   // Get all user answers for an attempt
   getAnswersByAttempt: async (attemptId: number): Promise<UserAnswerResponse[]> => {
     const response = await api.get<UserAnswerResponse[]>(`/api/user-answers/attempt/${attemptId}`);
+    return response.data;
+  },
+};
+
+// AI Grading APIs - Gọi backend để xử lý AI grading
+export const aiGradingApi = {
+  // Grade all writing answers for an exam attempt
+  gradeAllWritingAnswers: async (attemptId: number): Promise<Record<number, WritingGradingResult>> => {
+    const response = await api.post<Record<number, WritingGradingResult>>(
+      `/api/exam-attempts/${attemptId}/grade-writing`
+    );
     return response.data;
   },
 };

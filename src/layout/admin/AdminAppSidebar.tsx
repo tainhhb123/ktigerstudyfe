@@ -4,9 +4,8 @@ import { Link, useLocation } from "react-router-dom";
 // Assume these icons are imported from an icon library
 import {
   ChevronDownIcon,
-  // GridIcon,
+  GridIcon,
   HorizontaLDots,
-  // UserCircleIcon,
   UserIcon,
   DocsIcon,
   PencilIcon,
@@ -18,32 +17,57 @@ type NavItem = {
   icon: React.ReactNode;
   path?: string;
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  isHeader?: boolean; // For section headers
 };
-const ACTIVE_COLOR = "bg-[rgba(19,110,97,0.08)] text-[#136E61]";
+const ACTIVE_COLOR = "bg-[#FFE8DC] text-[#FF6B35]";
 
 const navItems: NavItem[] = [
+  {
+    icon: <GridIcon />,
+    name: "Dashboard",
+    path: "/admin",
+  },
+  // === QUẢN LÍ TÀI LIỆU (Note: Phát triển sau) ===
   // {
-  //   icon: <GridIcon />,
-  //   name: "Trang tổng quát",
-  //   path: "/admin",
+  //   name: "Quản lí tài liệu",
+  //   icon: <span></span>,
+  //   isHeader: true,
   // },
-
+  // {
+  //   icon: <DocsIcon />,
+  //   name: "Tài liệu học viên",
+  //   path: "/admin/tailieuhocvien",
+  // },
+  // {
+  //   icon: <DocsIcon />,
+  //   name: "Báo cáo tài liệu",
+  //   path: "/admin/baocaotailieu",
+  // },
+  {
+    name: "Quản lí học viên",
+    icon: <span></span>,
+    isHeader: true,
+  },
   {
     icon: <UserIcon />,
-    name: "Quản lí học viên ",
-    subItems: [{ name: "Danh sách học viên", path: "/admin/thongtinhocvien", pro: false },
-              { name: "Danh sách tiến trình học tập học viên ", path: "/admin/tientrinhhocvien", pro: false },
-
-    ],
-
+    name: "Danh sách học viên",
+    path: "/admin/thongtinhocvien",
   },
-
-    {
+  {
+    icon: <UserIcon />,
+    name: "Tiến trình học tập",
+    path: "/admin/tientrinhhocvien",
+  },
+  {
+    name: "Quản lí nội dung",
+    icon: <span></span>,
+    isHeader: true,
+  },
+  {
     icon: <PencilIcon />,
     name: "Quản lí bài học",
     path: "/admin/danhsachbaihoc",
   },
-
   {
     icon: <DocsIcon />,
     name: "Quản lí đề thi TOPIK",
@@ -51,15 +75,6 @@ const navItems: NavItem[] = [
       { name: "Danh sách đề thi", path: "/admin/exams", pro: false, new: true },
       { name: "Tạo đề thi mới", path: "/admin/exams/create", pro: false },
     ],
-  },
-
-  {
-    icon: <DocsIcon />,
-    name: "Quản lí tài liệu ",
-    subItems: [{ name: "Danh sách tài liệu học viên chia sẻ", path: "/admin/tailieuhocvien", pro: false },
-              { name: "Báo cáo tài liệu", path: "/admin/baocaotailieu", pro: false },
-    ],
-
   },
   
   // {
@@ -186,13 +201,21 @@ const AppSidebar: React.FC = () => {
   };
 
   const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => (
-    <ul className="flex flex-col gap-4">
+    <ul className="flex flex-col gap-1">
       {items.map((nav, index) => (
-        <li key={nav.name}>
-          {nav.subItems ? (
+        <li key={`${menuType}-${index}-${nav.name}`}>
+          {nav.isHeader ? (
+            (isExpanded || isHovered || isMobileOpen) && (
+              <div className="px-3 py-2 mt-4 mb-1">
+                <h3 className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#BDBDBD', letterSpacing: '0.05em' }}>
+                  {nav.name}
+                </h3>
+              </div>
+            )
+          ) : nav.subItems ? (
             <button
               onClick={() => handleSubmenuToggle(index, menuType)}
-              className={`menu-item group ${
+              className={`menu-item group w-full ${
                 openSubmenu?.type === menuType && openSubmenu?.index === index
                   ? ACTIVE_COLOR
                   : "menu-item-inactive"
@@ -203,24 +226,25 @@ const AppSidebar: React.FC = () => {
               }`}
             >
               <span
-                className={`menu-item-icon-size  ${
+                className={`flex-shrink-0 ${
                   openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? "text-[#136E61]"
-                    : "menu-item-icon-inactive"
+                    ? "text-[#FF6B35]"
+                    : "text-gray-500"
                 }`}
+                style={{ width: '24px', height: '24px' }}
               >
                 {nav.icon}
               </span>
               {(isExpanded || isHovered || isMobileOpen) && (
-                <span className="menu-item-text">{nav.name}</span>
+                <span className="menu-item-text flex-1 text-left text-[15px] font-medium">{nav.name}</span>
               )}
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
-                  className={`ml-auto w-5 h-5 transition-transform duration-200 ${
+                  className={`flex-shrink-0 w-5 h-5 transition-transform duration-200 ${
                     openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
-                      ? "rotate-180 text-[#136E61]"
-                      : ""
+                      ? "rotate-180 text-[#FF6B35]"
+                      : "text-gray-500"
                   }`}
                 />
               )}
@@ -229,21 +253,22 @@ const AppSidebar: React.FC = () => {
             nav.path && (
               <Link
                 to={nav.path}
-                className={`menu-item group ${
+                className={`menu-item group w-full ${
                   isActive(nav.path) ? ACTIVE_COLOR : "menu-item-inactive"
                 }`}
               >
                 <span
-                  className={`menu-item-icon-size ${
+                  className={`flex-shrink-0 ${
                     isActive(nav.path)
-                      ? "text-[#136E61]"
-                      : "menu-item-icon-inactive"
+                      ? "text-[#FF6B35]"
+                      : "text-gray-500"
                   }`}
+                  style={{ width: '24px', height: '24px' }}
                 >
                   {nav.icon}
                 </span>
                 {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">{nav.name}</span>
+                  <span className="menu-item-text flex-1 text-left text-[15px] font-medium">{nav.name}</span>
                 )}
               </Link>
             )
@@ -272,35 +297,26 @@ const AppSidebar: React.FC = () => {
                           : "menu-dropdown-item-inactive"
                       }`}
                     >
-                      <span
-                        className={`menu-item-icon-size ${
-                          isActive(subItem.path)
-                            ? "text-[#136E61]"
-                            : "menu-item-icon-inactive"
-                        }`}
-                      >
-                        {/* Nếu có icon riêng cho subItem thì đưa vào đây */}
-                      </span>
-                      {subItem.name}
+                      <span className="text-[14px]">{subItem.name}</span>
                       <span className="flex items-center gap-1 ml-auto">
                         {subItem.new && (
                           <span
-                            className={`ml-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
+                            className="ml-auto px-2 py-0.5 rounded text-xs font-medium uppercase"
+                            style={{ 
+                              backgroundColor: isActive(subItem.path) ? '#FF6B35' : '#FFE8DC',
+                              color: isActive(subItem.path) ? '#FFFFFF' : '#FF6B35'
+                            }}
                           >
                             new
                           </span>
                         )}
                         {subItem.pro && (
                           <span
-                            className={`ml-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
+                            className="ml-auto px-2 py-0.5 rounded text-xs font-medium uppercase"
+                            style={{ 
+                              backgroundColor: isActive(subItem.path) ? '#FF6B35' : '#FFE8DC',
+                              color: isActive(subItem.path) ? '#FFFFFF' : '#FF6B35'
+                            }}
                           >
                             pro
                           </span>
@@ -319,7 +335,8 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+      style={{ backgroundColor: '#FFFFFF', borderColor: '#BDBDBD' }}
+      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r 
         ${
           isExpanded || isMobileOpen
             ? "w-[290px]"
@@ -337,69 +354,23 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link to="/" >
+        <Link to="/" className="flex items-center">
           {isExpanded || isHovered || isMobileOpen ? (
-            <>
-              <img
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              <img
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-            </>
+            <h1 className="text-2xl font-bold tracking-tight">
+              <span style={{ color: '#FF6B35' }}>K-Tiger</span>
+              <span style={{ color: '#4CAF50' }}>Study</span>
+            </h1>
           ) : (
-            <img
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={32}
-              height={32}
-            />
+            <h1 className="text-3xl font-bold" style={{ color: '#FF6B35' }}>
+              K
+            </h1>
           )}
         </Link>
       </div>
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
-          <div className="flex flex-col gap-4">
-            <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Menu"
-                ) : (
-                  <HorizontaLDots className="size-6" />
-                )}
-              </h2>
-              {renderMenuItems(navItems, "main")}
-            </div>
-            <div className="">
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  ""
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(othersItems, "others")}
-            </div>
+          <div className="flex flex-col">
+            {renderMenuItems(navItems, "main")}
           </div>
         </nav>
       </div>
