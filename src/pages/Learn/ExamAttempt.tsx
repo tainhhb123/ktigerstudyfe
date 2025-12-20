@@ -47,23 +47,43 @@ const ExamAttempt = () => {
   useEffect(() => {
     if (sections.length > 0 && currentSectionIndex < sections.length) {
       fetchQuestionsForSection(sections[currentSectionIndex].sectionId);
-      // Reset timer for new section
-      const section = sections[currentSectionIndex];
-      setTimeLeft(section.durationMinutes * 60);
-      startTimer();
       
-      // Save current position to localStorage
+      // Load saved time or reset timer for new section
       const saved = localStorage.getItem('topik_in_progress');
+      let shouldLoadSavedTime = false;
+      
       if (saved) {
         try {
           const data = JSON.parse(saved);
+          
+          // If resuming the same section, restore the saved time
+          if (data.attemptId === attemptId && data.currentSectionIndex === currentSectionIndex && data.timeLeft) {
+            setTimeLeft(data.timeLeft);
+            shouldLoadSavedTime = true;
+            console.log('⏱️ Restoring timer:', data.timeLeft, 'seconds');
+          }
+          
+          // Update position
           data.currentSectionIndex = currentSectionIndex;
           data.currentQuestionIndex = currentQuestionIndex;
+          if (!shouldLoadSavedTime) {
+            const section = sections[currentSectionIndex];
+            const newTime = section.durationMinutes * 60;
+            setTimeLeft(newTime);
+            data.timeLeft = newTime;
+          }
           localStorage.setItem('topik_in_progress', JSON.stringify(data));
         } catch (err) {
           console.error('Error updating section position:', err);
+          const section = sections[currentSectionIndex];
+          setTimeLeft(section.durationMinutes * 60);
         }
+      } else {
+        const section = sections[currentSectionIndex];
+        setTimeLeft(section.durationMinutes * 60);
       }
+      
+      startTimer();
     }
   }, [currentSectionIndex, sections]);
 
@@ -77,6 +97,7 @@ const ExamAttempt = () => {
       const saved = localStorage.getItem('topik_in_progress');
       let savedSectionIndex = 0;
       let savedQuestionIndex = 0;
+      let savedTimeLeft = null;
       
       if (saved) {
         try {
@@ -84,7 +105,8 @@ const ExamAttempt = () => {
           if (data.attemptId === attemptId) {
             savedSectionIndex = data.currentSectionIndex || 0;
             savedQuestionIndex = data.currentQuestionIndex || 0;
-            console.log('📍 Restoring position: Section', savedSectionIndex, 'Question', savedQuestionIndex);
+            savedTimeLeft = data.timeLeft;
+            console.log('📍 Restoring position: Section', savedSectionIndex, 'Question', savedQuestionIndex, 'Time:', savedTimeLeft);
           }
         } catch (err) {
           console.error('Error parsing saved position:', err);
@@ -97,7 +119,8 @@ const ExamAttempt = () => {
         examTitle: attemptData.examTitle || 'Bài thi TOPIK',
         startedAt: new Date().toISOString(),
         currentSectionIndex: savedSectionIndex,
-        currentQuestionIndex: savedQuestionIndex
+        currentQuestionIndex: savedQuestionIndex,
+        timeLeft: savedTimeLeft
       }));
 
       if (attemptData.examId) {
@@ -196,7 +219,24 @@ const ExamAttempt = () => {
           handleAutoSubmit(); // Auto submit when time's up
           return 0;
         }
-        return prev - 1;
+        
+        const newTime = prev - 1;
+        
+        // Save time to localStorage every 5 seconds to avoid too many writes
+        if (newTime % 5 === 0) {
+          const saved = localStorage.getItem('topik_in_progress');
+          if (saved) {
+            try {
+              const data = JSON.parse(saved);
+              data.timeLeft = newTime;
+              localStorage.setItem('topik_in_progress', JSON.stringify(data));
+            } catch (err) {
+              console.error('Error saving timer:', err);
+            }
+          }
+        }
+        
+        return newTime;
       });
     }, 1000);
   };
