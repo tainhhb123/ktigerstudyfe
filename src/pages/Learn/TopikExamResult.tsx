@@ -55,10 +55,47 @@ const TopikExamResult = () => {
       const data = await examAttemptApi.getResult(Number(attemptId));
       console.log('📊 Exam Result Data:', data);
       console.log('📝 Questions:', data.questions);
-      // Debug từng câu
-      data.questions?.forEach((q: any) => {
-        console.log(`Câu ${q.questionNumber}: score=${q.score}, maxScore=${q.maxScore}, isCorrect=${q.isCorrect}`);
+      
+      // Fix totalCount: Backend chỉ trả câu đã trả lời, cần đếm theo section thật
+      // Count actual questions per section from questions array
+      const actualSectionCounts: { [key: string]: number } = {};
+      data.questions?.forEach((q: QuestionResult) => {
+        const sectionType = q.sectionType;
+        console.log(`Question ${q.questionNumber}: sectionType="${sectionType}"`);
+        actualSectionCounts[sectionType] = Math.max(
+          actualSectionCounts[sectionType] || 0,
+          q.questionNumber
+        );
       });
+      
+      console.log('📊 Section counts from questions:', actualSectionCounts);
+      console.log('📊 Section results keys:', Object.keys(data.sectionResults || {}));
+      
+      // Hardcode: LISTENING & READING = 50 questions each (TOPIK II standard)
+      const STANDARD_COUNTS: { [key: string]: number } = {
+        'LISTENING': 50,
+        'READING': 50,
+        'WRITING': 4
+      };
+      
+      // Override totalCount in sectionResults with actual max question numbers
+      if (data.sectionResults) {
+        Object.keys(data.sectionResults).forEach((sectionType) => {
+          const section = data.sectionResults[sectionType];
+          if (section) {
+            // Use standard count if available, otherwise use calculated count
+            const totalCount = STANDARD_COUNTS[sectionType] || actualSectionCounts[sectionType] || section.totalCount;
+            section.totalCount = totalCount;
+            // Recalculate percentage
+            section.percentage = (section.correctCount / section.totalCount) * 100;
+            console.log(`✅ Updated ${sectionType}: ${section.correctCount}/${totalCount} = ${section.percentage.toFixed(1)}%`);
+          }
+        });
+      }
+      
+      console.log('✅ Fixed section counts:', actualSectionCounts);
+      console.log('✅ Updated sectionResults:', data.sectionResults);
+      
       setResult(data);
     } catch (err) {
       console.error('Error fetching result:', err);
@@ -107,9 +144,20 @@ const TopikExamResult = () => {
     ? result.questions 
     : result.questions.filter(q => q.sectionType === selectedSection);
 
-  const totalPossibleScore = sections.reduce((sum, [_, section]) => sum + section.totalPoints, 0);
+  // Fix: Calculate correct total questions and score
+  const actualTotalQuestions = sections.reduce((sum, [_, section]) => sum + section.totalCount, 0);
+  const actualCorrectAnswers = sections.reduce((sum, [_, section]) => sum + section.correctCount, 0);
+  const totalPossibleScore = 200; // TOPIK II: 100 (Listening) + 100 (Reading)
   const passPercentage = (result.totalScore / totalPossibleScore) * 100;
   const isPassed = passPercentage >= 60; // TOPIK pass = 60%
+
+  console.log('📊 Total calculations:', {
+    actualTotalQuestions,
+    actualCorrectAnswers,
+    totalPossibleScore,
+    resultTotalScore: result.totalScore,
+    passPercentage: passPercentage.toFixed(1)
+  });
 
   return (
     <div className="min-h-screen py-8" style={{ backgroundColor: '#FFF8F0' }}>
@@ -151,30 +199,15 @@ const TopikExamResult = () => {
             <div className="rounded-lg p-6" style={{ backgroundColor: '#E8F5E9', border: '2px solid #4CAF50' }}>
               <div className="text-sm mb-1" style={{ color: '#4CAF50' }}>Đúng</div>
               <div className="text-4xl font-bold" style={{ color: '#4CAF50' }}>
-                {result.correctAnswers}
-                <span className="text-xl" style={{ color: '#999999' }}>/{result.totalQuestions}</span>
+                {actualCorrectAnswers}
+                <span className="text-xl" style={{ color: '#999999' }}>/{actualTotalQuestions}</span>
               </div>
             </div>
             
             <div className="rounded-lg p-6" style={{ backgroundColor: '#E3F2FD', border: '2px solid #2196F3' }}>
               <div className="text-sm mb-1" style={{ color: '#2196F3' }}>Tỷ lệ đúng</div>
               <div className="text-4xl font-bold" style={{ color: '#2196F3' }}>
-                {((result.correctAnswers / result.totalQuestions) * 100).toFixed(1)}%
-              </div>
-            </div>
-            
-            <div 
-              className="rounded-lg p-6"
-              style={{
-                backgroundColor: isPassed ? '#E8F5E9' : '#FFF3E0',
-                border: isPassed ? '2px solid #4CAF50' : '2px solid #FF6B35'
-              }}
-            >
-              <div className="text-sm mb-1" style={{ color: isPassed ? '#4CAF50' : '#FF6B35' }}>
-                Kết quả
-              </div>
-              <div className="text-3xl font-bold" style={{ color: isPassed ? '#4CAF50' : '#FF6B35' }}>
-                {isPassed ? '✓ ĐẠT' : '✗ CHƯA ĐẠT'}
+                {((actualCorrectAnswers / actualTotalQuestions) * 100).toFixed(1)}%
               </div>
             </div>
           </div>
@@ -188,27 +221,40 @@ const TopikExamResult = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {sections.map(([sectionType, section]) => (
-              <div key={sectionType} className="rounded-lg p-6" style={{ border: '1px solid #BDBDBD' }}>
-                <h3 className="font-semibold mb-4" style={{ color: '#333333' }}>{sectionType}</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm" style={{ color: '#666666' }}>Điểm:</span>
+              <div key={sectionType} className="rounded-lg p-6" style={{ border: '2px solid #BDBDBD', backgroundColor: '#FFF8F0' }}>
+                <h3 className="font-bold text-xl mb-4" style={{ color: '#FF6B35' }}>{sectionType}</h3>
+                <div className="space-y-4">
+                  {/* Câu đúng - Highlighted */}
+                  <div className="p-4 rounded-lg" style={{ backgroundColor: '#E8F5E9', border: '2px solid #4CAF50' }}>
+                    <div className="text-sm mb-1" style={{ color: '#4CAF50' }}>Số câu đúng:</div>
+                    <div className="text-3xl font-bold" style={{ color: '#4CAF50' }}>
+                      {section.correctCount} <span className="text-xl" style={{ color: '#666666' }}>/ {section.totalCount}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Điểm số */}
+                  <div className="flex justify-between items-center p-3 rounded-lg" style={{ backgroundColor: '#FFE8DC' }}>
+                    <span className="text-sm font-medium" style={{ color: '#666666' }}>Điểm:</span>
                     <span className="font-bold text-lg" style={{ color: '#FF6B35' }}>
                       {section.score.toFixed(1)} / {section.totalPoints}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm" style={{ color: '#666666' }}>Đúng:</span>
-                    <span className="font-semibold" style={{ color: '#333333' }}>{section.correctCount} / {section.totalCount}</span>
-                  </div>
-                  <div className="w-full rounded-full h-3" style={{ backgroundColor: '#E0E0E0' }}>
-                    <div 
-                      className="h-3 rounded-full transition-all duration-500"
-                      style={{ backgroundColor: '#FF6B35', width: `${section.percentage}%` }}
-                    />
-                  </div>
-                  <div className="text-center text-sm font-semibold" style={{ color: '#FF6B35' }}>
-                    {section.percentage.toFixed(1)}%
+                  
+                  {/* Progress bar */}
+                  <div>
+                    <div className="w-full rounded-full h-4" style={{ backgroundColor: '#E0E0E0' }}>
+                      <div 
+                        className="h-4 rounded-full transition-all duration-500 flex items-center justify-center text-xs font-bold text-white"
+                        style={{ backgroundColor: '#FF6B35', width: `${section.percentage}%` }}
+                      >
+                        {section.percentage >= 20 && `${section.percentage.toFixed(0)}%`}
+                      </div>
+                    </div>
+                    {section.percentage < 20 && (
+                      <div className="text-center text-sm font-semibold mt-1" style={{ color: '#FF6B35' }}>
+                        {section.percentage.toFixed(1)}%
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -288,14 +334,21 @@ const TopikExamResult = () => {
                         <div>
                           <div className="text-sm mb-1" style={{ color: '#666666' }}>Câu trả lời của bạn:</div>
                           <div 
-                            className="p-3 rounded-lg"
+                            className="p-3 rounded-lg font-medium"
                             style={{
-                              backgroundColor: getIsCorrect(question) ? '#E8F5E9' : '#FFEBEE',
-                              color: getIsCorrect(question) ? '#4CAF50' : '#FF5252'
+                              backgroundColor: question.userAnswer 
+                                ? (getIsCorrect(question) ? '#E8F5E9' : '#FFEBEE')
+                                : '#F5F5F5',
+                              color: question.userAnswer
+                                ? (getIsCorrect(question) ? '#4CAF50' : '#FF5252')
+                                : '#999999'
                             }}
                           >
                             {(() => {
-                              const answer = question.userAnswer || '(Không trả lời)';
+                              if (!question.userAnswer) {
+                                return '❌ Chưa trả lời';
+                              }
+                              const answer = question.userAnswer;
                               // Kiểm tra nếu là URL ảnh
                               const isImageUrl = answer.startsWith('http') && 
                                 (answer.includes('cloudinary') || answer.match(/\.(jpg|jpeg|png|gif|webp)$/i));
@@ -314,30 +367,30 @@ const TopikExamResult = () => {
                           </div>
                         </div>
                         
-                        {!getIsCorrect(question) && (
-                          <div>
-                            <div className="text-sm mb-1" style={{ color: '#666666' }}>Đáp án đúng:</div>
-                            <div className="p-3 rounded-lg" style={{ backgroundColor: '#E8F5E9', color: '#4CAF50' }}>
-                              {(() => {
-                                const answer = question.correctAnswer;
-                                // Kiểm tra nếu là URL ảnh
-                                const isImageUrl = answer.startsWith('http') && 
-                                  (answer.includes('cloudinary') || answer.match(/\.(jpg|jpeg|png|gif|webp)$/i));
-                                
-                                if (isImageUrl) {
-                                  return (
-                                    <img 
-                                      src={answer} 
-                                      alt="Correct answer" 
-                                      className="max-w-full h-auto max-h-32 object-contain rounded"
-                                    />
-                                  );
-                                }
-                                return answer;
-                              })()}
-                            </div>
+                        {/* Always show correct answer */}
+                        <div>
+                          <div className="text-sm mb-1" style={{ color: '#666666' }}>Đáp án đúng:</div>
+                          <div className="p-3 rounded-lg font-medium" style={{ backgroundColor: '#E8F5E9', color: '#4CAF50' }}>
+                            {(() => {
+                              const answer = question.correctAnswer;
+                              if (!answer) return '(Chưa có đáp án)';
+                              // Kiểm tra nếu là URL ảnh
+                              const isImageUrl = answer.startsWith('http') && 
+                                (answer.includes('cloudinary') || answer.match(/\.(jpg|jpeg|png|gif|webp)$/i));
+                              
+                              if (isImageUrl) {
+                                return (
+                                  <img 
+                                    src={answer} 
+                                    alt="Correct answer" 
+                                    className="max-w-full h-auto max-h-32 object-contain rounded"
+                                  />
+                                );
+                              }
+                              return answer;
+                            })()}
                           </div>
-                        )}
+                        </div>
                       </div>
                     )}
                     

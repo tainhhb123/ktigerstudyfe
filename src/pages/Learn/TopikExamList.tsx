@@ -1,20 +1,41 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, FileText, BookOpen, Award } from 'lucide-react';
+import { Clock, FileText, BookOpen, Award, PlayCircle } from 'lucide-react';
 import { examApi } from '../../services/ExamApi';
 import { ExamResponse, ExamType } from '../../types/exam';
 
 type TabType = ExamType | 'ALL';
+
+interface InProgressExam {
+  attemptId: string;
+  examTitle: string;
+  startedAt: string;
+}
 
 const TopikExamList = () => {
   const [exams, setExams] = useState<ExamResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('ALL');
+  const [inProgressExam, setInProgressExam] = useState<InProgressExam | null>(null);
 
   useEffect(() => {
     fetchExams();
+    checkInProgressExam();
   }, []);
+
+  const checkInProgressExam = () => {
+    const saved = localStorage.getItem('topik_in_progress');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved) as InProgressExam;
+        setInProgressExam(data);
+      } catch (err) {
+        console.error('Error parsing saved exam:', err);
+        localStorage.removeItem('topik_in_progress');
+      }
+    }
+  };
 
   const fetchExams = async () => {
     try {
@@ -115,6 +136,57 @@ const TopikExamList = () => {
   return (
     <div className="max-w-6xl mx-auto">
 
+      {/* In-Progress Exam Banner */}
+      {inProgressExam && (
+        <div 
+          className="rounded-xl p-6 mb-6 flex items-center justify-between"
+          style={{ 
+            backgroundColor: '#FFF3E0', 
+            border: '2px solid #FF6B35',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}
+        >
+          <div className="flex items-center gap-4">
+            <div 
+              className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: '#FFE8DC' }}
+            >
+              <PlayCircle className="w-8 h-8" style={{ color: '#FF6B35' }} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold mb-1" style={{ color: '#FF6B35' }}>
+                Bài thi đang làm dở
+              </h3>
+              <p className="text-sm" style={{ color: '#666666' }}>
+                {inProgressExam.examTitle}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                localStorage.removeItem('topik_in_progress');
+                setInProgressExam(null);
+              }}
+              className="px-4 py-2 rounded-lg text-sm transition"
+              style={{ 
+                backgroundColor: '#FFFFFF',
+                color: '#666666',
+                border: '1px solid #BDBDBD'
+              }}
+            >
+              Bỏ qua
+            </button>
+            <Link
+              to={`/learn/topik/attempt/${inProgressExam.attemptId}`}
+              className="px-6 py-2 rounded-lg text-white font-semibold text-sm transition hover:opacity-90"
+              style={{ backgroundColor: '#FF6B35' }}
+            >
+              Tiếp tục làm bài
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="mb-6" style={{ borderBottom: '1px solid #BDBDBD' }}>

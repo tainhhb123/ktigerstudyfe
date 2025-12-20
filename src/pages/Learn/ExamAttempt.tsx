@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, ChevronLeft, ChevronRight, List, Volume2 } from 'lucide-react';
+import { Clock, ChevronLeft, ChevronRight, List, Volume2, Play } from 'lucide-react';
 import { 
   examAttemptApi, 
   examSectionApi, 
@@ -29,6 +29,7 @@ const ExamAttempt = () => {
   const [timeLeft, setTimeLeft] = useState(0); // seconds
   const [loading, setLoading] = useState(true);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const [audioStarted, setAudioStarted] = useState(false); // Đã bắt đầu phát audio
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -50,6 +51,19 @@ const ExamAttempt = () => {
       const section = sections[currentSectionIndex];
       setTimeLeft(section.durationMinutes * 60);
       startTimer();
+      
+      // Save current position to localStorage
+      const saved = localStorage.getItem('topik_in_progress');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          data.currentSectionIndex = currentSectionIndex;
+          data.currentQuestionIndex = currentQuestionIndex;
+          localStorage.setItem('topik_in_progress', JSON.stringify(data));
+        } catch (err) {
+          console.error('Error updating section position:', err);
+        }
+      }
     }
   }, [currentSectionIndex, sections]);
 
@@ -59,16 +73,80 @@ const ExamAttempt = () => {
       const attemptData = await examAttemptApi.getAttemptById(Number(attemptId));
       setAttempt(attemptData);
 
+      // Load saved position from localStorage
+      const saved = localStorage.getItem('topik_in_progress');
+      let savedSectionIndex = 0;
+      let savedQuestionIndex = 0;
+      
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          if (data.attemptId === attemptId) {
+            savedSectionIndex = data.currentSectionIndex || 0;
+            savedQuestionIndex = data.currentQuestionIndex || 0;
+            console.log('📍 Restoring position: Section', savedSectionIndex, 'Question', savedQuestionIndex);
+          }
+        } catch (err) {
+          console.error('Error parsing saved position:', err);
+        }
+      }
+
+      // Save to localStorage for resume functionality
+      localStorage.setItem('topik_in_progress', JSON.stringify({
+        attemptId: attemptId,
+        examTitle: attemptData.examTitle || 'Bài thi TOPIK',
+        startedAt: new Date().toISOString(),
+        currentSectionIndex: savedSectionIndex,
+        currentQuestionIndex: savedQuestionIndex
+      }));
+
       if (attemptData.examId) {
         const sectionsData = await examSectionApi.getSectionsByExam(attemptData.examId);
         setSections(sectionsData.sort((a, b) => a.sectionOrder - b.sectionOrder));
+        
+        // Restore position AFTER sections are loaded
+        setCurrentSectionIndex(savedSectionIndex);
+        setCurrentQuestionIndex(savedQuestionIndex);
       }
+
+      // Load saved answers
+      await loadSavedAnswers();
     } catch (err) {
       console.error('Error fetching attempt:', err);
       alert('Không thể tải thông tin bài thi');
       navigate('/learn/topik');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSavedAnswers = async () => {
+    try {
+      const savedAnswers = await userAnswerApi.getAnswersByAttempt(Number(attemptId));
+      console.log('📥 Loaded saved answers:', savedAnswers.length);
+
+      const mcqAnswers = new Map<number, number>();
+      const textAnswersMap = new Map<number, string>();
+
+      savedAnswers.forEach(answer => {
+        if (answer.questionId) {
+          // MCQ answer (has choiceId)
+          if (answer.choiceId) {
+            mcqAnswers.set(answer.questionId, answer.choiceId);
+          }
+          // Text answer (SHORT/ESSAY)
+          if (answer.answerText) {
+            textAnswersMap.set(answer.questionId, answer.answerText);
+          }
+        }
+      });
+
+      setSelectedAnswers(mcqAnswers);
+      setTextAnswers(textAnswersMap);
+      console.log('✅ Restored answers - MCQ:', mcqAnswers.size, 'Text:', textAnswersMap.size);
+    } catch (err) {
+      console.error('Error loading saved answers:', err);
+      // Don't alert - this is not critical, user can continue
     }
   };
 
@@ -114,12 +192,25 @@ const ExamAttempt = () => {
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          handleNextSection(); // Auto move to next section when time's up
+          clearInterval(timerRef.current!);
+          handleAutoSubmit(); // Auto submit when time's up
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
+  };
+
+  const handleAutoSubmit = async () => {
+    try {
+      await examAttemptApi.submitExam(Number(attemptId));
+      localStorage.removeItem('topik_in_progress'); // Clear saved attempt
+      alert('Hết giờ! Bài thi đã được tự động nộp.');
+      navigate(`/learn/topik/result/${attemptId}`);
+    } catch (err) {
+      console.error('Error auto-submitting exam:', err);
+      alert('Hết giờ nhưng có lỗi khi tự động nộp bài');
+    }
   };
 
   const formatTime = (seconds: number): string => {
@@ -129,18 +220,39 @@ const ExamAttempt = () => {
   };
 
   const handleAnswerSelect = async (questionId: number, choiceId: number) => {
-    // Update local state
-    setSelectedAnswers(new Map(selectedAnswers.set(questionId, choiceId)));
+    // Toggle: Nếu đã chọn đáp án này rồi thì bỏ chọn
+    const currentAnswer = selectedAnswers.get(questionId);
+    
+    if (currentAnswer === choiceId) {
+      // Bỏ chọn
+      const newAnswers = new Map(selectedAnswers);
+      newAnswers.delete(questionId);
+      setSelectedAnswers(newAnswers);
+      
+      // Xóa answer ở backend (có thể gửi null hoặc không gửi gì)
+      try {
+        await userAnswerApi.saveUserAnswer({
+          attemptId: Number(attemptId),
+          questionId: questionId,
+          choiceId: null, // hoặc có thể call API delete nếu có
+        });
+      } catch (err) {
+        console.error('Error removing answer:', err);
+      }
+    } else {
+      // Chọn đáp án mới
+      setSelectedAnswers(new Map(selectedAnswers.set(questionId, choiceId)));
 
-    // Save to backend
-    try {
-      await userAnswerApi.saveUserAnswer({
-        attemptId: Number(attemptId),
-        questionId: questionId,
-        choiceId: choiceId,
-      });
-    } catch (err) {
-      console.error('Error saving answer:', err);
+      // Save to backend
+      try {
+        await userAnswerApi.saveUserAnswer({
+          attemptId: Number(attemptId),
+          questionId: questionId,
+          choiceId: choiceId,
+        });
+      } catch (err) {
+        console.error('Error saving answer:', err);
+      }
     }
   };
 
@@ -192,11 +304,14 @@ const ExamAttempt = () => {
       );
       if (nextIndex !== -1) {
         setCurrentQuestionIndex(nextIndex);
+        updateSavedPosition(currentSectionIndex, nextIndex);
       }
     } else {
       // Single question, move to next
       if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        const newIndex = currentQuestionIndex + 1;
+        setCurrentQuestionIndex(newIndex);
+        updateSavedPosition(currentSectionIndex, newIndex);
       }
     }
   };
@@ -210,21 +325,40 @@ const ExamAttempt = () => {
       for (let i = currentQuestionIndex - 1; i >= 0; i--) {
         if (questions[i].groupId !== currentQ.groupId) {
           setCurrentQuestionIndex(i);
+          updateSavedPosition(currentSectionIndex, i);
           return;
         }
       }
     } else {
       // Single question, move to previous
       if (currentQuestionIndex > 0) {
-        setCurrentQuestionIndex(currentQuestionIndex - 1);
+        const newIndex = currentQuestionIndex - 1;
+        setCurrentQuestionIndex(newIndex);
+        updateSavedPosition(currentSectionIndex, newIndex);
+      }
+    }
+  };
+
+  const updateSavedPosition = (sectionIdx: number, questionIdx: number) => {
+    const saved = localStorage.getItem('topik_in_progress');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        data.currentSectionIndex = sectionIdx;
+        data.currentQuestionIndex = questionIdx;
+        localStorage.setItem('topik_in_progress', JSON.stringify(data));
+      } catch (err) {
+        console.error('Error updating question position:', err);
       }
     }
   };
 
   const handleNextSection = () => {
     if (currentSectionIndex < sections.length - 1) {
-      setCurrentSectionIndex(currentSectionIndex + 1);
+      const newSectionIndex = currentSectionIndex + 1;
+      setCurrentSectionIndex(newSectionIndex);
       setCurrentQuestionIndex(0);
+      updateSavedPosition(newSectionIndex, 0);
     } else {
       handleSubmitExam();
     }
@@ -235,11 +369,13 @@ const ExamAttempt = () => {
 
     try {
       await examAttemptApi.submitExam(Number(attemptId));
+      localStorage.removeItem('topik_in_progress'); // Clear saved attempt
       alert('Nộp bài thành công!');
       navigate(`/learn/topik/result/${attemptId}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error submitting exam:', err);
-      alert('Có lỗi khi nộp bài');
+      const errorMessage = err?.response?.data?.message || err?.message || 'Không xác định';
+      alert(`Có lỗi khi nộp bài:\n${errorMessage}`);
     }
   };
 
@@ -274,11 +410,9 @@ const ExamAttempt = () => {
     });
   };
 
-  // Helper: Check if any question in group has answer
-  const hasGroupAnswer = (groupId: number | null): boolean => {
-    if (!groupId) return false;
-    const groupQuestions = questions.filter(q => q.groupId === groupId);
-    return groupQuestions.some(q => selectedAnswers.has(q.questionId) || textAnswers.has(q.questionId));
+  // Helper: Check if a specific question has answer (fix logic để chỉ check câu đó)
+  const hasQuestionAnswer = (question: QuestionResponse): boolean => {
+    return selectedAnswers.has(question.questionId) || textAnswers.has(question.questionId);
   };
 
   if (loading || !attempt || sections.length === 0) {
@@ -344,14 +478,80 @@ const ExamAttempt = () => {
               {/* Audio Player (for Listening section) */}
               {currentSection.sectionType === 'LISTENING' && currentSection.audioUrl && (
                 <div className="mb-6 p-4 rounded-lg border-2" style={{ backgroundColor: '#E8F5E9', borderColor: '#4CAF50' }}>
+                  <div className="mb-2 text-sm font-semibold" style={{ color: '#2E7D32' }}>
+                    ⚠️ Lưu ý: Audio sẽ chạy liên tục, không thể tạm dừng hoặc tua tới/lui.
+                  </div>
+                  <style>{`
+                    .audio-no-seek::-webkit-media-controls-timeline,
+                    .audio-no-seek::-webkit-media-controls-current-time-display,
+                    .audio-no-seek::-webkit-media-controls-time-remaining-display {
+                      pointer-events: none;
+                      cursor: not-allowed;
+                    }
+                    .audio-no-seek.audio-started::-webkit-media-controls-play-button {
+                      pointer-events: none;
+                      opacity: 0.5;
+                      cursor: not-allowed;
+                    }
+                    .audio-no-seek {
+                      pointer-events: auto;
+                    }
+                    .audio-no-seek::-webkit-media-controls-volume-slider,
+                    .audio-no-seek::-webkit-media-controls-mute-button {
+                      pointer-events: auto;
+                      cursor: pointer;
+                    }
+                  `}</style>
                   <audio
                     ref={audioRef}
                     src={currentSection.audioUrl}
-                    onPlay={() => setAudioPlaying(true)}
-                    onPause={() => setAudioPlaying(false)}
+                    onPlay={(e) => {
+                      if (!audioStarted) {
+                        const confirmed = confirm('Bắt đầu phát audio? Audio sẽ chạy liên tục và không thể tạm dừng.');
+                        if (confirmed) {
+                          setAudioStarted(true);
+                          setAudioPlaying(true);
+                          e.currentTarget.classList.add('audio-started');
+                        } else {
+                          e.currentTarget.pause();
+                        }
+                      } else {
+                        setAudioPlaying(true);
+                      }
+                    }}
+                    onPause={(e) => {
+                      // Prevent pause after started
+                      if (audioStarted && !e.currentTarget.ended) {
+                        e.preventDefault();
+                        setTimeout(() => {
+                          e.currentTarget.play();
+                        }, 0);
+                      } else {
+                        setAudioPlaying(false);
+                      }
+                    }}
                     onEnded={() => setAudioPlaying(false)}
-                    className="w-full"
+                    onSeeking={(e) => {
+                      // Prevent seeking - reset to stored position
+                      e.preventDefault();
+                      const audio = e.currentTarget;
+                      if (audioStarted && audio.dataset.lastTime) {
+                        const lastTime = parseFloat(audio.dataset.lastTime);
+                        setTimeout(() => {
+                          audio.currentTime = lastTime;
+                          audio.play();
+                        }, 0);
+                      }
+                    }}
+                    onTimeUpdate={(e) => {
+                      // Store current time to prevent seeking
+                      const audio = e.currentTarget;
+                      audio.dataset.lastTime = audio.currentTime.toString();
+                    }}
+                    className={`w-full audio-no-seek ${audioStarted ? 'audio-started' : ''}`}
                     controls
+                    controlsList="nodownload noplaybackrate"
+                    style={{ cursor: 'default' }}
                   />
                
                 </div>
@@ -380,18 +580,6 @@ const ExamAttempt = () => {
                               src={currentQuestion.audioUrl}
                               className="w-full"
                               controls
-                            />
-                          </div>
-                        )}
-
-                        {/* Shared Image (for grouped questions) */}
-                        {isGrouped && currentQuestion.imageUrl && (
-                          <div className="mb-6">
-                            <img 
-                              src={currentQuestion.imageUrl} 
-                              alt="Shared content for question group"
-                              className="max-w-full h-auto rounded-lg border"
-                              style={{ borderColor: '#BDBDBD' }}
                             />
                           </div>
                         )}
@@ -446,9 +634,21 @@ const ExamAttempt = () => {
                               />
                             ) : (
                               <>
+                                {/* Individual Question Image - Show for EACH question if it has imageUrl */}
+                                {q.imageUrl && (
+                                  <div className="mb-6">
+                                    <img 
+                                      src={q.imageUrl} 
+                                      alt={`Question ${q.questionNumber}`}
+                                      className="max-w-full h-auto rounded-lg border"
+                                      style={{ borderColor: '#BDBDBD' }}
+                                    />
+                                  </div>
+                                )}
+
                                 {/* Question Text - Always show */}
                                 <div className="mb-6">
-                                  <h2 className="text-xl font-bold mb-4" style={{ color: '#333333' }}>
+                                  <h2 className="text-xl font-bold mb-4" style={{ color: '#333333', whiteSpace: 'pre-line' }}>
                                     {q.questionNumber}. {q.questionText}
                                   </h2>
                                 </div>
@@ -674,7 +874,7 @@ const ExamAttempt = () => {
                 {uniqueQuestions.map((q) => {
                   const questionIndex = questions.findIndex(quest => quest.questionId === q.questionId);
                   const isActive = currentQuestion?.questionNumber === q.questionNumber;
-                  const hasAnswer = q.groupId ? hasGroupAnswer(q.groupId) : (selectedAnswers.has(q.questionId) || textAnswers.has(q.questionId));
+                  const hasAnswer = hasQuestionAnswer(q);
                   
                   return (
                     <button
@@ -696,11 +896,11 @@ const ExamAttempt = () => {
               <div className="mt-4 pt-4 border-t text-sm" style={{ borderColor: '#BDBDBD' }}>
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-4 h-4 rounded" style={{ backgroundColor: '#E8F5E9' }}></div>
-                  <span style={{ color: '#666666' }}>Đã trả lời: {uniqueQuestions.filter(q => q.groupId ? hasGroupAnswer(q.groupId) : (selectedAnswers.has(q.questionId) || textAnswers.has(q.questionId))).length}</span>
+                  <span style={{ color: '#666666' }}>Đã trả lời: {uniqueQuestions.filter(q => hasQuestionAnswer(q)).length}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded" style={{ backgroundColor: '#FFE8DC' }}></div>
-                  <span style={{ color: '#666666' }}>Chưa trả lời: {uniqueQuestions.length - uniqueQuestions.filter(q => q.groupId ? hasGroupAnswer(q.groupId) : (selectedAnswers.has(q.questionId) || textAnswers.has(q.questionId))).length}</span>
+                  <span style={{ color: '#666666' }}>Chưa trả lời: {uniqueQuestions.length - uniqueQuestions.filter(q => hasQuestionAnswer(q)).length}</span>
                 </div>
               </div>
             </div>
