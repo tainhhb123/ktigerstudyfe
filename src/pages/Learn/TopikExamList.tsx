@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, FileText, BookOpen, Award, PlayCircle } from 'lucide-react';
-import { examApi } from '../../services/ExamApi';
+import { examApi, examAttemptApi } from '../../services/ExamApi';
 import { ExamResponse, ExamType } from '../../types/exam';
+import { authService } from '../../services/authService';
 
 type TabType = ExamType | 'ALL';
 
@@ -18,10 +19,12 @@ const TopikExamList = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('ALL');
   const [inProgressExam, setInProgressExam] = useState<InProgressExam | null>(null);
+  const [completedExamIds, setCompletedExamIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     fetchExams();
     checkInProgressExam();
+    fetchUserExamAttempts();
   }, []);
 
   const checkInProgressExam = () => {
@@ -48,6 +51,32 @@ const TopikExamList = () => {
       console.error('Error fetching exams:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserExamAttempts = async () => {
+    try {
+      const userId = authService.getUserId();
+      console.log('Current userId:', userId);
+      if (!userId) {
+        console.log('No user ID found');
+        return;
+      }
+      
+      const attempts = await examAttemptApi.getAttemptsByUser(userId);
+      console.log('User exam attempts:', attempts);
+      
+      // Lưu danh sách examId mà user đã làm (không kể bài thi IN_PROGRESS)
+      const completedIds = new Set(
+        attempts
+          .filter(attempt => attempt.status === 'COMPLETED')
+          .map(attempt => attempt.examId)
+          .filter((id): id is number => id !== undefined)
+      );
+      console.log('Completed exam IDs:', Array.from(completedIds));
+      setCompletedExamIds(completedIds);
+    } catch (err) {
+      console.error('Error fetching user exam attempts:', err);
     }
   };
 
@@ -278,9 +307,9 @@ const TopikExamList = () => {
               <Link
                 to={`/learn/topik/exam/${exam.examId}`}
                 className="block w-full py-3 text-white text-center rounded-lg font-medium transition"
-                style={{ backgroundColor: '#FF6B35' }}
+                style={{ backgroundColor: completedExamIds.has(exam.examId) ? '#4CAF50' : '#FF6B35' }}
               >
-                Bắt đầu thi
+                {completedExamIds.has(exam.examId) ? 'Làm lại' : 'Bắt đầu thi'}
               </Link>
             </div>
           </div>

@@ -1,570 +1,868 @@
+import { Link } from "react-router-dom";
+import { BookOpen, Target, MessageSquare, CheckCircle, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import hoHanImage from "../../assets/hoHan.png";
-// Mock data cho placement test
-const placementQuestions = [
-    {
-        id: 1,
-        type: "multiple_choice",
-        question: "나는 주말에는 보통 영화를 (...) 운동을 한다.",
-        options: ["A. 보지만   ", "B. 보거나   ", "C. 보려고   ", "D. 보더니"],
-        correct: 2,
-        level: 1,
-        instruction: "( )에 들어갈 가장 알맞은 것을 고르십시오."
-    },
-    {
-        id: 2,
-        type: "multiple_choice",
-        question: "똑똑하게 모으자!<br />매일매일 쌓여 가는 행복한 미래",
-        options: [
-            "A. 병원 ",  
-            "B. 은행 ",
-            "C. 여행사 ",
-            "D. 체육관",
-        ],
-        correct: 1,
-        level: 1,
-        instruction: "다음은 무엇에 대한 글인지 고르십시오."
-    },
-        {
-        id: 3,
-        type: "multiple_choice",
-        question: "지난 13일 인주경찰서에 편지 한 통이 배달되었다.편지를 보낸 사람은 지난달 인주시를 방문했다가 지갑을 잃어버린 외국인 관광객 장 모 씨였다. 장 씨는 말이 통하지 않아 지갑을 찾는 데 어려움을 겪었다.그때 한 경찰이 사전과 몸짓을 이용해 장 씨와 이야기하며 잃어버린 지갑을 찾는 데 도움을 주었다.이에 장 씨가 고마움을 담은 감사 편지를 보낸 것이다.",
-        options: [
-            "A. 병원 ",  
-            "B. 은행 ",
-            "C. 여행사 ",
-            "D. 체육관",
-        ],
-        correct: 1,
-        level: 1,
-        instruction: "다음 글 또는 그래프의 내용과 같은 것을 고르십시오."
-    },
-    {
-        id: 4,
-        type: "multiple_choice",
-        question: "(가)개와 고양이는 사이가 나쁜 것으로 유명하다. <br/> (나)개가 앞발을 드는 행동은 함께 놀고 싶다는 의미이다. <br/> (다)그런데 고양이는 이런 행동을 공격하는 것으로 오해하는 것이다. <br/> (라)둘 사이가 안 좋은 이유는 표현을 서로 다르게 받아들이기 때문이다.",
-        options: [
-            "A. (가)-(라)-(나)-(다)",  
-            "B. (가)-(나)-(라)-(다)  ",
-            "C. (나)-(다)-(가)-(라)",
-            "D. (나)-(가)-(다)-(라)",
-        ],
-        correct: 1,
-        level: 1,
-        instruction: "다음을 순서대로 맞게 배열한 것을 고르십시오."
-    },
+import feature1Image from "../../assets/feature_1.png";
+import feature2Image from "../../assets/feature_2.png";
+import feature3Image from "../../assets/feature_3.png";
+import feature4Image from "../../assets/feature_4.png";
+import feature5Image from "../../assets/feature_5.png";
+import banner1Image from "../../assets/banner_1.png";
+import banner2Image from "../../assets/banner_2.jpg";
+import banner3Image from "../../assets/banner_3.png";
+import banner4Image from "../../assets/banner_4.webp";
 
-
-    {
-        id: 5,
-        type: "multiple_choice",
-        question: "(가)시대가 변하면서 회식 문화가 바뀌고 있는 것이다. <br/> (나)직장에서는 좋은 업무 분위기를 위해서 회식을 한다. <br/> (다)예전에는 직장에서 회식을 할 때 주로 술을 많이 마셨다. <br/> (라)그러나 요즘에는 회식 대신에 공연을 관람하거나 맛집을 탐방하는 경우가 늘고 있다.",
-        options: [
-            "A. (나)-(다)-(가)-(라)",  
-            "B. (나)-(다)-(라)-(가) ",
-            "C. (다)-(가)-(나)-(라)",
-            "D. (다)-(나)-(라)-(가)",
-        ],
-        correct: 1,
-        level: 1,
-        instruction: "다음을 순서대로 맞게 배열한 것을 고르십시오."
-    },
-        {
-        id: 6,
-        type: "multiple_choice",
-        question: "소비 심리 ‘봄바람’,백화점 매출 기지개",
-        options: [
-            "A. 소비자들의 구매 욕구가 살아나 백화점 매출이 늘어나고 있다. ", 
-            "B. 날씨의 영향으로 백화점에서 물건을 구입하는 사람들이 많아졌다 ",
-            "C. 백화점에서 매출을 늘리기 위해 행사를 하자 사람들이 모여들었다.",
-            "D. 소비자들의 심리를 반영한 백화점의 매출 전략이 호응을 얻고 있다.",
-        ],
-        correct: 1,
-        level: 1,
-        instruction: "다음 신문 기사의 제목을 가장 잘 설명한 것을 고르십시오."
-    },
-        {
-        id: 7,
-        type: "multiple_choice",
-        question: "한 연구에 따르면 과거에 비해 요즘 사람들의 손톱이 더 빨리 자란다고 한다.80년 전 사람들은 손톱이 한 달에 3mm 정도 자랐지만 최근에는 그보다 길게 3.5mm 정도 자란다는 것이다.손톱 주변을 ( ) 세포 활동이 활발해져 손톱이 더 빨리 자란다.연구팀은 최근 컴퓨터나 휴대전화의 자판을 누르는 등 손가락 끝을 사용하는 일이 많아지면서 손톱이 자라는 것에 영향을 준 것으로 보았다.",
-        options: [
-            "A. 깨끗하게 관리하면",  
-            "B. 감싸서 보호해 주면  ",
-            "C. 자극하는 활동을 하면",
-            "D. 건조하지 않게 해 주면",
-        ],
-        correct: 1,
-        level: 1,
-        instruction: "다음을 읽고 (... )에 들어갈 내용으로 가장 알맞은 것을 고르십시오.(각 2점)"
-    },
-        {
-        id: 8,
-        type: "multiple_choice",
-        question: "물감은 섞거나 덧칠할수록 색이 탁해진다.그래서 19세기 화가들은 점을 찍어색을 표현하는 점묘법을 생각해 냈다.이 기법은 예를 들어 빨간색과 파란 색의 작은 점을 촘촘히 찍어서,조금 떨어진 곳에서 볼 때 점들이 섞여 보라색 으로 보이도록 한 것이다.이렇게 표현한 색은 물감을 섞어서 만든 색보다 훨씬 더 맑고 부드러운 느낌을 준다.이 때문에 점묘법은 회화의 대표적인 표현 기법으로 자리 잡게 되었고 현대 화가들도 즐겨 사용하고 있다.",
-        options: [
-            "A. 이 기법으로 그림을 그리면 그림이 부드럽게 느껴진다.",  
-            "B. 이 기법은 19세기 이후에는 화가들의 외면을 받게 되었다. ",
-            "C. 이 기법은 가까운 곳에서 봐야 색이 섞여 보이는 효과가 있다.",
-            "D. 이 기법으로 그림을 그릴 때는 넓은 간격으로 점을 찍어야 한다.",
-        ],
-        correct: 1,
-        level: 1,
-        instruction: "다음을 읽고 내용이 같은 것을 고르십시오."
-    },
-//listreningnv
-    {
-        id: 9,
-        type: "listening",
-        question: "Nghe và chọn từ đúng:",
-        audioUrl: "https://res.cloudinary.com/di6d1g736/video/upload/v1751510273/009_mp3cut.net_nytnm7.mp3",
-        options: [
-            "A. 화 씨는 회사원입니까?",
-            "B. 화 씨는 회사원입니다",
-            "C. 화 씨는 교사입니까?",
-            "D. 화 씨는 교사입니다",
-        ],
-        correct: 1,
-        level: 3,
-        instruction: "다음 음성을 듣고 맞는 단어를 고르십시오. / Nghe âm thanh và chọn từ đúng."
-    },
-    
+const bannerImages = [
+  banner1Image,
+  banner3Image,
+  banner4Image
 ];
 
-const levelRecommendations = [
-    {
-        level: 1,
-        title: "Cấp độ 1 - Sơ cấp",
-        description: "Học bảng chữ cái Hangeul, từ vựng cơ bản, câu chào hỏi",
-        color: "bg-green-500",
-        icon: "🌱",
-    },
-    {
-        level: 2,
-        title: "Cấp độ 2 - Sơ cấp nâng cao",
-        description: "Ngữ pháp cơ bản, số đếm, thời gian, gia đình",
-        color: "bg-blue-500",
-        icon: "📚",
-    },
-    {
-        level: 3,
-        title: "Cấp độ 3 - Trung cấp",
-        description: "Hoạt động hằng ngày, mua sắm, giao tiếp cơ bản",
-        color: "bg-yellow-500",
-        icon: "🗣️",
-    },
-    {
-        level: 4,
-        title: "Cấp độ 4 - Trung cấp nâng cao",
-        description: "Diễn tả cảm xúc, ý kiến, kể chuyện quá khứ",
-        color: "bg-purple-500",
-        icon: "💭",
-    },
-    {
-        level: 5,
-        title: "Cấp độ 5 - Trung cao cấp",
-        description: "Thảo luận chủ đề phức tạp, đọc hiểu văn bản",
-        color: "bg-red-500",
-        icon: "🎯",
-    },
-    {
-        level: 6,
-        title: "Cấp độ 6 - Cao cấp",
-        description: "Ngữ pháp nâng cao, viết luận, giao tiếp thành thạo",
-        color: "bg-indigo-500",
-        icon: "🏆",
-    },
+const features = [
+  {
+    title: "HỌC THEO LỘ TRÌNH",
+    icon: BookOpen,
+    color: "#FF6B35",
+    items: [
+      "Lộ trình từ Sơ cấp đến Cao cấp",
+      "Học từ vựng, ngữ pháp, luyện nghe, đọc, viết đa dạng",
+      "Cung cấp bài tập để rèn luyện ngay sau khi học",
+      "Kho tài liệu học thuật phong phú"
+    ]
+  },
+  {
+    title: "THI THỬ TOPIK",
+    icon: Target,
+    color: "#FF6B35",
+    items: [
+      "Mô phỏng đề thi Topik theo đúng cấu trúc",
+      "Làm bài thi trên website để quen với việc thi online",
+      "Chấm điểm tự động và phản hồi chi tiết",
+      "Theo dõi tiến độ học tập qua biểu đồ thống kê"
+    ]
+  },
+  {
+    title: "CHAT AI LUYỆN HỘI THOẠI",
+    icon: MessageSquare,
+    color: "#FF6B35",
+    items: [
+      "Luyện hội thoại với AI trong nhiều tình huống",
+      "Nhận phản hồi ngay lập tức để sửa lỗi và cải thiện",
+      "Phát triển kỹ năng giao tiếp Tiếng Hàn tự nhiên",
+      "Tự tin hơn khi nói Tiếng Hàn trong đời sống"
+    ]
+  }
 ];
+
+const reviews = [
+  {
+    name: "Quang Minh",
+    rating: 5,
+    date: "22/01/2024",
+    text: "Ứng dụng rất bổ ích cho người mới bắt đầu học tiếng Hàn. Giao diện thân thiện, dễ sử dụng, các bài học được sắp xếp khoa học."
+  },
+  {
+    name: "Mai Trang",
+    rating: 5,
+    date: "15/02/2024",
+    text: "Mình thích tính năng thi thử TOPIK nhất. Giúp mình làm quen với đề thi và biết được điểm yếu của mình để cải thiện."
+  },
+  {
+    name: "Tuấn Anh",
+    rating: 5,
+    date: "03/03/2024",
+    text: "Chat AI rất hữu ích! Mình có thể luyện nói tiếng Hàn mọi lúc mọi nơi mà không ngại sai. AI sửa lỗi rất chi tiết và dễ hiểu."
+  }
+];
+
+const faqs = [
+  {
+    question: "K-Tiger Study là gì?",
+    answer: "K-Tiger Study là nền tảng học tiếng Hàn trực tuyến toàn diện, cung cấp lộ trình từ cơ bản đến nâng cao, thi thử TOPIK và luyện hội thoại với AI."
+  },
+  {
+    question: "K-Tiger Study có những tính năng gì nổi bật?",
+    answer: "Các tính năng nổi bật bao gồm: Lộ trình học có hệ thống, Thi thử TOPIK theo chuẩn, Chat AI luyện hội thoại, Kho tài liệu phong phú và Theo dõi tiến độ học tập."
+  },
+  {
+    question: "Học phí trên K-Tiger Study như thế nào?",
+    answer: "Chúng tôi cung cấp nhiều gói học khác nhau phù hợp với nhu cầu của từng học viên. Vui lòng liên hệ để biết thêm chi tiết về học phí."
+  },
+  {
+    question: "Tôi có thể đạt được mục tiêu nào khi dùng K-Tiger Study?",
+    answer: "Bạn có thể đạt được các mục tiêu như: Giao tiếp cơ bản, Đạt chứng chỉ TOPIK, Nâng cao kỹ năng nghe-đọc-viết, Tự tin hội thoại tiếng Hàn."
+  },
+  {
+    question: "K-Tiger Study có hỗ trợ học offline không?",
+    answer: "Hiện tại K-Tiger Study chỉ hỗ trợ học trực tuyến. Bạn cần kết nối internet để truy cập các bài học và tính năng của nền tảng."
+  }
+];
+
+const featuresData = [
+  { title: "Nội dung phong phú", image: feature1Image },
+  { title: "Lộ trình học rõ ràng", image: feature2Image },
+  { title: "Bảng xếp hạng & đo lường", image: feature3Image },
+  { title: "Chat AI thông minh", image: feature4Image },
+  { title: "Lý thuyết và đề thi chi tiết", image: feature5Image }
+];
+
 
 export default function LearnHome() {
-    const [currentStep, setCurrentStep] = useState<
-        "intro" | "test" | "result"
-    >("intro");
-    const [currentQuestion, setCurrentQuestion] = useState(0);
-    const [answers, setAnswers] = useState<number[]>([]);
-    const [testResult, setTestResult] = useState<
-        {
-            score: number;
-            recommendedLevel: number;
-            correctAnswers: number;
-        } | null
-    >(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const navigate = useNavigate();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [featureIndex, setFeatureIndex] = useState(2); // Start with middle item
 
-    const userId = Number(localStorage.getItem("userId"));
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % bannerImages.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
-    // ✅ Tính toán kết quả test - TẤT CẢ CÂU ĐỀU 10 ĐIỂM
-    const calculateResult = () => {
-        let correctAnswers = 0;
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % bannerImages.length);
+  };
 
-        // Đếm số câu đúng
-        answers.forEach((answer, index) => {
-            if (answer === placementQuestions[index].correct) {
-                correctAnswers++;
-            }
-        });
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
+  };
 
-        // Tính điểm: mỗi câu đúng = 10 điểm
-        const score = correctAnswers * 10;
+  const nextFeature = () => {
+    setFeatureIndex((prev) => (prev + 1) % featuresData.length);
+  };
 
-      
-        let recommendedLevel = 1;
-        if (correctAnswers >= 9) recommendedLevel = 6;     
-        else if (correctAnswers >= 8) recommendedLevel = 5; 
-        else if (correctAnswers >= 7) recommendedLevel = 4; 
-        else if (correctAnswers >= 6) recommendedLevel = 3; 
-        else if (correctAnswers >= 4) recommendedLevel = 2; 
-        else recommendedLevel = 1;     
+  const prevFeature = () => {
+    setFeatureIndex((prev) => (prev - 1 + featuresData.length) % featuresData.length);
+  };
 
-        return { score, recommendedLevel, correctAnswers };
-    };
+  const getCarouselClass = (index: number) => {
+    const diff = index - featureIndex;
+    const length = featuresData.length;
+    
+    // Normalize difference to handle circular array
+    let normalizedDiff = diff;
+    if (Math.abs(diff) > length / 2) {
+      normalizedDiff = diff > 0 ? diff - length : diff + length;
+    }
+    
+    if (normalizedDiff === 0) return 'carousel-selected';
+    if (normalizedDiff === -1) return 'carousel-prev';
+    if (normalizedDiff === 1) return 'carousel-next';
+    if (normalizedDiff === -2) return 'carousel-prevLeftSecond';
+    if (normalizedDiff === 2) return 'carousel-nextRightSecond';
+    if (normalizedDiff < -2) return 'carousel-hideLeft';
+    if (normalizedDiff > 2) return 'carousel-hideRight';
+    return 'carousel-hideRight';
+  };
 
-    const handleAnswer = (answerIndex: number) => {
-        const newAnswers = [...answers];
-        newAnswers[currentQuestion] = answerIndex;
-        setAnswers(newAnswers);
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
+      {/* Hero Banner */}
+      <section className="relative overflow-hidden">
+        <div className="container mx-auto px-4 py-8">
+          <div className="relative w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden shadow-2xl">
+            {bannerImages.map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt={`Banner ${index + 1}`}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                  index === currentSlide ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            ))}
 
-        if (currentQuestion < placementQuestions.length - 1) {
-            setCurrentQuestion(currentQuestion + 1);
-        } else {
-            // Hoàn thành test
-            const result = calculateResult();
-            setTestResult(result);
-            setCurrentStep("result");
+            {/* Navigation Buttons */}
+            <button
+              onClick={prevSlide}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all"
+            >
+              <ChevronLeft className="w-6 h-6" style={{ color: '#FF6B35' }} />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all"
+            >
+              <ChevronRight className="w-6 h-6" style={{ color: '#FF6B35' }} />
+            </button>
+
+            {/* Dots */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {bannerImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`w-3 h-3 rounded-full transition-all ${
+                    index === currentSlide ? 'bg-white w-8' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TOPIK Roadmap Section */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8" style={{ color: '#333' }}>
+            <span style={{ color: '#FF6B35' }}>K-Tiger Study</span>: Lộ trình nhanh 3 tháng để học ngôn ngữ mastery!
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* TOPIK 1 */}
+            <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: '#FF6B35' }}>
+              <div className="bg-white font-bold py-2 px-4 rounded-full inline-block mb-4" style={{ color: '#FF6B35' }}>
+                TOPIK 1
+              </div>
+              <ul className="space-y-2 text-sm">
+                <li>⭐ Nắm vững 800 từ vựng, 80 cấu trúc ngữ pháp cơ bản</li>
+                <li>⭐ Xây dựng nền tảng Hán-Hàn vững chắc giao tiếp, lắng nghe, đọc, viết cơ bản</li>
+                <li>⭐ Luyện nguyên âm bán âm, ghép vần âm tiết TOPIK 1</li>
+                <li>⭐ Luyện bài tập ghi nhớ từ vựng, ngữ pháp cơ bản TOPIK 1</li>
+                <li>⭐ Luyện bài tập nghe TOPIK 1</li>
+                <li>⭐ Đạt kết quả thi đánh giá</li>
+              </ul>
+            </div>
+
+            {/* TOPIK 2 */}
+            <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: '#FF6B35' }}>
+              <div className="bg-white font-bold py-2 px-4 rounded-full inline-block mb-4" style={{ color: '#FF6B35' }}>
+                TOPIK 2
+              </div>
+              <ul className="space-y-2 text-sm">
+                <li>⭐ Nắm vững 1500 từ vựng, 200 cấu trúc ngữ pháp</li>
+                <li>⭐ Nâng cao khả năng giao tiếp</li>
+                <li>⭐ Luyện tập cấu từ nâng ngữ pháp, câu, đọc, viết từ đầu</li>
+                <li>⭐ Nâng cấp cách lên từ TOPIK 1</li>
+                <li>⭐ Luyện bài tập ghi nhớ từ vựng, ngữ pháp cơ bản TOPIK 2</li>
+                <li>⭐ Luyện bài tập nghe TOPIK 2</li>
+                <li>⭐ Đạt kết quả thi đánh giá</li>
+              </ul>
+            </div>
+
+            {/* TOPIK 3 */}
+            <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: '#FF6B35' }}>
+              <div className="bg-white font-bold py-2 px-4 rounded-full inline-block mb-4" style={{ color: '#FF6B35' }}>
+                TOPIK 3
+              </div>
+              <ul className="space-y-2 text-sm">
+                <li>⭐ Nắm vững 3000 từ vựng, 300 cấu trúc ngữ pháp</li>
+                <li>⭐ Sử dụng tiếng Hàn trong nhiều tình huống</li>
+                <li>⭐ Luyện tập cấu từ nâng ngữ pháp, câu, đọc, viết từ cơ bản đến nâng cao</li>
+                <li>⭐ Phân tích cách dùng hàn từ TOPIK 3</li>
+                <li>⭐ Luyện cách viết văn bản, bài luận nâng cao trình độ trong hàng ngày</li>
+                <li>⭐ Luyện bài tập nghe TOPIK 3</li>
+                <li>⭐ Đạt kết quả thi đánh giá</li>
+              </ul>
+            </div>
+
+            {/* TOPIK 4 */}
+            <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: '#FF6B35' }}>
+              <div className="bg-white font-bold py-2 px-4 rounded-full inline-block mb-4" style={{ color: '#FF6B35' }}>
+                TOPIK 4
+              </div>
+              <ul className="space-y-2 text-sm">
+                <li>⭐ Nắm vững 4500 từ vựng, 400 cấu trúc ngữ pháp</li>
+                <li>⭐ Hiểu và sử dụng ngôn ngữ một cách chính xác và tự nhiên</li>
+                <li>⭐ Luyện tập cấu từ nâng ngữ pháp, câu, đọc, viết TOPIK 4</li>
+                <li>⭐ Nâng cao kỹ năng đọc hiểu tài liệu, bài báo</li>
+                <li>⭐ Luyện viết bài luận, báo cáo chuyên sâu với TOPIK 4 theo hướng dày dặn kinh nghiệm</li>
+                <li>⭐ Đạt kết quả thi đánh giá</li>
+              </ul>
+            </div>
+
+            {/* TOPIK 5 */}
+            <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: '#FF6B35' }}>
+              <div className="bg-white font-bold py-2 px-4 rounded-full inline-block mb-4" style={{ color: '#FF6B35' }}>
+                TOPIK 5
+              </div>
+              <ul className="space-y-2 text-sm">
+                <li>⭐ Nắm vững 6000 từ vựng, 500 cấu trúc ngữ pháp</li>
+                <li>⭐ Giao tiếp thành thạo trong mọi tình huống</li>
+                <li>⭐ Luyện tập cấu từ nâng ngữ pháp, câu, đọc, viết TOPIK 5</li>
+                <li>⭐ Phân tích và nghiên cứu bài văn TOPIK 5</li>
+                <li>⭐ Luyện viết bài luận chuyên sâu, phân tích tác phẩm văn học</li>
+                <li>⭐ Mục tiêu đạt 250 điểm</li>
+              </ul>
+            </div>
+
+            {/* TOPIK 6 */}
+            <div className="rounded-2xl p-6 text-white" style={{ backgroundColor: '#FF6B35' }}>
+              <div className="bg-white font-bold py-2 px-4 rounded-full inline-block mb-4" style={{ color: '#FF6B35' }}>
+                TOPIK 6
+              </div>
+              <ul className="space-y-2 text-sm">
+                <li>⭐ Nắm vững 8000 từ vựng, 600 cấu trúc ngữ pháp</li>
+                <li>⭐ Sử dụng tiếng Hàn như người bản ngữ</li>
+                <li>⭐ Luyện tập cấu từ nâng ngữ pháp, câu, đọc, viết TOPIK 6 nâng cao</li>
+                <li>⭐ Phân tích viết bài với mức độ cao nhất của TOPIK 6 nâng cao tầm hàng ngày cao</li>
+                <li>⭐ Nghiên cứu văn học, văn hóa Hàn Quốc sâu sắc</li>
+                <li>⭐ Chuẩn bị cho các cuộc thi, kỳ thi học bổng TOPIK 6 cao dương sâu bài</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* K-Tiger Study Introduction */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4" style={{ color: '#333' }}>
+            <span style={{ color: '#FF6B35' }}>K-Tiger Study</span>: Làm chủ tiếng Hàn từ nền tảng đến ứng dụng
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            {features.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <div 
+                  key={index}
+                  className="rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow"
+                  style={{ backgroundColor: feature.color }}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                      <IconComponent className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-xl font-bold">{feature.title}</h3>
+                  </div>
+                  <ul className="space-y-2">
+                    {feature.items.map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link 
+                    to={index === 0 ? "/learn/level" : index === 1 ? "/learn/topik" : "/learn/chatai"}
+                    className="mt-4 inline-block bg-white font-semibold px-6 py-2 rounded-full hover:bg-gray-100 transition-colors"
+                    style={{ color: '#FF6B35' }}
+                  >
+                    TÌM HIỂU THÊM →
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Screenshots Section - Carousel Slider */}
+      <section className="py-16" style={{ backgroundColor: '#F5F5F5' }}>
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12" style={{ color: '#333' }}>
+            Tính năng nổi bật
+          </h2>
+          
+          {/* Carousel Container */}
+          <div className="carousel-wrapper relative" style={{ height: '500px' }}>
+            <div id="carousel" className="carousel-container">
+              {featuresData.map((item, index) => (
+                <div 
+                  key={index}
+                  className={`carousel-item ${getCarouselClass(index)}`}
+                  onClick={() => setFeatureIndex(index)}
+                >
+                  <img 
+                    src={item.image} 
+                    alt={item.title}
+                    draggable="false"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const parent = e.currentTarget.parentElement;
+                      if (parent) {
+                        parent.style.backgroundColor = '#e0e0e0';
+                        parent.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">${item.title}</div>`;
+                      }
+                    }}
+                  />
+                  <p className="carousel-title">{item.title}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Navigation Buttons */}
+            <button
+              onClick={prevFeature}
+              className="carousel-btn carousel-btn-prev"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            
+            <button
+              onClick={nextFeature}
+              className="carousel-btn carousel-btn-next"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Dots Indicator */}
+          <div className="flex justify-center gap-2 mt-8">
+            {featuresData.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setFeatureIndex(index)}
+                className={`w-3 h-3 rounded-full transition-all ${
+                  index === featureIndex ? 'w-8' : 'bg-gray-300'
+                }`}
+                style={{ backgroundColor: index === featureIndex ? '#FF6B35' : undefined }}
+              />
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <Link 
+              to="/learn/level"
+              className="inline-block text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all"
+              style={{ backgroundColor: '#FF6B35' }}
+            >
+              BẮT ĐẦU HỌC NGAY
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <style>{`
+        .carousel-wrapper {
+          position: relative;
+          overflow: hidden;
         }
-    };
-
-    const playAudio = async (audioUrl: string) => {
-        try {
-            setIsPlaying(true);
-            const audio = new Audio(audioUrl);
-            audio.play();
-            audio.onended = () => setIsPlaying(false);
-        } catch (error) {
-            console.log("Audio not available in demo");
-            setIsPlaying(false);
+        
+        .carousel-container {
+          position: relative;
+          height: 100%;
+          width: 100%;
         }
-    };
+        
+        .carousel-item {
+          position: absolute;
+          transition: all 600ms cubic-bezier(0.3, 0.7, 0.4, 1);
+          cursor: pointer;
+          top: 50%;
+          border: 2px solid #ddd;
+          border-radius: 12px;
+          overflow: hidden;
+        }
+        
+        .carousel-selected {
+          border: 3px solid #FF6B35;
+        }
+        
+        .carousel-item img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: width 400ms;
+          user-select: none;
+          -webkit-user-drag: none;
+          background-color: #f5f5f5;
+        }
+        
+        .carousel-title {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          text-align: center;
+          padding: 8px;
+          background: rgba(255, 255, 255, 0.95);
+          font-weight: 600;
+          color: #333;
+          font-size: 14px;
+        }
+        
+        .carousel-selected {
+          z-index: 10;
+          left: 50%;
+          transform: translateX(-50%) translateY(-50%);
+          width: 400px;
+          height: 500px;
+          opacity: 1;
+        }
+        
+        .carousel-prev {
+          z-index: 5;
+          left: 30%;
+          transform: translateX(-50%) translateY(calc(-50% + 50px));
+          width: 300px;
+          height: 400px;
+          opacity: 1;
+        }
+        
+        .carousel-next {
+          z-index: 5;
+          left: 70%;
+          transform: translateX(-50%) translateY(calc(-50% + 50px));
+          width: 300px;
+          height: 400px;
+          opacity: 1;
+        }
+        
+        .carousel-prevLeftSecond {
+          z-index: 4;
+          left: 15%;
+          transform: translateX(-50%) translateY(-50%);
+          width: 200px;
+          height: 300px;
+          opacity: 0.7;
+        }
+        
+        .carousel-nextRightSecond {
+          z-index: 4;
+          left: 85%;
+          transform: translateX(-50%) translateY(-50%);
+          width: 200px;
+          height: 300px;
+          opacity: 0.7;
+        }
+        
+        .carousel-hideLeft {
+          left: 0%;
+          opacity: 0;
+          transform: translateX(-50%) translateY(-50%);
+          width: 200px;
+          height: 300px;
+          z-index: 1;
+        }
+        
+        .carousel-hideRight {
+          left: 100%;
+          opacity: 0;
+          transform: translateX(-50%) translateY(-50%);
+          width: 200px;
+          height: 300px;
+          z-index: 1;
+        }
+        
+        .carousel-btn {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 20;
+          width: 50px;
+          height: 50px;
+          background: white;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          transition: all 0.3s;
+          color: #FF6B35;
+        }
+        
+        .carousel-btn:hover {
+          background: #f0f0f0;
+          transform: translateY(-50%) scale(1.1);
+        }
+        
+        .carousel-btn-prev {
+          left: 20px;
+        }
+        
+        .carousel-btn-next {
+          right: 20px;
+        }
+        
+        @media (max-width: 768px) {
+          .carousel-selected {
+            width: 280px;
+            height: 400px;
+          }
+          .carousel-prev, .carousel-next {
+            width: 200px;
+            height: 300px;
+          }
+          .carousel-prevLeftSecond, .carousel-nextRightSecond {
+            width: 150px;
+            height: 220px;
+            opacity: 0.5;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          .carousel-selected {
+            width: 280px;
+          }
+          .carousel-prev, .carousel-next {
+            width: 200px;
+          }
+          .carousel-prevLeftSecond, .carousel-nextRightSecond {
+            width: 150px;
+            opacity: 0.5;
+          }
+        }
+      `}</style>
 
-    const startLearning = (level: number) => {
-        // Chuyển đến trang học theo cấp độ
-        navigate(`/learn/lesson?levelId=${level}`);
-    };
-
-    const retakeTest = () => {
-        setCurrentStep("test");
-        setCurrentQuestion(0);
-        setAnswers([]);
-        setTestResult(null);
-    };
-
-    // Intro Screen
-    if (currentStep === "intro") {
-        return (
-            <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#FFF8F0' }}>
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="max-w-2xl w-full rounded-3xl shadow-2xl p-8 text-center"
-                    style={{ backgroundColor: '#FFFFFF' }}
-                >
-                    <div className="mb-6">
-                        <div className="mb-4">
-                            <div className="w-28 h-28 mx-auto rounded-full shadow-lg flex items-center justify-center" style={{ backgroundColor: '#FFE8DC' }}>
-                                <img 
-                                    src={hoHanImage}
-                                    className="w-24 h-24 object-contain"
-                                    alt="Ho Han"
-                                />
-                            </div>
-                        </div>
-                        <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: '#333333' }}>
-                            Chào mừng đến với{" "}
-                            <span style={{ color: '#FF6B35' }}>K-Tiger</span>
-                            <span style={{ color: '#4CAF50' }}>Study</span>
-                        </h1>
-                        <p className="text-lg" style={{ color: '#666666' }}>
-                            Hành trình học tiếng Hàn của bạn bắt đầu từ đây!
-                        </p>
-                    </div>
-
-                    <div className="p-6 rounded-2xl mb-6" style={{ backgroundColor: '#FF6B35' }}>
-                        <h2 className="text-2xl font-bold mb-3 text-white">🎯 Kiểm tra trình độ</h2>
-                        <p className="mb-4" style={{ color: '#FFE8DC' }}>
-                            Làm 9 câu hỏi nhanh để chúng tôi đánh giá trình độ và gợi ý cấp độ
-                            học phù hợp nhất cho bạn
-                        </p>
-                        <div className="flex items-center justify-center gap-3 text-sm text-white">
-                            <span className="px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>⏱️ ~3 phút</span>
-                            <span className="px-3 py-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>📝 9 câu hỏi</span>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-4 justify-center">
-                        <button
-                            onClick={() => setCurrentStep("test")}
-                            className="text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                            style={{ backgroundColor: '#4CAF50' }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2E7D32'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
-                        >
-                            🚀 Bắt đầu kiểm tra
-                        </button>
-                    </div>
-                </motion.div>
+      {/* Goals Section */}
+      <section className="py-16 text-white" style={{ backgroundColor: '#FF6B35' }}>
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            ĐẶT MỤC TIÊU LỚN TỪ NHỮNG MỤC TIÊU NHỎ
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Lộ trình chi tiết */}
+            <div>
+              <h3 className="text-2xl font-bold mb-4">LỘ TRÌNH CHI TIẾT</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>Xác định mục tiêu Topik 1, 2 hoặc 3</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>Lộ trình từ ngữ pháp cơ bản đến nâng cao</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>Học từ vựng thông dụng và theo chủ đề</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>Luyện tập nghe, đọc hiểu theo từng cấp độ</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>Ôn luyện VIẾT và THI THỬ định kỳ</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>Thực hành MỖI NGÀY đều đặn</span>
+                </li>
+              </ul>
             </div>
-        );
-    }
 
-    // Test Screen
-    if (currentStep === "test") {
-        const question = placementQuestions[currentQuestion];
-
-        return (
-            <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#FFF8F0' }}>
-                <motion.div
-                    key={currentQuestion}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="max-w-3xl w-full rounded-3xl shadow-2xl p-6 md:p-8"
-                    style={{ backgroundColor: '#FFFFFF' }}
-                >
-                    {/* Progress Bar */}
-                    <div className="mb-6">
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-semibold" style={{ color: '#333333' }}>
-                                Câu {currentQuestion + 1} / {placementQuestions.length}
-                            </span>
-                            <span className="text-sm font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}>
-                                Cấp độ {question.level}
-                            </span>
-                        </div>
-                        <div className="w-full rounded-full h-3" style={{ backgroundColor: '#E0E0E0' }}>
-                            <div
-                                className="h-3 rounded-full transition-all duration-300"
-                                style={{
-                                    width: `${((currentQuestion + 1) / placementQuestions.length) * 100}%`,
-                                    background: 'linear-gradient(90deg, #FF6B35 0%, #4CAF50 100%)'
-                                }}
-                            ></div>
-                        </div>
-                    </div>
-
-                    {/* Instruction */}
-                    <div className="mb-6 p-4 rounded-xl" style={{ backgroundColor: '#FFF8F0', borderLeft: '4px solid #FF6B35' }}>
-                        <p className="text-lg font-bold leading-relaxed" style={{ color: '#333333' }}>
-                            {question.instruction}
-                        </p>
-                    </div>
-
-                    {/* Question */}
-                    <div className="mb-6">
-                        <h2 
-                            className="text-lg leading-relaxed"
-                            style={{ color: '#333333' }}
-                            dangerouslySetInnerHTML={{ __html: question.question }}
-                        />
-
-                        {/* Audio Player for listening questions */}
-                        {question.type === "listening" && (
-                            <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: '#FFF8F0' }}>
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-xl" style={{ backgroundColor: '#FF6B35' }}>
-                                        🎧
-                                    </div>
-                                    <span className="font-semibold" style={{ color: '#FF6B35' }}>Phần nghe</span>
-                                </div>
-                                
-                                <audio
-                                    controls
-                                    className="w-full rounded-lg"
-                                    style={{ display: "block", width: "100%" }}
-                                >
-                                    <source src={question.audioUrl} type="audio/mpeg" />
-                                    Trình duyệt của bạn không hỗ trợ audio.
-                                </audio>
-                                
-                                <p className="text-sm mt-2" style={{ color: '#666666' }}>
-                                    💡 Bạn có thể nghe lại nhiều lần bằng cách sử dụng thanh điều khiển
-                                </p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Options */}
-                    <div className="space-y-3">
-                        {question.options.map((option, index) => (
-                            <button
-                                key={index}
-                                onClick={() => handleAnswer(index)}
-                                className="w-full p-4 text-left rounded-xl border-2 transition-all group flex items-center gap-3"
-                                style={{ borderColor: '#BDBDBD', backgroundColor: '#FFFFFF' }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.borderColor = '#FF6B35';
-                                    e.currentTarget.style.backgroundColor = '#FFE8DC';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.borderColor = '#BDBDBD';
-                                    e.currentTarget.style.backgroundColor = '#FFFFFF';
-                                }}
-                            >
-                                <div 
-                                    className="w-8 h-8 border-2 rounded-full flex items-center justify-center text-sm font-bold transition-all"
-                                    style={{ borderColor: '#BDBDBD', color: '#666666' }}
-                                >
-                                    {String.fromCharCode(65 + index)}
-                                </div>
-                                <span className="font-medium" style={{ color: '#333333' }}>
-                                    {option}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Tips */}
-                    {/* <div className="mt-6 p-3 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-600 text-center">
-                            💡 <strong>Mẹo:</strong> Đọc kỹ hướng dẫn trước khi chọn đáp án
-                        </p>
-                    </div> */}
-                </motion.div>
+            {/* Bài tập của chúng mình đảm bảo đạt điểm cao */}
+            <div>
+              <h3 className="text-2xl font-bold mb-4">BÀI TẬP CỦA CHÚNG MÌNH ĐẢM BẢO ĐẠT ĐIỂM CAO</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>Luyện thi TOPIK với đề mẫu chuẩn Hàn Quốc</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>Bài tập ngữ pháp, câu, đọc, nghe, viết với lời giải chi tiết</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>Hệ thống chấm điểm và phân tích kết quả tự động</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>Đề xuất bài tập cải thiện dựa trên điểm yếu</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <span>So sánh điểm số với học viên khác qua bảng xếp hạng</span>
+                </li>
+              </ul>
             </div>
-        );
-    }
+          </div>
+        </div>
+      </section>
 
-    // Result Screen
-    if (currentStep === "result" && testResult) {
-        const recommendation = levelRecommendations[testResult.recommendedLevel - 1];
-
-        return (
-            <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#FFF8F0' }}>
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="max-w-4xl w-full rounded-3xl shadow-2xl p-6 md:p-8"
-                    style={{ backgroundColor: '#FFFFFF' }}
-                >
-                    <div className="text-center mb-8">
-                        <div className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center text-5xl" style={{ backgroundColor: '#FFE8DC' }}>
-                            🎉
-                        </div>
-                        <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: '#333333' }}>
-                            Kết quả kiểm tra trình độ
-                        </h1>
-                        <p className="text-lg" style={{ color: '#666666' }}>
-                            Bạn đã hoàn thành bài kiểm tra! Đây là kết quả và đề xuất của chúng tôi
-                        </p>
+    
+      {/* User Reviews */}
+      <section className="py-16" style={{ backgroundColor: '#F5F5F5' }}>
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12" style={{ color: '#333' }}>
+            Học viên nói gì về K-Tiger Study
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {reviews.map((review, index) => (
+              <div key={index} className="bg-white p-6 rounded-2xl shadow-lg">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: '#FF6B35' }}>
+                    {review.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">{review.name}</h4>
+                    <div className="flex items-center gap-1">
+                      {[...Array(review.rating)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                      <span className="text-xs text-gray-500 ml-1">{review.date}</span>
                     </div>
+                  </div>
+                </div>
+                <p className="text-gray-700 text-sm">{review.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                    {/* Score Card */}
-                    <div className="p-6 rounded-2xl mb-6" style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' }}>
-                        <div className="grid grid-cols-3 gap-4 text-center text-white">
-                            <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                                <div className="text-3xl font-bold">{testResult.score}</div>
-                                <div style={{ color: '#FFE8DC' }}>Điểm số</div>
-                            </div>
-                            <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                                <div className="text-3xl font-bold">
-                                    {testResult.correctAnswers}/{placementQuestions.length}
-                                </div>
-                                <div style={{ color: '#FFE8DC' }}>Câu đúng</div>
-                            </div>
-                            <div className="p-3 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                                <div className="text-3xl font-bold">
-                                    {Math.round((testResult.correctAnswers / placementQuestions.length) * 100)}%
-                                </div>
-                                <div style={{ color: '#FFE8DC' }}>Tỷ lệ đúng</div>
-                            </div>
-                        </div>
-                    </div>
+      {/* FAQ Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12" style={{ color: '#333' }}>
+            CÂU HỎI THƯỜNG GẶP
+          </h2>
+          
+          <div className="max-w-3xl mx-auto space-y-4">
+            {faqs.map((faq, index) => (
+              <details key={index} className="bg-white border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-[#FF6B35] transition-colors">
+                <summary className="font-semibold text-lg flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0" style={{ backgroundColor: '#FF6B35' }}>
+                    {index + 1}
+                  </div>
+                  {faq.question}
+                </summary>
+                <p className="mt-4 ml-11 text-gray-700">{faq.answer}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                    {/* Recommended Level */}
-                    <div
-                        className="text-white p-6 rounded-2xl mb-6"
-                        style={{ backgroundColor: '#4CAF50' }}
-                    >
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="w-16 h-16 rounded-full flex items-center justify-center text-3xl" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
-                                {recommendation.icon}
-                            </div>
-                            <div>
-                                <h2 className="text-2xl font-bold">{recommendation.title}</h2>
-                                <p style={{ color: 'rgba(255,255,255,0.9)' }}>
-                                    {recommendation.description}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-                            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.95)' }}>
-                                💡 <strong>Gợi ý:</strong> Bạn nên bắt đầu học từ cấp độ này để có
-                                nền tảng vững chắc và tiến bộ một cách hiệu quả nhất.
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* All Levels Overview */}
-                    <div className="mb-8">
-                        <h3 className="text-xl font-bold mb-4" style={{ color: '#333333' }}>
-                            🗺️ Tổng quan tất cả cấp độ
-                        </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            {levelRecommendations.map((level, index) => (
-                                <div
-                                    key={index}
-                                    className="p-4 rounded-xl border-2 transition-all cursor-pointer"
-                                    style={{
-                                        borderColor: level.level === testResult.recommendedLevel ? '#FF6B35' : '#BDBDBD',
-                                        backgroundColor: level.level === testResult.recommendedLevel ? '#FFE8DC' : '#FFFFFF',
-                                        boxShadow: level.level === testResult.recommendedLevel ? '0 4px 12px rgba(255,107,53,0.2)' : 'none'
-                                    }}
-                                    onClick={() => startLearning(level.level)}
-                                >
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-2xl">{level.icon}</span>
-                                        <span className="font-semibold" style={{ color: '#333333' }}>
-                                            Cấp {level.level}
-                                        </span>
-                                        {level.level === testResult.recommendedLevel && (
-                                            <span className="text-white text-xs px-2 py-1 rounded-full" style={{ backgroundColor: '#FF6B35' }}>
-                                                Đề xuất
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-sm" style={{ color: '#666666' }}>
-                                        {level.description}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <button
-                            onClick={() => startLearning(testResult.recommendedLevel)}
-                            className="text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                            style={{ backgroundColor: '#FF6B35' }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E55A2B'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF6B35'}
-                        >
-                            🚀 Bắt đầu học cấp {testResult.recommendedLevel}
-                        </button>
-                        <button
-                            onClick={retakeTest}
-                            className="px-8 py-4 rounded-xl font-semibold text-lg transition-all"
-                            style={{ backgroundColor: '#E0E0E0', color: '#333333' }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#BDBDBD'}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#E0E0E0'}
-                        >
-                            🔄 Làm lại test
-                        </button>
-                    </div>
-                </motion.div>
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Brand Info */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FF6B35' }}>
+                  <span className="text-white font-bold text-xl">K</span>
+                </div>
+                <span className="text-xl font-bold">K-Tiger Study</span>
+              </div>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                K-Tiger Study - Ứng dụng luyện thi TOPIK chuyên biệt, giúp bạn học đúng và đạng và đạt được mục tiêu từ vựng, ngữ pháp, nghe đọc và viết theo cấu trúc của từng cấp độ. Thư viện tài nguyên kĩ thuật đa dạng và tổ chức theo lộ trình học được cơ nhận hỗi trợ lúc và lộ trình học được cơ nhận hỗi trợ từ từ người học.
+              </p>
+              
+              <div className="mt-6">
+                <p className="text-gray-400 text-sm font-semibold mb-2">Thông tin liên hệ:</p>
+                <p className="text-gray-400 text-sm">📞 Hotline: (+84) 389.093.655</p>
+                <p className="text-gray-400 text-sm mt-1">📧 Email: <a href="mailto:tintc.21it@vku.udn.vn" className="hover:underline" style={{ color: '#FF6B35' }}>tintc.21it@vku.udn.vn</a></p>
+                <p className="text-gray-400 text-sm mt-1">📍 Địa chỉ: 57 Huỳnh Thúc Kháng, Khối phố Bàn Thạch, phường Hòa Hương, thành phố Tam Kì, tỉnh Quảng Nam</p>
+              </div>
             </div>
-        );
-    }
 
-    return null;
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-lg font-bold mb-4">Mọi người quan tâm</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/about" className="text-gray-400 hover:text-[#FF6B35] text-sm transition-colors">
+                    ▸ Về K-Tiger Study
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/terms" className="text-gray-400 hover:text-[#FF6B35] text-sm transition-colors">
+                    ▸ Điều khoản & Điều kiện
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h3 className="text-lg font-bold mb-4">Liên hệ với chúng tôi</h3>
+              <div className="flex gap-3">
+                <a 
+                  href="https://www.facebook.com/ttantai23" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors"
+                >
+                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </a>
+                <a 
+                  href="https://zalo.me" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors"
+                >
+                  <span className="text-white font-bold text-lg">Z</span>
+                </a>
+                <a 
+                  href="mailto:tintc.21it@vku.udn.vn"
+                  className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                >
+                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* App Download */}
+            <div>
+              <h3 className="text-lg font-bold mb-4">Tải ứng dụng</h3>
+              <div className="space-y-3">
+                <a 
+                  href="#" 
+                  className="block bg-black hover:bg-gray-900 rounded-lg px-4 py-2 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                    </svg>
+                    <div>
+                      <p className="text-xs text-gray-400">Download on the</p>
+                      <p className="text-sm font-semibold">App Store</p>
+                    </div>
+                  </div>
+                </a>
+                <a 
+                  href="#" 
+                  className="block bg-black hover:bg-gray-900 rounded-lg px-4 py-2 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+                    </svg>
+                    <div>
+                      <p className="text-xs text-gray-400">GET IT ON</p>
+                      <p className="text-sm font-semibold">Google Play</p>
+                    </div>
+                  </div>
+                </a>
+              </div>
+
+              <div className="mt-6">
+                <h4 className="text-sm font-semibold mb-3">Ứng dụng khác</h4>
+                <div className="flex gap-2">
+                  <div className="w-12 h-12 bg-teal-500 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-xs">JLPT</span>
+                  </div>
+                  <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-xs">TOE</span>
+                  </div>
+                  <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-xs">TIE</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <img 
+                  src="https://www.dmca.com/img/dmca-badge-w150-5x1-09.png" 
+                  alt="DMCA Protected" 
+                  className="w-32"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-8 pt-8 border-t border-gray-700 text-center">
+            <p className="text-gray-400 text-sm">
+              © 2024 K-Tiger Study. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
 }
