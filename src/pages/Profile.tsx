@@ -25,6 +25,23 @@ interface UserProfile {
   };
 }
 
+interface UserXP {
+  userXPId: number;
+  user: any;
+  totalXP: number;
+  levelNumber: number;
+  currentTitle: string;
+  currentBadge: string;
+}
+
+interface UserProgress {
+  progressId: number;
+  user: any;
+  lesson: any;
+  lastAccessed: string;
+  isLessonCompleted: boolean;
+}
+
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
@@ -43,7 +60,7 @@ const Profile = () => {
     fetchUserData();
   }, []);
 
-  const fetchUserData = () => {
+  const fetchUserData = async () => {
     const userStr = localStorage.getItem("user");
     if (!userStr) return;
 
@@ -52,31 +69,137 @@ const Profile = () => {
 
     if (!userId) return;
 
-    fetch(`http://localhost:8080/api/users/${userId}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Không lấy được thông tin người dùng");
-        return res.json();
-      })
-      .then((data: UserProfile) => {
-        // Thêm giá trị mặc định "Chưa cập nhật" cho các trường trống
-        const updatedData = {
-          ...data,
-          dateOfBirth: data.dateOfBirth || "Chưa cập nhật",
-          gender: data.gender || "Chưa cập nhật",
-          learningStats: data.learningStats || {
-            completedLessons: 15,
-            totalPoints: 2540,
-            streak: 7,
-            level: 3,
-            progressPercent: 45,
-          },
-        };
-        setUser(updatedData);
-      })
-      .catch((err) => {
-        console.error("Lỗi khi fetch user:", err);
-        showFeedback("Lỗi khi tải thông tin người dùng", "error");
-      });
+    try {
+      // Fetch thông tin người dùng cơ bản
+      const userResponse = await fetch(`http://localhost:8080/api/users/${userId}`);
+      if (!userResponse.ok) throw new Error("Không lấy được thông tin người dùng");
+      const userData: UserProfile = await userResponse.json();
+
+      // Fetch dữ liệu XP (totalxp, level_number)
+      let userXP: UserXP | null = null;
+      try {
+        const xpResponse = await fetch(`http://localhost:8080/api/user-xp/${userId}`);
+        console.log("XP Response status:", xpResponse.status);
+        if (xpResponse.ok) {
+          userXP = await xpResponse.json();
+          console.log("User XP data:", userXP);
+        } else {
+          console.warn("API userxp không tồn tại hoặc lỗi, sử dụng dữ liệu mặc định");
+        }
+      } catch (error) {
+        console.error("Lỗi khi fetch XP:", error);
+      }
+
+      // Fetch user progress (completed lessons)
+      let completedLessons = 0;
+      let streak = 0;
+      
+      try {
+        const progressResponse = await fetch(`http://localhost:8080/api/user-progress/user/${userId}`);
+        console.log("========== USER PROGRESS DEBUG ==========");
+        console.log("Progress API URL:", `http://localhost:8080/api/user-progress/user/${userId}`);
+        console.log("Progress Response status:", progressResponse.status);
+        
+        if (progressResponse.ok) {
+          const progressData: UserProgress[] = await progressResponse.json();
+          console.log("✅ User Progress data RAW:", JSON.stringify(progressData, null, 2));
+          console.log("📊 Total records:", progressData.length);
+          
+          // Log từng record
+          progressData.forEach((p, index) => {
+            console.log(`Record ${index}:`, {
+              isLessonCompleted: p.isLessonCompleted,
+              type: typeof p.isLessonCompleted,
+              lastAccessed: p.lastAccessed
+            });
+          });
+          
+          // Đếm số bài học đã hoàn thành
+          completedLessons = progressData.filter(p => p.isLessonCompleted === true).length;
+          console.log("✅ Completed lessons:", completedLessons);
+          
+          // Tính streak (số ngày học liên tiếp)
+          streak = calculateStreak(progressData);
+          console.log("✅ Streak:", streak);
+        } else {
+          const errorText = await progressResponse.text();
+          console.warn("❌ API user-progress lỗi:", progressResponse.status, errorText);
+        }
+      } catch (error) {
+        console.error("❌ Lỗi khi fetch Progress:", error);
+      }
+
+      // Tính progress percent dựa trên level
+      const progressPercent = userXP ? Math.min((userXP.totalXP % 200) / 200 * 100, 100) : 0;
+
+      // Cập nhật dữ liệu người dùng với thông tin thực tế
+      const updatedData = {
+        ...userData,
+        dateOfBirth: userData.dateOfBirth || "Chưa cập nhật",
+        gender: userData.gender || "Chưa cập nhật",
+        learningStats: {
+          completedLessons: completedLessons,
+          totalPoints: userXP?.totalXP || 0,
+          streak: streak,
+          level: userXP?.levelNumber || 1,
+          progressPercent: Math.round(progressPercent),
+        },
+      };
+      
+      console.log("Final user data:", updatedData);
+      setUser(updatedData);
+    } catch (err) {
+      console.error("Lỗi khi fetch user:", err);
+      showFeedback("Lỗi khi tải thông tin người dùng", "error");
+    }
+  };
+
+  // Hàm tính số ngày học liên tiếp
+  const calculateStreak = (progressData: UserProgress[]): number => {
+    if (progressData.length === 0) return 0;
+
+    // Sắp xếp theo ngày giảm dần
+    const sortedProgress = progressData
+      .filter(p => p.lastAccessed)
+      .map(p => new Date(p.lastAccessed))
+      .sort((a, b) => b.getTime() - a.getTime());
+
+    // Lấy các ngày duy nhất
+    const uniqueDates = Array.from(new Set(
+      sortedProgress.map(date => date.toDateString())
+    )).map(dateStr => new Date(dateStr));
+
+    if (uniqueDates.length === 0) return 0;
+
+    // Kiểm tra xem ngày gần nhất có phải hôm nay hoặc hôm qua không
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const lastDate = new Date(uniqueDates[0]);
+    lastDate.setHours(0, 0, 0, 0);
+    
+    const daysDiff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Nếu ngày cuối cùng không phải hôm nay hoặc hôm qua, streak = 0
+    if (daysDiff > 1) return 0;
+
+    // Đếm số ngày liên tiếp
+    let streak = 1;
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const currentDate = new Date(uniqueDates[i - 1]);
+      const prevDate = new Date(uniqueDates[i]);
+      currentDate.setHours(0, 0, 0, 0);
+      prevDate.setHours(0, 0, 0, 0);
+      
+      const diff = Math.floor((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (diff === 1) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    return streak;
   };
 
   // Hàm hiển thị thông báo
