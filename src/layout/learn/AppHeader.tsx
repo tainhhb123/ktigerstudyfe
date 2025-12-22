@@ -44,7 +44,7 @@ const AppHeader: React.FC = () => {
     <header className="sticky top-0 flex w-full z-50 shadow-sm" style={{ backgroundColor: '#FFF8F0', borderBottom: '1px solid #BDBDBD' }}>
       <div className="flex items-center justify-between w-full px-4 py-3 lg:px-6 lg:py-4">
         {/* Logo */}
-        <Link to="/learn" className="flex items-center shrink-0 gap-0.5">
+        <Link to="/" className="flex items-center shrink-0 gap-0.5">
           <span className="text-2xl lg:text-3xl font-extrabold tracking-tight" style={{ color: '#FF6B35' }}>
             K-Tiger
           </span>

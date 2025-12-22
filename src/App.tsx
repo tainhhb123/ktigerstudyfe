@@ -10,6 +10,7 @@ import Home from "./pages/Dashboard/Home";
 
 import TopikWritingSection from './pages/Learn/TopikWritingSection';
 import LearnHome from "./pages/Learn/LearnHome";
+import LearnHomePage from "./pages/Learn/LearnHomePage";
 import TopikExamList from "./pages/Learn/TopikExamList";
 import TopikExamDetail from "./pages/Learn/TopikExamDetail";
 import ExamAttempt from "./pages/Learn/ExamAttempt";
@@ -154,13 +155,15 @@ export default function App() {
           <Route path="topik/result/:attemptId" element={<TopikExamResult />} />
           <Route path="topik/writing/:attemptId" element={<TopikWritingSection />} />
         </Route>
-        <Route path="/*" element={<LearnAppLayout />}>
 
-          <Route path="profile" element={<Profile />} />      
-          <Route path="profile/change-password" element={<ChangePasswordForm />} />
-
-        
+        {/* Trang chủ (/) cũng dùng layout học để có header */}
+        <Route path="/" element={<LearnAppLayout />}>
+          <Route index element={<LearnHomePage />} />
         </Route>
+
+        {/* Profile and other user pages (outside learn layout) */}
+        <Route path="profile" element={<Profile />} />
+        <Route path="profile/change-password" element={<ChangePasswordForm />} />
 
         {/* === Auth & Fallback === */}
         <Route path="signin" element={<SignIn />} />
