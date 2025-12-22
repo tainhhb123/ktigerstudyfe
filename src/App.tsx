@@ -158,7 +158,7 @@ export default function App() {
 
         {/* Trang chủ (/) cũng dùng layout học để có header */}
         <Route path="/" element={<LearnAppLayout />}>
-          <Route index element={<LearnHomePage />} />
+          <Route index element={<LearnHome />} />
         </Route>
 
         {/* Profile and other user pages (outside learn layout) */}
