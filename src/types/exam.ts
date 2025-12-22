@@ -100,3 +100,49 @@ export interface UserAnswerRequest {
   choiceId?: number;
   answerText?: string;
 }
+
+// ===== Exam Result Types (matching Backend) =====
+export interface ExamResultResponse {
+  attemptId: number;
+  totalScore: number;
+  totalQuestions: number;
+  correctAnswers: number;
+  sectionResults: Record<string, SectionResultResponse>; // Map<String, SectionResultResponse> from BE
+  questions: QuestionResultResponse[];
+}
+
+export interface SectionResultResponse {
+  sectionType: string; // "LISTENING" | "WRITING" | "READING"
+  score: number;
+  totalPoints: number;
+  correctCount: number;
+  totalCount: number;
+  percentage: number;
+}
+
+// ✨ AI Score Breakdown cho ESSAY questions
+export interface AIScoreBreakdown {
+  content: number;       // Nội dung (0-40)
+  grammar: number;       // Ngữ pháp (0-30)
+  vocabulary: number;    // Từ vựng (0-20)
+  organization: number;  // Tổ chức (0-10)
+}
+
+export interface QuestionResultResponse {
+  questionId: number;
+  questionNumber: number;
+  questionText: string;
+  questionType: string; // "MCQ" | "SHORT" | "ESSAY"
+  sectionType: string; // "LISTENING" | "WRITING" | "READING"
+  userAnswer?: string;
+  correctAnswer?: string;
+  isCorrect: boolean; // @JsonProperty("isCorrect") from BE
+  score: number;
+  maxScore: number;
+  
+  // ✨ AI Grading fields (cho ESSAY questions)
+  aiScore?: number;                 // Điểm AI (0-100)
+  aiFeedback?: string;              // Nhận xét từ AI
+  aiBreakdown?: AIScoreBreakdown;   // Chi tiết điểm theo tiêu chí
+  aiSuggestions?: string[];         // Gợi ý cải thiện
+}

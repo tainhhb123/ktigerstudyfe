@@ -10,7 +10,7 @@ function DashboardLayoutContent() {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
   return (
-    <div className="min-h-screen xl:flex">
+    <div className="min-h-screen xl:flex" style={{ backgroundColor: '#FFF8F0' }}>
       <AppSidebar />
       <Backdrop />
 
