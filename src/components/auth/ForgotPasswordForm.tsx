@@ -21,6 +21,7 @@ const ForgotPasswordForm: React.FC = () => {
     try {
       await axios.post("http://localhost:8080/api/auth/forgot-password", {
         email,
+        platform: "web" // Backend yêu cầu thêm field platform
       });
       setSuccess("Nếu email hợp lệ, hệ thống đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra hộp thư!");
       setEmail("");

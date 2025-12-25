@@ -99,7 +99,39 @@ const TopikExamResult = () => {
     });
   };
 
-  const sections = Object.entries(result.sectionResults);
+  // 🔧 FIX: Backend đang trả về sai totalPoints và totalCount
+  // Cần override với giá trị đúng dựa trên TOPIK structure
+  const getCorrectSectionData = (sectionType: string, section: any) => {
+    let correctTotalPoints = section.totalPoints;
+    let correctTotalCount = section.totalCount;
+    
+    // TOPIK II structure
+    if (sectionType === 'LISTENING') {
+      correctTotalPoints = 100; // 50 câu × 2đ
+      correctTotalCount = 50;
+    } else if (sectionType === 'READING') {
+      correctTotalPoints = 100; // 50 câu × 2đ
+      correctTotalCount = 50;
+    } else if (sectionType === 'WRITING') {
+      correctTotalPoints = 100; // 4 câu (10+10+30+50)
+      correctTotalCount = 4;
+    }
+    
+    // Recalculate percentage based on correct totalPoints
+    const correctPercentage = (section.score / correctTotalPoints) * 100;
+    
+    return {
+      ...section,
+      totalPoints: correctTotalPoints,
+      totalCount: correctTotalCount,
+      percentage: correctPercentage
+    };
+  };
+
+  const sections = Object.entries(result.sectionResults).map(([sectionType, section]) => [
+    sectionType,
+    getCorrectSectionData(sectionType, section)
+  ]);
   
   // Lấy câu hỏi theo tab hiện tại
   const getFilteredQuestions = () => {
@@ -275,6 +307,9 @@ const TopikExamResult = () => {
                       {result.correctAnswers}
                       <span className="text-lg" style={{ color: '#999999' }}>/{result.totalQuestions}</span>
                     </div>
+                    <div className="text-xs mt-1" style={{ color: '#999999' }}>
+                      {((result.correctAnswers / result.totalQuestions) * 100).toFixed(1)}% đúng
+                    </div>
                   </div>
                   
                   <div className="rounded-lg p-5" style={{ backgroundColor: '#E3F2FD', border: '2px solid #2196F3' }}>
@@ -325,6 +360,14 @@ const TopikExamResult = () => {
                               <span className="font-bold" style={{ color: colors.text }}>
                                 {section.correctCount}/{section.totalCount}
                               </span>
+                            </div>
+                            
+                            {/* Hiển thị chi tiết tính điểm */}
+                            <div className="text-xs" style={{ color: '#999999' }}>
+                              {sectionType === 'LISTENING' || sectionType === 'READING' 
+                                ? `${section.correctCount} câu × 2đ = ${section.score.toFixed(0)}đ`
+                                : `4 câu (10+10+30+50 = 100đ)`
+                              }
                             </div>
                             
                             {/* Progress bar */}

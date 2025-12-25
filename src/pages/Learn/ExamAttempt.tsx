@@ -518,9 +518,7 @@ const ExamAttempt = () => {
               {/* Audio Player (for Listening section) */}
               {currentSection.sectionType === 'LISTENING' && currentSection.audioUrl && (
                 <div className="mb-6 p-4 rounded-lg border-2" style={{ backgroundColor: '#E8F5E9', borderColor: '#4CAF50' }}>
-                  <div className="mb-2 text-sm font-semibold" style={{ color: '#2E7D32' }}>
-                    ⚠️ Lưu ý: Audio sẽ chạy liên tục, không thể tạm dừng hoặc tua tới/lui.
-                  </div>
+                 
                   <style>{`
                     .audio-no-seek::-webkit-media-controls-timeline,
                     .audio-no-seek::-webkit-media-controls-current-time-display,

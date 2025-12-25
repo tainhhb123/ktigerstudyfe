@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAllLevels } from "../../services/LevelApi"; 
 import { Book, Star, Trophy, Target, Rocket, Crown, GraduationCap, Medal } from "phosphor-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
+import { authService } from "../../services/authService";
 
 type Level = { 
   levelId: number;
@@ -66,6 +69,7 @@ export default function LevelSelect() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showPlacementPopup, setShowPlacementPopup] = useState(false);
   const navigate = useNavigate();
 
   // Hàm lấy cấu hình cho từng level dựa trên index
@@ -78,6 +82,18 @@ export default function LevelSelect() {
       .then((data) => {
         setLevels(data);
         setLoading(false);
+        
+        // Kiểm tra xem đã hiện popup cho user hiện tại chưa
+        const userId = authService.getUserId();
+        if (userId) {
+          const popupKey = `hasSeenPlacementPopup_${userId}`;
+          const hasSeenPopup = sessionStorage.getItem(popupKey);
+          
+          // Chỉ hiện popup nếu chưa xem trong session này
+          if (!hasSeenPopup) {
+            setShowPlacementPopup(true);
+          }
+        }
       })
       .catch(() => {
         setError("Không lấy được dữ liệu cấp độ.");
@@ -87,6 +103,23 @@ export default function LevelSelect() {
 
   const handleClick = (levelId: number, levelName: string) => {
     navigate(`/learn/lesson?levelId=${levelId}`);
+  };
+
+  const handleStartPlacementTest = () => {
+    const userId = authService.getUserId();
+    if (userId) {
+      sessionStorage.setItem(`hasSeenPlacementPopup_${userId}`, 'true');
+    }
+    setShowPlacementPopup(false);
+    navigate('/learn/placement-test');
+  };
+
+  const handleClosePopup = () => {
+    const userId = authService.getUserId();
+    if (userId) {
+      sessionStorage.setItem(`hasSeenPlacementPopup_${userId}`, 'true');
+    }
+    setShowPlacementPopup(false);
   };
 
   if (loading) {
@@ -247,6 +280,148 @@ export default function LevelSelect() {
           </div>
         </div>
       </div> */}
+
+      {/* Placement Test Popup */}
+      <AnimatePresence>
+        {showPlacementPopup && (
+          <motion.div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleClosePopup}
+          >
+            {/* Backdrop with blur */}
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+
+            {/* Popup Card */}
+            <motion.div 
+              className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+              initial={{ scale: 0.8, y: -50, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.8, y: -50, opacity: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 25
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={handleClosePopup}
+                className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-gray-100 transition z-10"
+                style={{ color: '#666666' }}
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="p-6">
+                {/* Icon */}
+                <motion.div
+                  className="flex items-center justify-center mb-4"
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                >
+                  <div 
+                    className="w-20 h-20 rounded-full flex items-center justify-center"
+                    style={{ 
+                      backgroundColor: '#FFE8DC',
+                      border: '3px solid #FF6B35'
+                    }}
+                  >
+                    <Star size={40} weight="fill" style={{ color: '#FF6B35' }} />
+                  </div>
+                </motion.div>
+                
+                {/* Title */}
+                <motion.h3 
+                  className="text-2xl font-bold text-center mb-2"
+                  style={{ color: '#FF6B35' }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  Kiểm tra trình độ
+                </motion.h3>
+                
+                {/* Description */}
+                <motion.p 
+                  className="text-center mb-4 leading-relaxed"
+                  style={{ color: '#666666' }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  Làm bài kiểm tra nhanh để chúng tôi <span className="font-semibold text-orange-600">đề xuất cấp độ phù hợp</span> với trình độ hiện tại của bạn!
+                </motion.p>
+                
+                {/* Benefits */}
+                <motion.div 
+                  className="rounded-xl p-4 mb-4"
+                  style={{ backgroundColor: '#FFF8F0', border: '1px solid #FFE8DC' }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <div className="space-y-2 text-sm" style={{ color: '#333333' }}>
+                    <div className="flex items-center gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" 
+                            style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}>✓</span>
+                      <span>Chỉ mất 5 phút</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" 
+                            style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}>✓</span>
+                      <span>9 câu hỏi đơn giản</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" 
+                            style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}>✓</span>
+                      <span>Kết quả ngay lập tức</span>
+                    </div>
+                  </div>
+                </motion.div>
+                
+                {/* Buttons */}
+                <motion.div 
+                  className="flex gap-3"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <button
+                    onClick={handleClosePopup}
+                    className="flex-1 px-6 py-3 rounded-xl font-semibold transition-all border-2 hover:bg-gray-50"
+                    style={{ borderColor: '#BDBDBD', color: '#666666' }}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    onClick={handleStartPlacementTest}
+                    className="flex-1 px-6 py-3 rounded-xl font-semibold text-white transition-all transform hover:scale-105 shadow-lg"
+                    style={{ backgroundColor: '#FF6B35' }}
+                  >
+                    Làm thử 🚀
+                  </button>
+                </motion.div>
+                
+                {/* Skip text */}
+                <motion.p 
+                  className="text-xs text-center mt-4"
+                  style={{ color: '#999999' }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  Bạn có thể chọn cấp độ trực tiếp nếu đã biết trình độ của mình
+                </motion.p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

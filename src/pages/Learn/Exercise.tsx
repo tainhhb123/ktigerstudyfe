@@ -10,7 +10,8 @@ import {
 } from "../../services/ExerciseApi";
 import { saveUserExerciseResult } from "../../services/UserExerciseResultApi";
 import { completeLesson } from "../../services/LessonApi";
-import LevelUpPopup from "../../components/learning-path/LevelUpPopup";
+import SimpleRewardPopup from "../../components/learning-path/SimpleRewardPopup";
+
 
 interface MultipleChoiceQuestion {
   questionId: number;
@@ -52,12 +53,16 @@ export default function Exercise({
   const [wrongList, setWrongList] = useState<QuestionItem[]>([]);     // Câu sai
   const [phase, setPhase] = useState<"main" | "review" | "done">("main"); // Giai đoạn
   const [questionKey, setQuestionKey] = useState(0);
-  // ➕ Popup lên cấp
-  const [levelUpData, setLevelUpData] = useState<null | {
-    levelNumber: number;
-    currentTitle: string;
-    currentBadge: string;
-  }>(null);
+  
+  // ➕ Popup rewards
+  const [showRewardPopup, setShowRewardPopup] = useState(false);
+  const [rewardData, setRewardData] = useState<{
+    xpGained: number;
+    isLevelUp: boolean;
+    levelNumber?: number;
+    levelTitle?: string;
+    levelBadge?: string;
+  } | null>(null);
 
   // Refs để lưu trữ không bị reset khi re-render
   const correctCountFirst = useRef<Map<number, number>>(new Map());   // Đếm câu đúng lần đầu
@@ -148,18 +153,28 @@ export default function Exercise({
           const result = await completeLesson(userId, Number(lessonId), lessonScore);
           
           console.log("🔍 completeLesson result:", result);
+          console.log("📊 XP Added:", result.xpAdded);
+          console.log("📊 XP Data:", result.xpData);
+          console.log("📊 Is First Time:", result.isFirstTime);
           
-          // 4. Hiển thị level up nếu có
-          if (result.xpAdded && result.xpData) {
-            const xpData = result.xpData;
-            if (xpData.levelNumber > (prevLevelRef.current || 0)) {
-              setLevelUpData({
-                levelNumber: xpData.levelNumber,
-                currentTitle: xpData.currentTitle,
-                currentBadge: xpData.currentBadge,
-              });
-              prevLevelRef.current = xpData.levelNumber;
-            }
+          // 4. Hiển thị popup reward - LUÔN hiển thị dù XP = 0 hoặc đã làm rồi
+          const xpGained = result.xpAdded || 0;
+          const xpData = result.xpData;
+          const isLevelUp = xpData && xpData.levelNumber > (prevLevelRef.current || 0);
+          
+          console.log("🎯 Setting reward data:", { xpGained, isLevelUp });
+          
+          setRewardData({
+            xpGained: xpGained,
+            isLevelUp: isLevelUp,
+            levelNumber: isLevelUp ? xpData.levelNumber : undefined,
+            levelTitle: isLevelUp ? xpData.currentTitle : undefined,
+            levelBadge: isLevelUp ? xpData.currentBadge : undefined,
+          });
+          setShowRewardPopup(true);
+          
+          if (isLevelUp && xpData) {
+            prevLevelRef.current = xpData.levelNumber;
           }
           
           // 5. ✅ Emit event để Lesson.tsx refresh và hiển thị thông báo
@@ -241,13 +256,18 @@ export default function Exercise({
 
   return (
     <>
-      {/* Pop-up sẽ chỉ render khi đầy đủ dữ liệu */}
-      {levelUpData && levelUpData.levelNumber && levelUpData.currentTitle && levelUpData.currentBadge && (
-        <LevelUpPopup
-          levelNumber={levelUpData.levelNumber}
-          currentTitle={levelUpData.currentTitle}
-          currentBadge={levelUpData.currentBadge}
-          onClose={() => setLevelUpData(null)}
+      {/* Popup reward nhỏ gọn */}
+      {showRewardPopup && rewardData && (
+        <SimpleRewardPopup
+          xpGained={rewardData.xpGained}
+          isLevelUp={rewardData.isLevelUp}
+          levelNumber={rewardData.levelNumber}
+          levelTitle={rewardData.levelTitle}
+          levelBadge={rewardData.levelBadge}
+          onClose={() => {
+            setShowRewardPopup(false);
+            setRewardData(null);
+          }}
         />
       )}
       {/* Phần chính */}
