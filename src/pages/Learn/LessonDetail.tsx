@@ -20,29 +20,37 @@ export default function LessonDetail() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
-      {/* Tabs cố định phía trên */}
-      <div className="fixed top-19 left-78 right-7 z-50 shadow-md" style={{ backgroundColor: '#FFFFFF' }}>
-        <div className="flex justify-around w-full" style={{ borderBottom: '1px solid #BDBDBD' }}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              className="flex-1 flex flex-col items-center py-3 transition text-sm font-medium"
-              style={{
-                color: activeTab === tab.key ? '#FF6B35' : '#666666',
-                backgroundColor: activeTab === tab.key ? '#FFE8DC' : 'transparent',
-                borderBottom: activeTab === tab.key ? '3px solid #FF6B35' : '3px solid transparent'
-              }}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              <div className="text-xl">{tab.icon}</div>
-              {tab.label}
-            </button>
-          ))}
+      {/* Tabs - Sticky với max-width */}
+      <div className="sticky top-0 z-40 w-full" style={{ backgroundColor: '#FFF8F0' }}>
+        <div className="max-w-3xl mx-auto px-4 pt-4">
+          <div 
+            className="flex rounded-2xl p-1.5 shadow-sm"
+            style={{ backgroundColor: '#FFFFFF', border: '1px solid #E0E0E0' }}
+          >
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all duration-300 text-sm font-semibold ${
+                  activeTab === tab.key 
+                    ? 'shadow-md transform scale-[1.02]' 
+                    : 'hover:bg-gray-50'
+                }`}
+                style={{
+                  color: activeTab === tab.key ? '#FFFFFF' : '#666666',
+                  backgroundColor: activeTab === tab.key ? '#FF6B35' : 'transparent',
+                }}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                <span className="text-lg">{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Nội dung tương ứng */}
-      <div className="max-w-3xl mx-auto pt-24 px-4">
+      <div className="max-w-3xl mx-auto pt-6 px-4 pb-8">
         {activeTab === "vocab" && <Vocabulary lessonId={lessonId} />}
         {activeTab === "grammar" && <Grammar lessonId={lessonId} setActiveTab={setActiveTab} />}
         {activeTab === "exercise" && <Exercise lessonId={lessonId} />}

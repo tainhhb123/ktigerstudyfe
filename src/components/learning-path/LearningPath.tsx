@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import AvatarImg from "../../assets/avatar_campfire.png";
 import HoHan from "../../assets/hohan.png";
 import HoVietNam from "../../assets/hoVietNam.png";
-import { Lock, CheckCircle } from "lucide-react"; // icon khoá, hoàn thành
+import { Lock, CheckCircle } from "lucide-react";
 
 type LearningPathProps = {
   lesson: {
@@ -17,92 +17,201 @@ type LearningPathProps = {
   };
   lessonIdx: number;
   isActive: boolean;
+  totalLessons: number;
+  isLast?: boolean;
 };
 
-function getOffsetClass(idx: number): string {
-  if (idx % 3 === 1) return "ml-24";
-  if (idx % 3 === 2) return "mr-24";
-  return "mx-auto";
-}
-
-export default function LearningPath({ lesson, lessonIdx, isActive }: LearningPathProps) {
+export default function LearningPath({ lesson, lessonIdx, isActive, isLast }: LearningPathProps) {
   const navigate = useNavigate();
   const [showInfo, setShowInfo] = useState(false);
-  const [tooltipVisible, setTooltipVisible] = useState(false);
-  const colorList = ["bg-blue-500", "bg-yellow-400", "bg-purple-500", "bg-red-500", "bg-green-500"];
-  const imageList = [AvatarImg, HoHan, HoVietNam];
-  const activeColor = colorList[lessonIdx % colorList.length];
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const nodeRef = useRef<HTMLButtonElement>(null);
+  
+  const imageList = [AvatarImg, HoHan, HoVietNam];
+  
+  // Zigzag pattern: chẵn = trái, lẻ = phải - offset lớn hơn để rộng rãi
+  const isLeft = lessonIdx % 2 === 0;
+  const offsetX = isLeft ? -130 : 130;
+  
+  // Mascot mỗi 3 bài
+  const showMascot = lessonIdx % 3 === 0 && lessonIdx > 0;
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
+      if (
+        tooltipRef.current && 
+        !tooltipRef.current.contains(e.target as Node) &&
+        nodeRef.current &&
+        !nodeRef.current.contains(e.target as Node)
+      ) {
         setShowInfo(false);
       }
     };
     if (showInfo) {
-      window.addEventListener("mousedown", handleClickOutside);
-      setTimeout(() => setTooltipVisible(true), 10);
-    } else {
-      setTooltipVisible(false);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      window.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showInfo]);
 
-  const handleClick = () => {
+  const handleNodeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (lesson.isLocked) return;
-    setShowInfo(!showInfo);
+    // Navigate trực tiếp vào bài học
+    navigate(`/learn/lesson-detail?lessonId=${lesson.lessonId}`);
   };
 
+  const handleStartLesson = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/learn/lesson-detail?lessonId=${lesson.lessonId}`);
+  };
+
+  // Màu sắc
+  const getNodeColor = () => {
+    if (lesson.isLocked) return { bg: '#E5E7EB', border: '#D1D5DB', text: '#9CA3AF' };
+    if (lesson.isLessonCompleted) return { bg: '#4ADE80', border: '#22C55E', text: '#16A34A' };
+    if (isActive) return { bg: '#FF6B35', border: '#FF8C5A', text: '#FF6B35' };
+    return { bg: '#FCD34D', border: '#FBBF24', text: '#CA8A04' };
+  };
+  
+  const nodeColor = getNodeColor();
+  
+  // Offset cho node tiếp theo (ngược lại) - phải khớp với offsetX
+  const nextOffsetX = isLeft ? 130 : -130;
+  const pathColor = lesson.isLocked ? '#D1D5DB' : '#FBBF24';
+  
   return (
-    <div className={`relative flex flex-col items-center ${getOffsetClass(lessonIdx)} mt-10`}>
-      <img
-        src={imageList[lessonIdx % imageList.length]}
-        alt="lesson"
-        className="w-40 h-40 object-contain drop-shadow-xl absolute -top 28 right-[-100px] z-10"
-        draggable={false}
-        style={{ userSelect: "none" }}
-      />
-      {/* Nút chính */}
-      <div
-        className={`w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow mb-4 cursor-pointer transform transition-all duration-150 active:scale-95 hover:scale-120
-        ${isActive ? activeColor : "bg-gray-300"} ${lesson.isLocked ? "opacity-40 cursor-not-allowed" : ""} ${lesson.isLessonCompleted ? "ring-4 ring-green-400" : ""}`}
-        onClick={handleClick}
+    <div className="relative" style={{ height: '160px', marginBottom: '0px' }}>
+      {/* SVG Path - đường nối liền mạch */}
+      {!isLast && (
+        <svg 
+          className="absolute pointer-events-none"
+          style={{
+            left: '50%',
+            top: '105px',
+            transform: 'translateX(-50%)',
+            width: '500px',
+            height: '60px',
+            zIndex: 0
+          }}
+          viewBox="0 0 500 60"
+        >
+          <path
+            d={`
+              M ${250 + offsetX} 0
+              L ${250 + offsetX} 10
+              Q ${250 + offsetX} 30, ${250 + offsetX + (nextOffsetX > offsetX ? 25 : -25)} 30
+              L ${250 + nextOffsetX - (nextOffsetX > offsetX ? 25 : -25)} 30
+              Q ${250 + nextOffsetX} 30, ${250 + nextOffsetX} 50
+              L ${250 + nextOffsetX} 55
+            `}
+            fill="none"
+            stroke={pathColor}
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeDasharray="3 10"
+            opacity={lesson.isLocked ? 0.35 : 0.75}
+          />
+        </svg>
+      )}
+
+      {/* Main Content - Centered với offsetX */}
+      <div 
+        className="absolute top-0 left-1/2 flex flex-col items-center"
+        style={{ transform: `translateX(calc(-50% + ${offsetX}px))` }}
       >
-        {lesson.isLocked ? <Lock size={20} /> : lesson.isLessonCompleted ? <CheckCircle size={28} /> : lessonIdx + 1}
+        {/* Node button */}
+        <button
+          ref={nodeRef}
+          type="button"
+          disabled={lesson.isLocked}
+          className={`relative z-20 w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold
+            transition-all duration-200 border-4 shadow-lg
+            ${lesson.isLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-110 active:scale-95'}`}
+          style={{ 
+            backgroundColor: nodeColor.bg,
+            borderColor: nodeColor.border
+          }}
+          onClick={handleNodeClick}
+        >
+          {lesson.isLocked ? (
+            <Lock size={22} className="text-gray-500" />
+          ) : lesson.isLessonCompleted ? (
+            <CheckCircle size={28} strokeWidth={2.5} />
+          ) : (
+            <span>{lessonIdx + 1}</span>
+          )}
+          
+          {/* Pulse animation */}
+          {isActive && !lesson.isLocked && (
+            <div 
+              className="absolute inset-0 rounded-full animate-ping"
+              style={{ backgroundColor: nodeColor.bg, opacity: 0.3 }}
+            />
+          )}
+        </button>
+
+        {/* Lesson name */}
+        <div 
+          className="mt-0 text-sm font-semibold text-center max-w-[140px] z-20 px-2 py-1 rounded"
+          style={{ 
+            color: lesson.isLocked ? '#9CA3AF' : '#374151'
+          }}
+        >
+          {lesson.lessonName}
+        </div>
       </div>
-      {/* Tên bài */}
-      <div className={`text-center font-semibold text-xl ${lesson.isLocked ? "text-gray-400" : lesson.isLessonCompleted ? "text-green-600" : ""}`}>{lesson.lessonName}</div>
-      {/* Tooltip nổi */}
+
+      {/* Mascot - phóng to x3, đặt gần node hơn */}
+      {showMascot && (
+        <img
+          src={imageList[Math.floor(lessonIdx / 3) % imageList.length]}
+          alt="mascot"
+          className="absolute w-40 h-40 object-contain drop-shadow-2xl z-10"
+          style={{ 
+            top: '-20px',
+            [isLeft ? 'right' : 'left']: '25%',
+            transform: isLeft ? 'translateX(50%)' : 'translateX(-50%)'
+          }}
+          draggable={false}
+        />
+      )}
+
+      {/* Tooltip */}
       {showInfo && !lesson.isLocked && (
         <div
           ref={tooltipRef}
-          className={`absolute top-24 left-1/2 -translate-x-1/2 z-50 rounded-xl p-4 text-white shadow-xl ${activeColor} flex flex-col items-center text-center max-w-sm transition-all duration-300 ease-out
-          ${tooltipVisible ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}
+          className="absolute left-1/2 z-50 bg-white rounded-2xl p-5 shadow-2xl 
+            flex flex-col items-center text-center w-64 border-2"
+          style={{ 
+            top: '90px',
+            transform: 'translateX(-50%)',
+            borderColor: nodeColor.border
+          }}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 bg-inherit" />
-          <div className="text-sm font-bold mb-2">{lesson.lessonDescription || "Không có mô tả."}</div>
+          {/* Arrow */}
+          <div 
+            className="absolute -top-3 left-1/2 -translate-x-1/2 w-5 h-5 bg-white rotate-45"
+            style={{ borderLeft: `2px solid ${nodeColor.border}`, borderTop: `2px solid ${nodeColor.border}` }}
+          />
+          
+          <div className="text-base font-bold text-gray-900 mb-2">{lesson.lessonName}</div>
+          <div className="text-sm text-gray-600 mb-4">{lesson.lessonDescription || "Sẵn sàng học bài mới!"}</div>
+          
           <button
-            className={`bg-white text-sm font-bold rounded-full px-4 py-1 text-green-600 hover:bg-gray-100 transition ${lesson.isLocked ? "opacity-40 cursor-not-allowed" : ""}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!lesson.isLocked) navigate(`/learn/lesson-detail?lessonId=${lesson.lessonId}`);
-            }}
-            disabled={lesson.isLocked}
+            type="button"
+            className="w-full py-3 rounded-xl font-bold text-base text-white
+              hover:opacity-90 active:scale-95 transition-all shadow-md"
+            style={{ backgroundColor: nodeColor.bg }}
+            onClick={handleStartLesson}
           >
-            BẮT ĐẦU
+            Bắt đầu học →
           </button>
         </div>
-      )}
-      {/* Nếu bị khóa, show thông báo dưới nút */}
-      {lesson.isLocked && (
-        <div className="mt-2 text-xs text-gray-400 font-semibold flex items-center gap-1"><Lock size={16}/> Bài chưa mở khóa</div>
-      )}
-      {/* Nếu hoàn thành, show đã xong */}
-      {lesson.isLessonCompleted && !lesson.isLocked && (
-        <div className="mt-2 text-xs text-green-500 font-semibold flex items-center gap-1"><CheckCircle size={16}/> Đã hoàn thành</div>
       )}
     </div>
   );

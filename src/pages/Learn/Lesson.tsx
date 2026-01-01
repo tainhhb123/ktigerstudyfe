@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import LearningPath from "../../components/learning-path/LearningPath";
 import RoadmapFooter from "../../components/learning-path/RoadmapFooter";
 import { getLessonsByLevelIdWithProgress } from "../../services/LessonApi";
+import bgPath from "../../assets/bgpath.jpg";
 
 function StickyRoadmapHeader({
   section,
@@ -17,22 +18,27 @@ function StickyRoadmapHeader({
   bgColorClass?: string;
 }) {
   return (
-    <div className="sticky top-[75px] z-50 w-full">
+    <div className="fixed left-0 right-0 top-[64px] z-40 w-full">
+      {/* Header chính - glass effect, bo góc dưới */}
       <div
-        className="px-6 py-5 rounded-b-2xl shadow-lg flex items-center justify-between transition-colors duration-500 text-xl font-semibold"
-        style={{ backgroundColor: '#FF6B35' }}
+        className="px-4 md:px-6 py-4 flex items-center justify-between text-lg font-semibold rounded-b-2xl backdrop-blur-md border-b border-white/20 shadow-lg"
+        style={{ 
+          background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.85) 0%, rgba(255, 140, 90, 0.85) 100%)',
+        }}
       >
-        <div className="font-bold text-white">{section}</div>
+        <div className="font-bold text-white drop-shadow-sm">
+          {section}{title ? `: ${title}` : ''}
+        </div>
         <button
-          className="text-xs px-4 py-2 rounded font-bold transition-colors"
-          style={{ backgroundColor: '#FFFFFF', color: '#FF6B35' }}
+          className="text-xs px-4 py-2 rounded-full font-bold transition-all hover:scale-105 hover:shadow-lg backdrop-blur-sm"
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+            color: '#FF6B35' 
+          }}
           onClick={onGuide}
         >
           Hướng dẫn
         </button>
-      </div>
-      <div className="px-6 py-2" style={{ backgroundColor: '#FFFFFF' }}>
-        <div className="font-semibold text-base" style={{ color: '#333333' }}>{title}</div>
       </div>
     </div>
   );
@@ -166,7 +172,23 @@ export default function Lesson() {
     return <div className="text-center py-20" style={{ color: '#666666' }}>Không có bài học nào cho cấp độ này!</div>;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
+    <div 
+      className="min-h-screen relative -mx-4 md:-mx-6"
+      style={{ 
+        backgroundColor: '#FFF8F0',
+        backgroundImage: `url(${bgPath})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Overlay để giảm độ đậm của ảnh nếu cần */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{ backgroundColor: 'rgba(255, 248, 240, 0.3)' }}
+      />
+        
       {/* ✅ Thông báo completion */}
       {showCompletionMessage && (
         <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-[60] animate-bounce">
@@ -189,24 +211,35 @@ export default function Lesson() {
         section={current ? `Bài số ${lessons.indexOf(current) + 1}` : ""}
         title={current ? current.lessonName : ""}
         onGuide={() => alert("Xem hướng dẫn")}
-
       />
 
-      {/* Danh sách bài học */}
-      {lessons.map((lesson, idx) => (
-        <div
-          key={lesson.lessonId}
-          id={`lesson-${lesson.lessonId}`}
-          className="max-w-xl mx-auto pb-10"
-        >
-          <LearningPath
-            lesson={lesson}
-            lessonIdx={idx}
-            isActive={lesson.lessonId === current?.lessonId}
-          />
-          <RoadmapFooter text={lesson.lessonDescription || ""} />
+      {/* Learning Path Container - full width */}
+      <div className="relative w-full mx-auto px-4 pb-20 pt-16">
+        {lessons.map((lesson, idx) => (
+          <div
+            key={lesson.lessonId}
+            id={`lesson-${lesson.lessonId}`}
+          >
+            <LearningPath
+              lesson={lesson}
+              lessonIdx={idx}
+              isActive={lesson.lessonId === current?.lessonId}
+              totalLessons={lessons.length}
+              isLast={idx === lessons.length - 1}
+            />
+          </div>
+        ))}
+      </div>
+      
+      {/* Footer decoration */}
+      <div className="text-center pb-10">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full" style={{ backgroundColor: '#FFE8DC' }}>
+          <span style={{ color: '#FF6B35' }}>🎯</span>
+          <span className="text-sm font-medium" style={{ color: '#FF6B35' }}>
+            {lessons.filter(l => l.isLessonCompleted).length}/{lessons.length} bài hoàn thành
+          </span>
         </div>
-      ))}
+      </div>
     </div>
   );
 }
