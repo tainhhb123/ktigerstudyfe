@@ -1,8 +1,9 @@
 // src/pages/Profile.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Tab } from "@headlessui/react";
 import { Pencil, Check, X, Camera, Lock } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // Thêm import này
+import { useNavigate } from "react-router-dom";
+import { uploadImageToCloudinary } from "../services/cloudinaryService";
 
 // Mở rộng kiểu dữ liệu người dùng
 interface UserProfile {
@@ -47,13 +48,15 @@ function classNames(...classes: string[]) {
 }
 
 const Profile = () => {
-  const navigate = useNavigate(); // Thêm hook navigate
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<UserProfile | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [feedback, setFeedback] = useState({ message: "", type: "" });
 
   useEffect(() => {
@@ -213,18 +216,33 @@ const Profile = () => {
     if (!user?.userId) return;
     
     try {
-      // Đảm bảo gửi toàn bộ dữ liệu người dùng
-      const completeUserData = { ...user, ...updatedData };
+      // Chỉ gửi các field thực sự có trong database, loại bỏ learningStats
+      const { learningStats, ...userDataWithoutStats } = user;
+      const completeUserData = { ...userDataWithoutStats, ...updatedData };
+      
+      // Chuyển "Chưa cập nhật" thành null cho các field Date
+      if (completeUserData.dateOfBirth === "Chưa cập nhật") {
+        completeUserData.dateOfBirth = null as any;
+      }
+      if (completeUserData.gender === "Chưa cập nhật") {
+        completeUserData.gender = null as any;
+      }
+      
+      console.log('🔍 Data gửi lên backend:', JSON.stringify(completeUserData, null, 2));
       
       const response = await fetch(`http://localhost:8080/api/users/${user.userId}`, {
-        method: 'PUT', // hoặc 'PATCH' tùy vào API của bạn
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(completeUserData),
       });
       
+      console.log('📡 Response status:', response.status);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Backend error response:', errorText);
         throw new Error('Cập nhật thất bại');
       }
       
@@ -354,6 +372,56 @@ const Profile = () => {
     });
   };
 
+  // Xử lý click nút camera để chọn ảnh
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Xử lý upload avatar
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingAvatar(true);
+      showFeedback("Đang tải ảnh lên...", "info");
+
+      // Upload lên Cloudinary
+      const cloudinaryUrl = await uploadImageToCloudinary(file);
+      console.log("Avatar uploaded to Cloudinary:", cloudinaryUrl);
+
+      // Cập nhật vào database - Dùng snake_case như trong DB
+      await updateUserInDatabase({ avatar_image: cloudinaryUrl } as any);
+
+      // Cập nhật state và localStorage với camelCase
+      const updatedUser = { ...user!, avatarImage: cloudinaryUrl };
+      setUser(updatedUser);
+
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const localUser = JSON.parse(userStr);
+        localStorage.setItem("user", JSON.stringify({
+          ...localUser,
+          avatarImage: cloudinaryUrl
+        }));
+      }
+
+      showFeedback("Cập nhật ảnh đại diện thành công!", "success");
+    } catch (error) {
+      console.error("Lỗi khi upload avatar:", error);
+      showFeedback(
+        error instanceof Error ? error.message : "Lỗi khi tải ảnh lên",
+        "error"
+      );
+    } finally {
+      setUploadingAvatar(false);
+      // Reset input để có thể chọn lại cùng file
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   // Hàm hiển thị giá trị trường với nút edit
   const renderFieldWithEdit = (label: string, field: keyof UserProfile, type: string = 'text') => {
     const value = user?.[field] as string || "Chưa cập nhật";
@@ -446,7 +514,13 @@ const Profile = () => {
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-white">
       {/* Thông báo feedback */}
       {feedback.message && (
-        <div className={`mb-4 p-3 rounded-md ${feedback.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        <div className={`mb-4 p-3 rounded-md ${
+          feedback.type === 'success' 
+            ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' 
+            : feedback.type === 'info'
+            ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+            : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100'
+        }`}>
           {feedback.message}
         </div>
       )}
@@ -455,15 +529,30 @@ const Profile = () => {
       <div className="flex flex-col sm:flex-row items-center sm:items-start mb-8">
         <div className="relative mb-4 sm:mb-0 sm:mr-8">
           <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500">
-            <img 
-              src={user.avatarImage || "/src/assets/hoHan.png"} 
-              alt={user.fullName} 
-              className="w-full h-full object-cover" 
-            />
+            {uploadingAvatar ? (
+              <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : (
+              <img 
+                src={user.avatarImage || "/src/assets/avtmacdinh.jpg"} 
+                alt={user.fullName} 
+                className="w-full h-full object-cover" 
+              />
+            )}
           </div>  
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarChange}
+            className="hidden"
+          />
           <button 
-            className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700"
-            onClick={() => alert('Chức năng đang phát triển')}
+            className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            onClick={handleAvatarClick}
+            disabled={uploadingAvatar}
+            title="Thay đổi ảnh đại diện"
           >
             <Camera size={16} />
           </button>
@@ -526,19 +615,6 @@ const Profile = () => {
             }
           >
             Thống kê học tập
-          </Tab>
-          <Tab
-            className={({ selected }) =>
-              classNames(
-                'w-full rounded-lg py-2.5 text-sm font-medium leading-5',
-                'focus:outline-none focus:ring-2 ring-offset-2 ring-offset-blue-400 ring-white ring-opacity-60',
-                selected
-                  ? 'bg-white dark:bg-gray-600 text-blue-700 dark:text-white shadow'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-white/[0.12] hover:text-blue-600'
-              )
-            }
-          >
-            Thành tích
           </Tab>
         </Tab.List>
         
@@ -667,51 +743,6 @@ const Profile = () => {
               <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
                 Xem chi tiết lịch sử học tập
               </button>
-            </div>
-          </Tab.Panel>
-          
-          {/* Panel thành tích */}
-          <Tab.Panel>
-            <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
-              <h3 className="text-xl font-semibold mb-6">Thành tích đạt được</h3>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
-                {/* Danh hiệu 1 */}
-                <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-gray-700 dark:to-gray-800 p-4 rounded-lg text-center hover:shadow-md transition">
-                  <div className="w-16 h-16 mx-auto bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-2xl">🔥</span>
-                  </div>
-                  <h4 className="font-semibold">Học liên tục 7 ngày</h4>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Đạt được 25/06/2023</p>
-                </div>
-                
-                {/* Danh hiệu 2 */}
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800 p-4 rounded-lg text-center hover:shadow-md transition">
-                  <div className="w-16 h-16 mx-auto bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-2xl">🎯</span>
-                  </div>
-                  <h4 className="font-semibold">Hoàn thành 10 bài học</h4>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Đạt được 20/06/2023</p>
-                </div>
-                
-                {/* Danh hiệu chưa đạt */}
-                <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-center opacity-50">
-                  <div className="w-16 h-16 mx-auto bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-2xl">🏆</span>
-                  </div>
-                  <h4 className="font-semibold">Đạt 5000 điểm</h4>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Còn thiếu 2460 điểm</p>
-                </div>
-                
-                {/* Danh hiệu chưa đạt */}
-                <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg text-center opacity-50">
-                  <div className="w-16 h-16 mx-auto bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-2">
-                    <span className="text-2xl">🌟</span>
-                  </div>
-                  <h4 className="font-semibold">Đạt cấp độ 5</h4>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Hiện tại: Cấp độ 3</p>
-                </div>
-              </div>
             </div>
           </Tab.Panel>
         </Tab.Panels>
