@@ -216,26 +216,49 @@ const Profile = () => {
     if (!user?.userId) return;
     
     try {
-      // Chỉ gửi các field thực sự có trong database, loại bỏ learningStats
-      const { learningStats, ...userDataWithoutStats } = user;
-      const completeUserData = { ...userDataWithoutStats, ...updatedData };
+      // Loại bỏ learningStats (không có trong DB)
+      const { learningStats, avatarImage, ...userDataWithoutStats } = user;
+      const mergedData = { ...userDataWithoutStats, ...updatedData };
       
-      // Chuyển "Chưa cập nhật" thành null cho các field Date
-      if (completeUserData.dateOfBirth === "Chưa cập nhật") {
-        completeUserData.dateOfBirth = null as any;
-      }
-      if (completeUserData.gender === "Chưa cập nhật") {
-        completeUserData.gender = null as any;
+      // ✅ Backend expect camelCase (Java convention)
+      const backendData: any = {
+        userId: mergedData.userId,
+        fullName: mergedData.fullName,
+        email: mergedData.email,
+        role: mergedData.role,
+        phoneNumber: mergedData.phoneNumber,
+        address: mergedData.address,
+        joinDate: mergedData.joinDate,
+        userStatus: 1, // Default active
+        userName: mergedData.userName || null,
+        password: null, // Don't update password here
+      };
+      
+      // Thêm avatarImage nếu có (từ updatedData có thể có avatarImage)
+      if (updatedData.avatarImage) {
+        backendData.avatarImage = updatedData.avatarImage;
+      } else if (avatarImage && avatarImage !== "/src/assets/avtmacdinh.jpg") {
+        backendData.avatarImage = avatarImage;
       }
       
-      console.log('🔍 Data gửi lên backend:', JSON.stringify(completeUserData, null, 2));
+      // Thêm dateOfBirth nếu có
+      if (mergedData.dateOfBirth && mergedData.dateOfBirth !== "Chưa cập nhật") {
+        backendData.dateOfBirth = mergedData.dateOfBirth;
+      }
+      
+      // Thêm gender nếu có
+      if (mergedData.gender && mergedData.gender !== "Chưa cập nhật") {
+        backendData.gender = mergedData.gender;
+      }
+      
+      console.log('🔍 Data gửi lên backend (camelCase - Java convention):', JSON.stringify(backendData, null, 2));
       
       const response = await fetch(`http://localhost:8080/api/users/${user.userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(completeUserData),
+        body: JSON.stringify(backendData),
       });
       
       console.log('📡 Response status:', response.status);
@@ -390,8 +413,8 @@ const Profile = () => {
       const cloudinaryUrl = await uploadImageToCloudinary(file);
       console.log("Avatar uploaded to Cloudinary:", cloudinaryUrl);
 
-      // Cập nhật vào database - Dùng snake_case như trong DB
-      await updateUserInDatabase({ avatar_image: cloudinaryUrl } as any);
+      // Cập nhật vào database - Dùng camelCase như trong Java
+      await updateUserInDatabase({ avatarImage: cloudinaryUrl });
 
       // Cập nhật state và localStorage với camelCase
       const updatedUser = { ...user!, avatarImage: cloudinaryUrl };
@@ -731,18 +754,7 @@ const Profile = () => {
                   <div className="mt-2 text-3xl font-bold text-purple-600 dark:text-purple-400">{user.learningStats?.level || 1}</div>
                 </div>
               </div>
-              
-              <h4 className="font-medium mb-2">Tiến độ tổng thể</h4>
-              <div className="w-full bg-gray-200 rounded-full h-4 mb-6 dark:bg-gray-600">
-                <div 
-                  className="bg-blue-600 h-4 rounded-full transition-all duration-500 ease-in-out" 
-                  style={{ width: `${user.learningStats?.progressPercent || 0}%` }}
-                ></div>
-              </div>
-              
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                Xem chi tiết lịch sử học tập
-              </button>
+
             </div>
           </Tab.Panel>
         </Tab.Panels>

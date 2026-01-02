@@ -1,6 +1,7 @@
 // src/App.tsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ScrollToTop } from "./components/common/ScrollToTop";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
 // Dashboard pages & layout
 import AppLayout from "./layout/admin/AdminAppLayout";
@@ -81,8 +82,12 @@ export default function App() {
       <ScrollToTop />
 
       <Routes>
-        {/* === Dashboard Layout === */}
-        <Route path="admin/*" element={<AppLayout />}>
+        {/* === Dashboard Layout - ADMIN ONLY === */}
+        <Route path="admin/*" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <AppLayout />
+          </ProtectedRoute>
+        }>
           <Route index element={<Home />} />
           <Route path="profile" element={<UserProfiles />} />
           <Route path="calendar" element={<Calendar />} />
@@ -121,8 +126,12 @@ export default function App() {
         </Route>
 
 
-        {/* === Document Layout (với wildcard *) === */}
-        <Route path="documents/*" element={<AppLayoutDocument />}>
+        {/* === Document Layout - Requires Login === */}
+        <Route path="documents/*" element={
+          <ProtectedRoute>
+            <AppLayoutDocument />
+          </ProtectedRoute>
+        }>
           <Route index element={<HomeDocument />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="flashcard" element={<FlashCard />} />
@@ -142,8 +151,12 @@ export default function App() {
           </Route>
         </Route>
 
-              // === Learn Layout ===
-        <Route path="learn/*" element={<LearnAppLayout />}>
+        {/* === Learn Layout - Requires Login === */}
+        <Route path="learn/*" element={
+          <ProtectedRoute>
+            <LearnAppLayout />
+          </ProtectedRoute>
+        }>
           <Route index element={<LearnHome />} />
           <Route path="level" element={<Level />} />
           <Route path="lesson" element={<Lesson />} />
@@ -163,9 +176,17 @@ export default function App() {
           <Route index element={<LearnHome />} />
         </Route>
 
-        {/* Profile and other user pages (outside learn layout) */}
-        <Route path="profile" element={<Profile />} />
-        <Route path="profile/change-password" element={<ChangePasswordForm />} />
+        {/* Profile and other user pages - Requires Login */}
+        <Route path="profile" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
+        <Route path="profile/change-password" element={
+          <ProtectedRoute>
+            <ChangePasswordForm />
+          </ProtectedRoute>
+        } />
 
         {/* === Auth & Fallback === */}
         <Route path="signin" element={<SignIn />} />
