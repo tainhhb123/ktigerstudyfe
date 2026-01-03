@@ -673,13 +673,17 @@ const TopikExamResult = () => {
                                 </div>
 
                                 {/* AI Grading Result */}
+                                {(() => {
+                                  console.log(`🔍 Q${question.questionNumber} aiScore:`, question.aiScore, 'aiFeedback:', question.aiFeedback?.substring(0, 50));
+                                  return null;
+                                })()}
                                 {question.aiScore !== undefined && question.aiScore !== null ? (
                                   <AIGradingResultCard question={question} />
                                 ) : question.userAnswer && question.userAnswer !== '(Không trả lời)' ? (
                                   <div className="p-4 rounded-lg" style={{ backgroundColor: '#FFF3E0', border: '1px solid #FF9800' }}>
                                     <div className="flex items-center gap-2" style={{ color: '#FF9800' }}>
                                       <AlertCircle className="w-5 h-5" />
-                                      <span>Chưa có kết quả chấm AI</span>
+                                      <span>Chưa có kết quả chấm AI (aiScore: {String(question.aiScore)})</span>
                                     </div>
                                   </div>
                                 ) : null}
@@ -834,8 +838,9 @@ const AIGradingResultCard = ({ question }: { question: QuestionResultResponse })
 };
 
 // Score Box Component
-const ScoreBox = ({ label, score, max }: { label: string; score: number; max: number }) => {
-  const percentage = (score / max) * 100;
+const ScoreBox = ({ label, score, max }: { label: string; score?: number; max: number }) => {
+  const actualScore = score ?? 0;
+  const percentage = max > 0 ? (actualScore / max) * 100 : 0;
   const getColor = () => {
     if (percentage >= 80) return '#4CAF50';
     if (percentage >= 60) return '#2196F3';
@@ -847,7 +852,7 @@ const ScoreBox = ({ label, score, max }: { label: string; score: number; max: nu
     <div className="p-3 rounded-lg text-center" style={{ backgroundColor: '#F5F5F5' }}>
       <div className="text-xs mb-1" style={{ color: '#666666' }}>{label}</div>
       <div className="text-xl font-bold" style={{ color: getColor() }}>
-        {score}
+        {actualScore}
         <span className="text-sm" style={{ color: '#999999' }}>/{max}</span>
       </div>
       <div className="w-full rounded-full h-1.5 mt-2" style={{ backgroundColor: '#E0E0E0' }}>

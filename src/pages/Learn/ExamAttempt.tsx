@@ -28,6 +28,7 @@ const ExamAttempt = () => {
   const [savingText, setSavingText] = useState<Set<number>>(new Set()); // Track which questions are being saved
   const [timeLeft, setTimeLeft] = useState(0); // seconds
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false); // ✨ AI grading in progress
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [audioStarted, setAudioStarted] = useState(false); // Đã bắt đầu phát audio
   
@@ -242,14 +243,16 @@ const ExamAttempt = () => {
   };
 
   const handleAutoSubmit = async () => {
+    setSubmitting(true); // Show AI grading indicator
     try {
       await examAttemptApi.submitExam(Number(attemptId));
       localStorage.removeItem('topik_in_progress'); // Clear saved attempt
-      alert('Hết giờ! Bài thi đã được tự động nộp.');
       navigate(`/learn/topik/result/${attemptId}`);
     } catch (err) {
       console.error('Error auto-submitting exam:', err);
       alert('Hết giờ nhưng có lỗi khi tự động nộp bài');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -345,6 +348,7 @@ const ExamAttempt = () => {
       if (nextIndex !== -1) {
         setCurrentQuestionIndex(nextIndex);
         updateSavedPosition(currentSectionIndex, nextIndex);
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // ✨ Scroll to top
       }
     } else {
       // Single question, move to next
@@ -352,6 +356,7 @@ const ExamAttempt = () => {
         const newIndex = currentQuestionIndex + 1;
         setCurrentQuestionIndex(newIndex);
         updateSavedPosition(currentSectionIndex, newIndex);
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // ✨ Scroll to top
       }
     }
   };
@@ -366,6 +371,7 @@ const ExamAttempt = () => {
         if (questions[i].groupId !== currentQ.groupId) {
           setCurrentQuestionIndex(i);
           updateSavedPosition(currentSectionIndex, i);
+          window.scrollTo({ top: 0, behavior: 'smooth' }); // ✨ Scroll to top
           return;
         }
       }
@@ -375,6 +381,7 @@ const ExamAttempt = () => {
         const newIndex = currentQuestionIndex - 1;
         setCurrentQuestionIndex(newIndex);
         updateSavedPosition(currentSectionIndex, newIndex);
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // ✨ Scroll to top
       }
     }
   };
@@ -399,6 +406,7 @@ const ExamAttempt = () => {
       setCurrentSectionIndex(newSectionIndex);
       setCurrentQuestionIndex(0);
       updateSavedPosition(newSectionIndex, 0);
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // ✨ Scroll to top
     } else {
       handleSubmitExam();
     }
@@ -407,15 +415,17 @@ const ExamAttempt = () => {
   const handleSubmitExam = async () => {
     if (!confirm('Bạn có chắc chắn muốn nộp bài?')) return;
 
+    setSubmitting(true); // Show AI grading indicator
     try {
       await examAttemptApi.submitExam(Number(attemptId));
       localStorage.removeItem('topik_in_progress'); // Clear saved attempt
-      alert('Nộp bài thành công!');
       navigate(`/learn/topik/result/${attemptId}`);
     } catch (err: any) {
       console.error('Error submitting exam:', err);
       const errorMessage = err?.response?.data?.message || err?.message || 'Không xác định';
       alert(`Có lỗi khi nộp bài:\n${errorMessage}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -474,6 +484,43 @@ const ExamAttempt = () => {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FFF8F0' }}>
+      {/* ✨ AI Grading Loading Overlay */}
+      {submitting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}>
+          <div className="text-center p-8 rounded-2xl max-w-md mx-4" style={{ backgroundColor: '#FFFFFF' }}>
+            {/* Animated Brain Icon */}
+            <div className="relative mx-auto w-24 h-24 mb-6">
+              <div className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: '#9C27B0', opacity: 0.3 }} />
+              <div className="absolute inset-2 rounded-full animate-pulse" style={{ backgroundColor: '#E1BEE7' }} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg className="w-12 h-12 animate-bounce" fill="#9C27B0" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl font-bold mb-3" style={{ color: '#9C27B0' }}>
+              🤖 AI đang chấm bài...
+            </h2>
+            <p className="mb-4" style={{ color: '#666666' }}>
+              Hệ thống AI đang đánh giá bài viết của bạn.
+              <br />Vui lòng đợi trong giây lát!
+            </p>
+            
+            {/* Progress dots */}
+            <div className="flex justify-center gap-2 mb-4">
+              <span className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: '#9C27B0', animationDelay: '0ms' }} />
+              <span className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: '#9C27B0', animationDelay: '150ms' }} />
+              <span className="w-3 h-3 rounded-full animate-bounce" style={{ backgroundColor: '#9C27B0', animationDelay: '300ms' }} />
+            </div>
+            
+            <p className="text-sm" style={{ color: '#999999' }}>
+              ⏱️ Thời gian chấm: ~10-30 giây
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="border-b sticky top-0 z-10" style={{ backgroundColor: '#FFFFFF', borderColor: '#BDBDBD' }}>
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -917,7 +964,10 @@ const ExamAttempt = () => {
                   return (
                     <button
                       key={q.questionId}
-                      onClick={() => setCurrentQuestionIndex(questionIndex)}
+                      onClick={() => {
+                        setCurrentQuestionIndex(questionIndex);
+                        window.scrollTo({ top: 0, behavior: 'smooth' }); // ✨ Scroll to top
+                      }}
                       className="aspect-square flex items-center justify-center rounded-lg text-sm font-semibold transition"
                       style={{
                         backgroundColor: isActive ? '#FF6B35' : hasAnswer ? '#E8F5E9' : '#FFE8DC',

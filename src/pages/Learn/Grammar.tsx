@@ -160,8 +160,7 @@ export default function Grammar({ lessonId, setActiveTab: setLessonTab }: Gramma
           <div className="w-full rounded-full h-2.5" style={{ backgroundColor: '#E0E0E0' }}>
             <div 
               className="h-2.5 rounded-full transition-all duration-500"
-              style={{ backgroundColor: '#FF6B35' }} 
-              style={{ width: `${completionPercentage}%` }}
+              style={{ backgroundColor: '#FF6B35', width: `${completionPercentage}%` }}
             ></div>
           </div>
         </div>

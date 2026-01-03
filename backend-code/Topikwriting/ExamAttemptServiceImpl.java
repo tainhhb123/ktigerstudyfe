@@ -268,18 +268,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
                     .multiply(BigDecimal.valueOf(aiScore))
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
-            // ✨ LƯU KẾT QUẢ AI VÀO DATABASE
-            userAnswer.setAiScore(aiScore);
-            userAnswer.setAiFeedback(result.getFeedback());
-            if (result.getBreakdown() != null) {
-                userAnswer.setAiBreakdown(convertBreakdownToJson(result.getBreakdown()));
-            }
-            if (result.getSuggestions() != null && !result.getSuggestions().isEmpty()) {
-                userAnswer.setAiSuggestions(convertSuggestionsToJson(result.getSuggestions()));
-            }
-
             System.out.println("✅ Q" + question.getQuestionNumber() + " AI score: " + aiScore + "/100 → " + finalScore + "/" + question.getPoints());
-            System.out.println("   💾 AI data saved to user_answer");
             return finalScore;
 
         } catch (Exception e) {
@@ -333,18 +322,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
                     .multiply(BigDecimal.valueOf(aiScore))
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
-            // ✨ LƯU KẾT QUẢ AI VÀO DATABASE
-            userAnswer.setAiScore(aiScore);
-            userAnswer.setAiFeedback(result.getFeedback());
-            if (result.getBreakdown() != null) {
-                userAnswer.setAiBreakdown(convertBreakdownToJson(result.getBreakdown()));
-            }
-            if (result.getSuggestions() != null && !result.getSuggestions().isEmpty()) {
-                userAnswer.setAiSuggestions(convertSuggestionsToJson(result.getSuggestions()));
-            }
-
             System.out.println("✅ Q" + question.getQuestionNumber() + " ESSAY AI score: " + aiScore + "/100 → " + finalScore + "/" + question.getPoints());
-            System.out.println("   💾 AI data saved to user_answer");
             
             // Log chi tiết (nếu có)
             if (result.getFeedback() != null) {
@@ -452,7 +430,6 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
 
     /**
      * Tạo danh sách chi tiết câu hỏi
-     * ✨ Đã thêm AI grading data cho WRITING
      */
     private List<QuestionResultResponse> prepareQuestionResults(List<UserAnswer> userAnswers) {
         return userAnswers.stream()
@@ -465,7 +442,7 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
                     // ✨ Với WRITING: isCorrect = score > 0
                     boolean isCorrect = answer.getScore() != null && answer.getScore().compareTo(BigDecimal.ZERO) > 0;
 
-                    QuestionResultResponse.QuestionResultResponseBuilder builder = QuestionResultResponse.builder()
+                    return QuestionResultResponse.builder()
                             .questionId(question.getQuestionId())
                             .questionNumber(question.getQuestionNumber())
                             .questionText(question.getQuestionText() != null ? question.getQuestionText() : question.getPassageText())
@@ -475,108 +452,11 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
                             .correctAnswer(correctAnswerText)
                             .isCorrect(isCorrect)
                             .score(answer.getScore() != null ? answer.getScore() : BigDecimal.ZERO)
-                            .maxScore(question.getPoints());
-
-                    // ✨ MAP AI GRADING DATA cho WRITING section
-                    if ("WRITING".equals(question.getSection().getSectionType().name())) {
-                        builder.aiScore(answer.getAiScore());
-                        builder.aiFeedback(answer.getAiFeedback());
-                        
-                        // Parse aiBreakdown từ JSON string
-                        if (answer.getAiBreakdown() != null) {
-                            builder.aiBreakdown(parseAiBreakdown(answer.getAiBreakdown()));
-                        }
-                        
-                        // Parse aiSuggestions từ JSON array string
-                        if (answer.getAiSuggestions() != null && !answer.getAiSuggestions().isEmpty()) {
-                            builder.aiSuggestions(parseAiSuggestions(answer.getAiSuggestions()));
-                        }
-                    }
-
-                    return builder.build();
+                            .maxScore(question.getPoints())
+                            .build();
                 })
                 .sorted(Comparator.comparing(QuestionResultResponse::getQuestionNumber))
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * ✨ Helper: Parse JSON string to AIScoreBreakdown
-     */
-    private QuestionResultResponse.AIScoreBreakdown parseAiBreakdown(String jsonString) {
-        try {
-            // Simple JSON parsing: {"content":25,"grammar":20,"vocabulary":15,"organization":20}
-            QuestionResultResponse.AIScoreBreakdown breakdown = new QuestionResultResponse.AIScoreBreakdown();
-            
-            String clean = jsonString.replaceAll("[{}\"\\s]", "");
-            String[] pairs = clean.split(",");
-            
-            for (String pair : pairs) {
-                String[] kv = pair.split(":");
-                if (kv.length == 2) {
-                    String key = kv[0].toLowerCase();
-                    Integer value = Integer.parseInt(kv[1]);
-                    
-                    switch (key) {
-                        case "content": breakdown.setContent(value); break;
-                        case "grammar": breakdown.setGrammar(value); break;
-                        case "vocabulary": breakdown.setVocabulary(value); break;
-                        case "organization": breakdown.setOrganization(value); break;
-                    }
-                }
-            }
-            return breakdown;
-        } catch (Exception e) {
-            System.err.println("Failed to parse aiBreakdown: " + e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * ✨ Helper: Parse JSON array string to List<String>
-     */
-    private List<String> parseAiSuggestions(String jsonArrayString) {
-        try {
-            // Simple JSON array parsing: ["suggestion1", "suggestion2"]
-            List<String> suggestions = new ArrayList<>();
-            
-            // Remove brackets and split by ","
-            String clean = jsonArrayString.trim();
-            if (clean.startsWith("[")) clean = clean.substring(1);
-            if (clean.endsWith("]")) clean = clean.substring(0, clean.length() - 1);
-            
-            if (clean.isEmpty()) return suggestions;
-            
-            // Split by "," but handle escaped quotes
-            StringBuilder current = new StringBuilder();
-            boolean inQuote = false;
-            boolean escaped = false;
-            
-            for (char c : clean.toCharArray()) {
-                if (escaped) {
-                    current.append(c);
-                    escaped = false;
-                } else if (c == '\\') {
-                    escaped = true;
-                } else if (c == '"') {
-                    inQuote = !inQuote;
-                } else if (c == ',' && !inQuote) {
-                    String item = current.toString().trim();
-                    if (!item.isEmpty()) suggestions.add(item);
-                    current = new StringBuilder();
-                } else {
-                    current.append(c);
-                }
-            }
-            
-            // Add last item
-            String lastItem = current.toString().trim();
-            if (!lastItem.isEmpty()) suggestions.add(lastItem);
-            
-            return suggestions;
-        } catch (Exception e) {
-            System.err.println("Failed to parse aiSuggestions: " + e.getMessage());
-            return new ArrayList<>();
-        }
     }
 
     /**
@@ -601,44 +481,6 @@ public class ExamAttemptServiceImpl implements ExamAttemptService {
         }
 
         return "(Không trả lời)";
-    }
-
-    /**
-     * ✨ Helper: Convert Breakdown object to JSON string
-     */
-    private String convertBreakdownToJson(WritingGradingResult.Breakdown breakdown) {
-        try {
-            StringBuilder sb = new StringBuilder("{");
-            sb.append("\"content\":").append(breakdown.getContent() != null ? breakdown.getContent() : 0);
-            sb.append(",\"grammar\":").append(breakdown.getGrammar() != null ? breakdown.getGrammar() : 0);
-            sb.append(",\"vocabulary\":").append(breakdown.getVocabulary() != null ? breakdown.getVocabulary() : 0);
-            sb.append(",\"organization\":").append(breakdown.getOrganization() != null ? breakdown.getOrganization() : 0);
-            sb.append("}");
-            return sb.toString();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /**
-     * ✨ Helper: Convert suggestions List to JSON array string
-     */
-    private String convertSuggestionsToJson(List<String> suggestions) {
-        try {
-            StringBuilder sb = new StringBuilder("[");
-            boolean first = true;
-            for (String suggestion : suggestions) {
-                if (!first) sb.append(",");
-                // Escape quotes and special characters in suggestion text
-                String escaped = suggestion.replace("\\", "\\\\").replace("\"", "\\\"");
-                sb.append("\"").append(escaped).append("\"");
-                first = false;
-            }
-            sb.append("]");
-            return sb.toString();
-        } catch (Exception e) {
-            return "[]";
-        }
     }
 
     /**
