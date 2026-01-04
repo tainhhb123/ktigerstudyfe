@@ -1,6 +1,6 @@
 // src/components/chatai/KoreanChatInterface.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../services/axiosConfig';
 import { KoreanChatScenario, KoreanDifficultyLevel, ChatMessage, ChatResponsePair } from '../../types/koreanChat';
 import { koreanChatApi } from '../../services/koreanChatApi';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
@@ -172,7 +172,7 @@ export default function KoreanChatInterface({
       );
     } catch (err) {
       console.error('Lỗi khi gửi tin nhắn:', err);
-      if (axios.isAxiosError(err) && err.response) {
+      if (axiosInstance.isAxiosError(err) && err.response) {
         alert(`Không thể gửi tin nhắn: ${err.response.data.message || err.message}`);
       } else {
         alert(`Không thể gửi tin nhắn: ${err instanceof Error ? err.message : 'Lỗi không xác định'}`);

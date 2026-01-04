@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../services/axiosConfig";
 
 // 🔍 Interface khớp với database fields
 interface Grammar {
@@ -90,7 +90,7 @@ export default function AddGrammarModal({
         // Update existing grammar
         console.log("Making PUT request to:", `/api/grammar-theories/${grammar.grammarId}`);
         
-        const response = await axios.put(
+        const response = await axiosInstance.put(
           `/api/grammar-theories/${grammar.grammarId}`,
           submitData
         );
@@ -101,7 +101,7 @@ export default function AddGrammarModal({
         // Create new grammar
         console.log("Making POST request to:", "/api/grammar-theories");
         
-        const response = await axios.post("/api/grammar-theories", submitData);
+        const response = await axiosInstance.post("/api/grammar-theories", submitData);
         
         console.log("POST response:", response.data);
         alert("Thêm ngữ pháp thành công!");
@@ -120,7 +120,7 @@ export default function AddGrammarModal({
     } catch (error: unknown) {
       console.error("API Error:", error);
       
-      if (axios.isAxiosError(error)) {
+      if (axiosInstance.isAxiosError(error)) {
         console.error("Response status:", error.response?.status);
         console.error("Response data:", error.response?.data);
         console.error("Request URL:", error.config?.url);

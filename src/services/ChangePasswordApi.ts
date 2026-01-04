@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosInstance from "./axiosConfig";
 
 interface ChangePasswordPayload {
   email: string;
@@ -7,6 +7,6 @@ interface ChangePasswordPayload {
 }
 
 export const changePassword = async (payload: ChangePasswordPayload) => {
-  const res = await axios.post("/api/users/change-password", payload);
+  const res = await axiosInstance.post("/api/users/change-password", payload);
   return res.data;
 };

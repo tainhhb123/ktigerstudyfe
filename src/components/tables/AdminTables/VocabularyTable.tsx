@@ -1,6 +1,6 @@
 // src/components/tables/AdminTables/VocabularyTable.tsx
 import { useEffect, useState, useMemo, Fragment } from "react";
-import axios from "axios";
+import axiosInstance from "../../../services/axiosConfig";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 import Button from "../../ui/button/Button";
 import { FaSearch } from 'react-icons/fa';
@@ -43,7 +43,7 @@ export default function VocabularyTable({ lessonId }: VocabularyTableProps) {
       console.log('Fetching vocabulary for lesson:', lessonId);
       
       // 🔍 Sử dụng relative path như DocumentReportTable
-      const response = await axios.get(`/api/vocabulary-theories/lesson/${lessonId}`);
+      const response = await axiosInstance.get(`/api/vocabulary-theories/lesson/${lessonId}`);
       
       console.log('API Response:', response.data);
       
@@ -58,7 +58,7 @@ export default function VocabularyTable({ lessonId }: VocabularyTableProps) {
       
     } catch (error: unknown) {
       console.error('Error details:', error);
-      if (axios.isAxiosError(error)) {
+      if (axiosInstance.isAxiosError(error)) {
         console.error('Response status:', error.response?.status);
         console.error('Response data:', error.response?.data);
       }
@@ -85,14 +85,14 @@ export default function VocabularyTable({ lessonId }: VocabularyTableProps) {
         console.log("Deleting vocabulary ID:", vocabId);
         
         // 🔍 Sử dụng relative path
-        await axios.delete(`/api/vocabulary-theories/${vocabId}`);
+        await axiosInstance.delete(`/api/vocabulary-theories/${vocabId}`);
         
         console.log("Delete successful");
         alert("Xóa từ vựng thành công!");
         fetchVocabulary(); // Refresh data
       } catch (error) {
         console.error('Error deleting vocabulary:', error);
-        if (axios.isAxiosError(error)) {
+        if (axiosInstance.isAxiosError(error)) {
           const errorMessage = error.response?.data?.message || error.message;
           alert(`Lỗi xóa từ vựng: ${errorMessage}`);
         } else {

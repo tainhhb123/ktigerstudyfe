@@ -4,6 +4,7 @@ import { Tab } from "@headlessui/react";
 import { Pencil, Check, X, Camera, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { uploadImageToCloudinary } from "../services/cloudinaryService";
+import axiosInstance from "../services/axiosConfig";
 
 // Mở rộng kiểu dữ liệu người dùng
 interface UserProfile {
@@ -74,21 +75,16 @@ const Profile = () => {
 
     try {
       // Fetch thông tin người dùng cơ bản
-      const userResponse = await fetch(`http://localhost:8080/api/users/${userId}`);
-      if (!userResponse.ok) throw new Error("Không lấy được thông tin người dùng");
-      const userData: UserProfile = await userResponse.json();
+      const userResponse = await axiosInstance.get(`/api/users/${userId}`);
+      const userData: UserProfile = userResponse.data;
 
       // Fetch dữ liệu XP (totalxp, level_number)
       let userXP: UserXP | null = null;
       try {
-        const xpResponse = await fetch(`http://localhost:8080/api/user-xp/${userId}`);
+        const xpResponse = await axiosInstance.get(`/api/user-xp/${userId}`);
         console.log("XP Response status:", xpResponse.status);
-        if (xpResponse.ok) {
-          userXP = await xpResponse.json();
-          console.log("User XP data:", userXP);
-        } else {
-          console.warn("API userxp không tồn tại hoặc lỗi, sử dụng dữ liệu mặc định");
-        }
+        userXP = xpResponse.data;
+        console.log("User XP data:", userXP);
       } catch (error) {
         console.error("Lỗi khi fetch XP:", error);
       }
@@ -98,36 +94,31 @@ const Profile = () => {
       let streak = 0;
       
       try {
-        const progressResponse = await fetch(`http://localhost:8080/api/user-progress/user/${userId}`);
+        const progressResponse = await axiosInstance.get(`/api/user-progress/user/${userId}`);
         console.log("========== USER PROGRESS DEBUG ==========");
-        console.log("Progress API URL:", `http://localhost:8080/api/user-progress/user/${userId}`);
+        console.log("Progress API URL:", `/api/user-progress/user/${userId}`);
         console.log("Progress Response status:", progressResponse.status);
         
-        if (progressResponse.ok) {
-          const progressData: UserProgress[] = await progressResponse.json();
-          console.log("✅ User Progress data RAW:", JSON.stringify(progressData, null, 2));
-          console.log("📊 Total records:", progressData.length);
-          
-          // Log từng record
-          progressData.forEach((p, index) => {
-            console.log(`Record ${index}:`, {
-              isLessonCompleted: p.isLessonCompleted,
-              type: typeof p.isLessonCompleted,
-              lastAccessed: p.lastAccessed
-            });
+        const progressData: UserProgress[] = progressResponse.data;
+        console.log("✅ User Progress data RAW:", JSON.stringify(progressData, null, 2));
+        console.log("📊 Total records:", progressData.length);
+        
+        // Log từng record
+        progressData.forEach((p, index) => {
+          console.log(`Record ${index}:`, {
+            isLessonCompleted: p.isLessonCompleted,
+            type: typeof p.isLessonCompleted,
+            lastAccessed: p.lastAccessed
           });
-          
-          // Đếm số bài học đã hoàn thành
-          completedLessons = progressData.filter(p => p.isLessonCompleted === true).length;
-          console.log("✅ Completed lessons:", completedLessons);
-          
-          // Tính streak (số ngày học liên tiếp)
-          streak = calculateStreak(progressData);
-          console.log("✅ Streak:", streak);
-        } else {
-          const errorText = await progressResponse.text();
-          console.warn("❌ API user-progress lỗi:", progressResponse.status, errorText);
-        }
+        });
+        
+        // Đếm số bài học đã hoàn thành
+        completedLessons = progressData.filter(p => p.isLessonCompleted === true).length;
+        console.log("✅ Completed lessons:", completedLessons);
+        
+        // Tính streak (số ngày học liên tiếp)
+        streak = calculateStreak(progressData);
+        console.log("✅ Streak:", streak);
       } catch (error) {
         console.error("❌ Lỗi khi fetch Progress:", error);
       }
@@ -253,23 +244,12 @@ const Profile = () => {
       
       console.log('🔍 Data gửi lên backend (camelCase - Java convention):', JSON.stringify(backendData, null, 2));
       
-      const response = await fetch(`http://localhost:8080/api/users/${user.userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(backendData),
-      });
+      const response = await axiosInstance.put(`/api/users/${user.userId}`, backendData);
       
       console.log('📡 Response status:', response.status);
+      console.log('✅ Cập nhật thành công:', response.data);
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Backend error response:', errorText);
-        throw new Error('Cập nhật thất bại');
-      }
-      
-      const data = await response.json();
+      const data = response.data;
       showFeedback("Cập nhật thông tin thành công", "success");
       return data;
     } catch (error) {

@@ -4,6 +4,7 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link, useNavigate } from "react-router-dom";
 import { getLeaderboard } from "../../services/LeadBoardApi"; // ✅ Import API leaderboard
+import axiosInstance from "../../services/axiosConfig"; // ✅ Import axios config
 
 // ✅ Import interface từ LeaderBoard hoặc tạo interface riêng
 interface LeaderboardItem {
@@ -41,16 +42,16 @@ export default function UserDropdown() {
     }
   }, []);
 
-  // ✅ Sửa lại function fetchUserData
+  // ✅ Sửa lại function fetchUserData - Dùng axiosInstance thay vì fetch
   const fetchUserData = async (userId: number) => {
     try {
-        // ✅ Gọi cả 2 API
+        // ✅ Gọi cả 2 API với axiosInstance (tự động gửi token)
         const [userResponse, leaderboardData] = await Promise.all([
-            fetch(`http://localhost:8080/api/users/${userId}`),
+            axiosInstance.get(`/api/users/${userId}`),
             getLeaderboard() // ✅ Sử dụng API leaderboard
         ]);
         
-        const userData = await userResponse.json();
+        const userData = userResponse.data; // axios trả về data trong .data
         
         // ✅ Tìm user trong leaderboard với type rõ ràng
         const currentUserInLeaderboard = leaderboardData.find(

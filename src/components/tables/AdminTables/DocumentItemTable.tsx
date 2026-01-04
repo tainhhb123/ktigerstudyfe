@@ -1,6 +1,6 @@
 // src/components/tables/AdminTables/DocumentItemTable.tsx
 import React, { useEffect, useState, useMemo, Fragment } from "react";
-import axios from "axios";
+import axiosInstance from "../../../services/axiosConfig";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 import Button from "../../ui/button/Button";
 

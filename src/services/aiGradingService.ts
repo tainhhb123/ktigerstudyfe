@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axiosInstance from './axiosConfig';
 
 // API gọi đến backend, backend sẽ xử lý Groq API
 const API_BASE_URL = '/api/ai-grading';
@@ -31,7 +31,7 @@ class AIGradingService {
    */
   async gradeWriting(request: WritingGradingRequest): Promise<WritingGradingResult> {
     try {
-      const response = await axios.post<WritingGradingResult>(
+      const response = await axiosInstance.post<WritingGradingResult>(
         `${API_BASE_URL}/grade-writing`,
         request
       );
@@ -49,7 +49,7 @@ class AIGradingService {
    */
   async gradeMultipleWriting(requests: WritingGradingRequest[]): Promise<WritingGradingResult[]> {
     try {
-      const response = await axios.post<WritingGradingResult[]>(
+      const response = await axiosInstance.post<WritingGradingResult[]>(
         `${API_BASE_URL}/grade-multiple`,
         { requests }
       );

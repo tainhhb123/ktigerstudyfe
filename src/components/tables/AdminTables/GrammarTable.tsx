@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, Fragment } from "react";
-import axios from "axios";
+import axiosInstance from "../../../services/axiosConfig";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 import Button from "../../ui/button/Button";
 import { FaSearch } from "react-icons/fa";
@@ -42,7 +42,7 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
     setError(null);
 
     try {
-      const response = await axios.get(`/api/grammar-theories/lessons/${lessonId}/grammar/paged`, {
+      const response = await axiosInstance.get(`/api/grammar-theories/lessons/${lessonId}/grammar/paged`, {
         params: {
           searchTerm: searchTerm || "",
           page: pageNumber,
@@ -89,7 +89,7 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
     if (window.confirm(`Bạn có chắc muốn xóa ngữ pháp "${grammarTitle}"?`)) {
       try {
         setLoading(true);
-        await axios.delete(`/api/grammar-theories/${grammarId}`);
+        await axiosInstance.delete(`/api/grammar-theories/${grammarId}`);
         alert("Xóa ngữ pháp thành công!");
         fetchGrammar();
       } catch {

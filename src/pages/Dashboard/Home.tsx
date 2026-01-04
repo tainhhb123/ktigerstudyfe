@@ -10,9 +10,8 @@ import {
   Clock,
   Award
 } from "lucide-react";
-import axios from "axios";
+import axiosInstance from "../../services/axiosConfig";
 import { examApi } from "../../services/ExamApi";
-import { authService } from "../../services/authService";
 
 interface DashboardStats {
   totalUsers: number;
@@ -75,7 +74,7 @@ export default function Home() {
       setLoading(true);
       
       // Fetch users stats
-      const usersRes = await axios.get("/api/users/learners?page=0&size=100");
+      const usersRes = await axiosInstance.get("/api/users/learners?page=0&size=100");
       const allUsers = usersRes.data.content || [];
       const activeUsers = allUsers.filter((u: any) => u.userStatus === 1).length;
       const frozenUsers = allUsers.filter((u: any) => u.userStatus === 0).length;
@@ -91,7 +90,7 @@ export default function Home() {
       // Fetch lessons (assume API exists)
       let totalLessons = 0;
       try {
-        const lessonsRes = await axios.get("/api/lessons");
+        const lessonsRes = await axiosInstance.get("/api/lessons");
         totalLessons = lessonsRes.data.length || 0;
       } catch {
         totalLessons = 0;
@@ -100,7 +99,7 @@ export default function Home() {
       // Fetch documents
       let totalDocuments = 0;
       try {
-        const docsRes = await axios.get("/api/document-lists");
+        const docsRes = await axiosInstance.get("/api/document-lists");
         totalDocuments = docsRes.data.length || 0;
       } catch {
         totalDocuments = 0;

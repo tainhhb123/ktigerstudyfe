@@ -1,8 +1,7 @@
 //src/services/LevelApi.ts
-import axios from 'axios';
-const BASE_URL = "http://localhost:8080/api/levels";
+import axiosInstance from './axiosConfig';
 
 export async function getAllLevels() {
-  const res = await axios.get(BASE_URL);
+  const res = await axiosInstance.get('/api/levels');
   return res.data; 
 }

@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { authService } from './authService';
+import axiosInstance from './axiosConfig';
 import {
   ExamResponse,
   ExamSectionResponse,
@@ -13,41 +12,23 @@ import {
 } from '../types/exam';
 import { WritingGradingRequest, WritingGradingResult } from './aiGradingService';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add auth token to requests
-api.interceptors.request.use((config) => {
-  const token = authService.getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
 // Exam APIs
 export const examApi = {
   // Get all active exams for users
   getActiveExams: async (): Promise<ExamResponse[]> => {
-    const response = await api.get<ExamResponse[]>('/api/exams/active');
+    const response = await axiosInstance.get<ExamResponse[]>('/api/exams/active');
     return response.data;
   },
 
   // Get all exams (admin)
   getAllExams: async (): Promise<ExamResponse[]> => {
-    const response = await api.get<ExamResponse[]>('/api/exams');
+    const response = await axiosInstance.get<ExamResponse[]>('/api/exams');
     return response.data;
   },
 
   // Get exam by ID
   getExamById: async (id: number): Promise<ExamResponse> => {
-    const response = await api.get<ExamResponse>(`/api/exams/${id}`);
+    const response = await axiosInstance.get<ExamResponse>(`/api/exams/${id}`);
     return response.data;
   },
 };
@@ -56,13 +37,13 @@ export const examApi = {
 export const examSectionApi = {
   // Get sections by exam ID
   getSectionsByExam: async (examId: number): Promise<ExamSectionResponse[]> => {
-    const response = await api.get<ExamSectionResponse[]>(`/api/exam-sections/exam/${examId}`);
+    const response = await axiosInstance.get<ExamSectionResponse[]>(`/api/exam-sections/exam/${examId}`);
     return response.data;
   },
 
   // Get section by ID
   getSectionById: async (id: number): Promise<ExamSectionResponse> => {
-    const response = await api.get<ExamSectionResponse>(`/api/exam-sections/${id}`);
+    const response = await axiosInstance.get<ExamSectionResponse>(`/api/exam-sections/${id}`);
     return response.data;
   },
 };
@@ -71,31 +52,31 @@ export const examSectionApi = {
 export const examAttemptApi = {
   // Start exam
   startExam: async (request: ExamAttemptRequest): Promise<ExamAttemptResponse> => {
-    const response = await api.post<ExamAttemptResponse>('/api/exam-attempts/start', request);
+    const response = await axiosInstance.post<ExamAttemptResponse>('/api/exam-attempts/start', request);
     return response.data;
   },
 
   // Get attempt by ID
   getAttemptById: async (id: number): Promise<ExamAttemptResponse> => {
-    const response = await api.get<ExamAttemptResponse>(`/api/exam-attempts/${id}`);
+    const response = await axiosInstance.get<ExamAttemptResponse>(`/api/exam-attempts/${id}`);
     return response.data;
   },
 
   // Get user's attempts
   getAttemptsByUser: async (userId: number): Promise<ExamAttemptResponse[]> => {
-    const response = await api.get<ExamAttemptResponse[]>(`/api/exam-attempts/user/${userId}`);
+    const response = await axiosInstance.get<ExamAttemptResponse[]>(`/api/exam-attempts/user/${userId}`);
     return response.data;
   },
 
   // Submit exam
   submitExam: async (attemptId: number): Promise<ExamAttemptResponse> => {
-    const response = await api.post<ExamAttemptResponse>(`/api/exam-attempts/${attemptId}/submit`);
+    const response = await axiosInstance.post<ExamAttemptResponse>(`/api/exam-attempts/${attemptId}/submit`);
     return response.data;
   },
 
   // Get exam result
   getResult: async (attemptId: number): Promise<ExamResultResponse> => {
-    const response = await api.get<ExamResultResponse>(`/api/exam-attempts/${attemptId}/result`);
+    const response = await axiosInstance.get<ExamResultResponse>(`/api/exam-attempts/${attemptId}/result`);
     return response.data;
   },
 };
@@ -104,13 +85,13 @@ export const examAttemptApi = {
 export const questionApi = {
   // Get questions by section ID
   getQuestionsBySection: async (sectionId: number): Promise<QuestionResponse[]> => {
-    const response = await api.get<QuestionResponse[]>(`/api/questions/section/${sectionId}`);
+    const response = await axiosInstance.get<QuestionResponse[]>(`/api/questions/section/${sectionId}`);
     return response.data;
   },
 
   // Get question by ID
   getQuestionById: async (id: number): Promise<QuestionResponse> => {
-    const response = await api.get<QuestionResponse>(`/api/questions/${id}`);
+    const response = await axiosInstance.get<QuestionResponse>(`/api/questions/${id}`);
     return response.data;
   },
 };
@@ -119,13 +100,13 @@ export const questionApi = {
 export const answerChoiceApi = {
   // Get answer choices by question ID
   getChoicesByQuestion: async (questionId: number): Promise<AnswerChoiceResponse[]> => {
-    const response = await api.get<AnswerChoiceResponse[]>(`/api/answer-choices/question/${questionId}`);
+    const response = await axiosInstance.get<AnswerChoiceResponse[]>(`/api/answer-choices/question/${questionId}`);
     return response.data;
   },
 
   // Get answer choice by ID
   getChoiceById: async (id: number): Promise<AnswerChoiceResponse> => {
-    const response = await api.get<AnswerChoiceResponse>(`/api/answer-choices/${id}`);
+    const response = await axiosInstance.get<AnswerChoiceResponse>(`/api/answer-choices/${id}`);
     return response.data;
   },
 };
@@ -134,13 +115,13 @@ export const answerChoiceApi = {
 export const userAnswerApi = {
   // Save user's answer to a question
   saveUserAnswer: async (request: UserAnswerRequest): Promise<UserAnswerResponse> => {
-    const response = await api.post<UserAnswerResponse>('/api/user-answers', request);
+    const response = await axiosInstance.post<UserAnswerResponse>('/api/user-answers', request);
     return response.data;
   },
 
   // Get all user answers for an attempt
   getAnswersByAttempt: async (attemptId: number): Promise<UserAnswerResponse[]> => {
-    const response = await api.get<UserAnswerResponse[]>(`/api/user-answers/attempt/${attemptId}`);
+    const response = await axiosInstance.get<UserAnswerResponse[]>(`/api/user-answers/attempt/${attemptId}`);
     return response.data;
   },
 };
@@ -149,11 +130,11 @@ export const userAnswerApi = {
 export const aiGradingApi = {
   // Grade all writing answers for an exam attempt
   gradeAllWritingAnswers: async (attemptId: number): Promise<Record<number, WritingGradingResult>> => {
-    const response = await api.post<Record<number, WritingGradingResult>>(
+    const response = await axiosInstance.post<Record<number, WritingGradingResult>>(
       `/api/exam-attempts/${attemptId}/grade-writing`
     );
     return response.data;
   },
 };
 
-export default api;
+export default axiosInstance;

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, Fragment } from "react";
-import axios from "axios";
+import axiosInstance from "../../../services/axiosConfig";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 import Button from "../../ui/button/Button";
 import { FaSearch } from "react-icons/fa";
@@ -41,7 +41,7 @@ export default function SentenceRewritingQuestionTable({ lessonId, exerciseId = 
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`/api/sentence-rewriting/lesson/${lessonId}/paged`, {
+      const response = await axiosInstance.get(`/api/sentence-rewriting/lesson/${lessonId}/paged`, {
         params: {
           keyword: searchTerm,
           page: pageNumber,
@@ -97,7 +97,7 @@ export default function SentenceRewritingQuestionTable({ lessonId, exerciseId = 
     if (window.confirm(`Bạn có chắc muốn xóa câu hỏi "${originalSentence}"?`)) {
       try {
         setLoading(true);
-        await axios.delete(`/api/sentence-rewriting/${questionId}`);
+        await axiosInstance.delete(`/api/sentence-rewriting/${questionId}`);
         alert("Xóa câu hỏi thành công!");
         fetchQuestions();
       } catch (error) {

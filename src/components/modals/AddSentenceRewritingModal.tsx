@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../services/axiosConfig";
 import Dropzone from "../form/form-elements/DropZone";
 
 interface SentenceRewritingQuestion {
@@ -125,7 +125,7 @@ export default function AddSentenceRewritingModal({
         // Update existing question
         console.log("Making PUT request to:", `/api/sentence-rewriting/${question.questionId}`);
         
-        const response = await axios.put(
+        const response = await axiosInstance.put(
           `/api/sentence-rewriting/${question.questionId}`,
           submitData
         );
@@ -136,7 +136,7 @@ export default function AddSentenceRewritingModal({
         // Create new question
         console.log("Making POST request to:", "/api/sentence-rewriting");
         
-        const response = await axios.post("/api/sentence-rewriting", submitData);
+        const response = await axiosInstance.post("/api/sentence-rewriting", submitData);
         
         console.log("POST response:", response.data);
         alert("Thêm câu hỏi thành công!");
@@ -158,7 +158,7 @@ export default function AddSentenceRewritingModal({
     } catch (error: unknown) {
       console.error("API Error:", error);
       
-      if (axios.isAxiosError(error)) {
+      if (axiosInstance.isAxiosError(error)) {
         console.error("Response status:", error.response?.status);
         console.error("Response data:", error.response?.data);
         const errorMessage = error.response?.data?.message || error.message || "Lỗi không xác định";

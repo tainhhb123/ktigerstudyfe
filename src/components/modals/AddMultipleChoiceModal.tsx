@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../services/axiosConfig";
 import Dropzone from "../../components/form/form-elements/DropZone";
 
 interface MultipleChoice {
@@ -152,7 +152,7 @@ export default function AddMultipleChoiceModal({
         // Update existing question
         console.log("Making PUT request to:", `/api/mcq/${question.questionId}`);
         
-        const response = await axios.put(
+        const response = await axiosInstance.put(
           `/api/mcq/${question.questionId}`,
           submitData
         );
@@ -163,7 +163,7 @@ export default function AddMultipleChoiceModal({
         // Create new question
         console.log("Making POST request to:", "/api/mcq");
         
-        const response = await axios.post("/api/mcq", submitData);
+        const response = await axiosInstance.post("/api/mcq", submitData);
         
         console.log("POST response:", response.data);
         alert("Thêm câu hỏi thành công!");
@@ -189,7 +189,7 @@ export default function AddMultipleChoiceModal({
     } catch (error: unknown) {
       console.error("API Error:", error);
       
-      if (axios.isAxiosError(error)) {
+      if (axiosInstance.isAxiosError(error)) {
         console.error("Response status:", error.response?.status);
         console.error("Response data:", error.response?.data);
         const errorMessage = error.response?.data?.message || error.message || "Lỗi không xác định";

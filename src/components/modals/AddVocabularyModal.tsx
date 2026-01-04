@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../services/axiosConfig";
 import DropzoneComponent from "../../components/form/form-elements/DropZone";
 
 interface AddVocabularyModalProps {
@@ -110,7 +110,7 @@ export default function AddVocabularyModal({
         // 🔍 Thêm thêm debug info
         console.log("PUT payload:", JSON.stringify(submitData, null, 2));
         
-        const response = await axios.put(
+        const response = await axiosInstance.put(
           `/api/vocabulary-theories/${vocabulary.vocabId}`,
           submitData
         );
@@ -121,7 +121,7 @@ export default function AddVocabularyModal({
         // Create new vocabulary
         console.log("Making POST request to:", "/api/vocabulary-theories");
         
-        const response = await axios.post("/api/vocabulary-theories", submitData);
+        const response = await axiosInstance.post("/api/vocabulary-theories", submitData);
 
         console.log("POST response:", response.data);
         alert("Thêm từ vựng thành công!");
@@ -142,7 +142,7 @@ export default function AddVocabularyModal({
     } catch (error: unknown) {
       console.error("API Error:", error);
 
-      if (axios.isAxiosError(error)) {
+      if (axiosInstance.isAxiosError(error)) {
         console.error("Response status:", error.response?.status);
         console.error("Response data:", error.response?.data);
         console.error("Request URL:", error.config?.url);

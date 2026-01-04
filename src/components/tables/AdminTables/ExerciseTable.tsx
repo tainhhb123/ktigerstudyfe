@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import axios from "axios";
+import axiosInstance from "../../../services/axiosConfig";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 import Button from "../../ui/button/Button";
 import { FaSearch } from "react-icons/fa";
@@ -35,7 +35,7 @@ export default function ExerciseTable({ lessonId, onViewDetail }: ExerciseTableP
     if (!lessonId) return;
     setLoading(true);
     try {
-      const response = await axios.get(`/api/exercises/lesson/${lessonId}/paged`, {
+      const response = await axiosInstance.get(`/api/exercises/lesson/${lessonId}/paged`, {
         params: {
           title: searchTerm,
           page: pageNumber,
@@ -83,7 +83,7 @@ export default function ExerciseTable({ lessonId, onViewDetail }: ExerciseTableP
 
   const handleUpdate = async (exerciseId: number) => {
     try {
-      await axios.put(`/api/exercises/${exerciseId}`, {
+      await axiosInstance.put(`/api/exercises/${exerciseId}`, {
         ...editValues,
         lessonId
       });
@@ -114,7 +114,7 @@ export default function ExerciseTable({ lessonId, onViewDetail }: ExerciseTableP
   const handleDelete = async (exerciseId: number, exerciseTitle: string) => {
     if (window.confirm(`Bạn có chắc muốn xóa bài tập "${exerciseTitle}"?`)) {
       try {
-        await axios.delete(`/api/exercises/${exerciseId}`);
+        await axiosInstance.delete(`/api/exercises/${exerciseId}`);
         fetchExercises();
       } catch {
         alert("Xóa thất bại");

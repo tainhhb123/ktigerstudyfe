@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../../services/axiosConfig";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";
 import VocabularyTable from "../../../components/tables/AdminTables/VocabularyTable";
@@ -42,7 +42,7 @@ export default function LessonDetailPage() {
       try {
         // ✅ Lấy danh sách exercises cho lesson
         console.log(`Fetching exercises for lesson ${lessonId}...`);
-        const response = await axios.get(`/api/exercises/lesson/${lessonId}`);
+        const response = await axiosInstance.get(`/api/exercises/lesson/${lessonId}`);
         const exercises = response.data;
         
         console.log("Exercises found:", exercises);
@@ -70,7 +70,7 @@ export default function LessonDetailPage() {
     const createDefaultExercise = async () => {
       try {
         // ✅ Double-check lần nữa trước khi tạo
-        const checkResponse = await axios.get(`/api/exercises/lesson/${lessonId}`);
+        const checkResponse = await axiosInstance.get(`/api/exercises/lesson/${lessonId}`);
         if (checkResponse.data && checkResponse.data.length > 0) {
           console.log("Exercise found during double-check, using existing one");
           setCurrentExercise(checkResponse.data[0]);
@@ -78,7 +78,7 @@ export default function LessonDetailPage() {
         }
 
         console.log("Creating new exercise for lesson", lessonId);
-        const createResponse = await axios.post('/api/exercises', {
+        const createResponse = await axiosInstance.post('/api/exercises', {
           exerciseName: `Bài tập - Lesson ${lessonId}`,
           exerciseDescription: `Bài tập mặc định cho bài học ${lessonId}`,
           exerciseType: "MIXED", // hoặc loại exercise phù hợp
@@ -91,7 +91,7 @@ export default function LessonDetailPage() {
         
       } catch (createError) {
         console.error('Error creating exercise:', createError);
-        if (axios.isAxiosError(createError)) {
+        if (axiosInstance.isAxiosError(createError)) {
           console.error("Create error details:", createError.response?.data);
         }
         

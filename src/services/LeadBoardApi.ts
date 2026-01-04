@@ -1,7 +1,7 @@
 //src/services/LeadBoardApi.ts
-import axios from "axios";
+import axiosInstance from "./axiosConfig";
 
 export const getLeaderboard = async () => {
-  const res = await axios.get("/api/user-xp/leaderboard");
+  const res = await axiosInstance.get("/api/user-xp/leaderboard");
   return res.data;
 };

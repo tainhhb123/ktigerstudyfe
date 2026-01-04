@@ -1,17 +1,17 @@
 // src/services/ExerciseApi.ts
-import axios from "axios";
+import axiosInstance from "./axiosConfig";
 
 export const getExercisesByLessonId = async (lessonId: string | number) => {
-  const res = await axios.get(`/api/exercises/lesson/${lessonId}`);
+  const res = await axiosInstance.get(`/api/exercises/lesson/${lessonId}`);
   return res.data;
 };
 
 export const getMultipleChoiceByExerciseId = async (exerciseId: string | number) => {
-  const res = await axios.get(`/api/mcq/exercise/${exerciseId}`);
+  const res = await axiosInstance.get(`/api/mcq/exercise/${exerciseId}`);
   return res.data;
 };
 
 export const getSentenceRewritingByExerciseId = async (exerciseId: string | number) => {
-  const res = await axios.get(`/api/sentence-rewriting/exercise/${exerciseId}`);
+  const res = await axiosInstance.get(`/api/sentence-rewriting/exercise/${exerciseId}`);
   return res.data;
 };

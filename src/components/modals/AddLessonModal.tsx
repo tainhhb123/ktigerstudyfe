@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../services/axiosConfig";
 
 interface Lesson {
   lessonId?: number;
@@ -78,10 +78,10 @@ export default function AddLessonModal({
       }
 
       if (editData && lesson.lessonId) {
-        await axios.put(`/api/lessons/${lesson.lessonId}`, submitData);
+        await axiosInstance.put(`/api/lessons/${lesson.lessonId}`, submitData);
         alert("Cập nhật bài học thành công!");
       } else {
-        await axios.post("/api/lessons", submitData);
+        await axiosInstance.post("/api/lessons", submitData);
         alert("Thêm bài học thành công!");
       }
 

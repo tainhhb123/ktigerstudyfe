@@ -1,6 +1,6 @@
 // src/components/tables/AdminTables/LearnerInfoTable.tsx
 import { useEffect, useState, useMemo, useCallback } from "react";
-import axios, { AxiosError } from "axios";
+import axiosInstance from "../../../services/axiosConfig"; import { AxiosError } from "axios";
 import {
   Table,
   TableHeader,
@@ -134,7 +134,7 @@ export default function LearnerInfoTable({ keyword }: UserInfoTableProps) {
     
     setActionLoading(userId);
     try {
-      const response = await axios.post<ApiResponse>(`/api/users/${userId}/${action}`);
+      const response = await axiosInstance.post<ApiResponse>(`/api/users/${userId}/${action}`);
       
       if (response.status === 200 && response.data.success === true) {
         updateUserStatus(userId, newStatus);

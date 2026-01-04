@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosInstance from "./axiosConfig";
 
 export const addUserXP = async ({
   userId,
@@ -7,6 +7,6 @@ export const addUserXP = async ({
   userId: number;
   xpToAdd: number;
 }) => {
-  const res = await axios.post("/api/user-xp/add", { userId, xpToAdd });
+  const res = await axiosInstance.post("/api/user-xp/add", { userId, xpToAdd });
   return res.data; 
 };

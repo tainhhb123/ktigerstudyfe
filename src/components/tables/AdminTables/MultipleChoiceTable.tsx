@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, Fragment } from "react";
-import axios from "axios";
+import axiosInstance from "../../../services/axiosConfig";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 import Button from "../../ui/button/Button";
 import { FaSearch } from 'react-icons/fa';
@@ -49,7 +49,7 @@ export default function MultipleChoiceTable({ lessonId, exerciseId }: MultipleCh
     
     try {
       // ✅ Có thể filter theo cả lessonId và exerciseId nếu API hỗ trợ
-      const response = await axios.get(`/api/mcq/lesson/${lessonId}/paged`, {
+      const response = await axiosInstance.get(`/api/mcq/lesson/${lessonId}/paged`, {
         params: {
           searchTerm,
           page: pageNumber,
@@ -110,7 +110,7 @@ export default function MultipleChoiceTable({ lessonId, exerciseId }: MultipleCh
     if (window.confirm(`Bạn có chắc muốn xóa câu hỏi "${questionText.substring(0, 50)}..."?`)) {
       try {
         setLoading(true);
-        await axios.delete(`/api/mcq/${questionId}`);
+        await axiosInstance.delete(`/api/mcq/${questionId}`);
         alert("Xóa câu hỏi thành công!");
         fetchQuestions();
       } catch (error) {

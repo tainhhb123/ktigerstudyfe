@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from '../../../services/axiosConfig';
 import {
   Table,
   TableHeader,

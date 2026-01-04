@@ -1,6 +1,6 @@
 // src/components/tables/AdminTables/DocumentReportTable.tsx
 import { useEffect, useState, useMemo } from "react";
-import axios from "axios";
+import axiosInstance from "../../../services/axiosConfig";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 
 interface DocumentReport {
@@ -77,8 +77,8 @@ export default function DocumentReportTable({ keyword = "" }: DocumentReportTabl
   const handleDelete = (id: number) => {
     if (!window.confirm("Xác nhận xóa báo cáo này?")) return;
     setLoading(true);
-    axios.delete(`/api/document-reports/${id}`)
-      .then(() => axios.get<Paged<DocumentReport>>(`/api/document-reports/paged?page=${currentPage}&size=${pageSize}`))
+    axiosInstance.delete(`/api/document-reports/${id}`)
+      .then(() => axiosInstance.get<Paged<DocumentReport>>(`/api/document-reports/paged?page=${currentPage}&size=${pageSize}`))
       .then((res) => setData(res.data))
       .finally(() => setLoading(false));
   };

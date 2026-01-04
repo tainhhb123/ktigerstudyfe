@@ -1,6 +1,6 @@
 // src/pages/admin/StudentDocumentPage.tsx
 import { useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../../services/axiosConfig";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";
 import PageMeta from "../../../components/common/PageMeta";
@@ -14,7 +14,7 @@ export default function StudentDocumentPage() {
 
   const handleDeleteList = (id: number) => {
     if (!window.confirm("Bạn có chắc muốn xóa tài liệu này?")) return;
-    axios.delete(`/api/document-lists/${id}`)
+    axiosInstance.delete(`/api/document-lists/${id}`)
       .then(() => {
         if (selectedListId === id) setSelectedListId(null);
         // Gọi lại fetch hoặc trigger reload nếu cần

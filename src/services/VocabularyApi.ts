@@ -1,8 +1,8 @@
 //src/services/VocabularyApi.ts
-import axios from "axios";
+import axiosInstance from "./axiosConfig";
 
 export const getVocabularyByLessonId = async (lessonId: string | number) => {
-  const res = await axios.get(`/api/vocabulary-theories/lesson/${lessonId}`);
+  const res = await axiosInstance.get(`/api/vocabulary-theories/lesson/${lessonId}`);
   return res.data;
 };
 

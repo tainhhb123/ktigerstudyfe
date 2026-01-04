@@ -13,7 +13,8 @@ const GOOGLE_CLIENT_ID =
   "163931303040-f2d5b0sr9ervddgg3eceuaqqhvoifvro.apps.googleusercontent.com";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  // ⚠️ Tắt StrictMode để tránh double render trong dev mode
+  // <StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <ThemeProvider>
         <AppWrapper>
@@ -21,5 +22,5 @@ createRoot(document.getElementById("root")!).render(
         </AppWrapper>
       </ThemeProvider>
     </GoogleOAuthProvider>
-  </StrictMode>,
+  // </StrictMode>
 );

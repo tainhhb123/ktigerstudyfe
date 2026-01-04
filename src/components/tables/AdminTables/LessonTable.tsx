@@ -1,6 +1,6 @@
 // src/components/tables/AdminTables/LessonTable.tsx
 import { useEffect, useState, useMemo, useCallback } from "react"; // Thêm useCallback
-import axios from "axios";
+import axiosInstance from "../../../services/axiosConfig";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 import Button from "../../ui/button/Button";
 // import { useNavigate } from "react-router-dom";

@@ -1,5 +1,6 @@
 // src/services/UserExerciseResultApi.ts
-import axios from "axios";
+import axiosInstance from "./axiosConfig";
+
 export const saveUserExerciseResult = async ({
   userId,
   exerciseId,
@@ -12,7 +13,7 @@ export const saveUserExerciseResult = async ({
   dateComplete: string;
 }) => {
   console.log("Sending:", { userId, exerciseId, score, dateComplete }); 
-  return axios.post("/api/user-exercise-results", {
+  return axiosInstance.post("/api/user-exercise-results", {
     userId,
     exerciseId,
     score,
