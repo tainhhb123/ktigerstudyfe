@@ -99,6 +99,7 @@ const ExamAttempt = () => {
       let savedSectionIndex = 0;
       let savedQuestionIndex = 0;
       let savedTimeLeft = null;
+      let savedAudioPosition = 0;  // ← THÊM BIẾN NÀY
       
       if (saved) {
         try {
@@ -107,7 +108,8 @@ const ExamAttempt = () => {
             savedSectionIndex = data.currentSectionIndex || 0;
             savedQuestionIndex = data.currentQuestionIndex || 0;
             savedTimeLeft = data.timeLeft;
-            console.log('📍 Restoring position: Section', savedSectionIndex, 'Question', savedQuestionIndex, 'Time:', savedTimeLeft);
+            savedAudioPosition = data.audioPosition || 0;  // ← BẢO TỒN GIÁ TRỊ ĐÃ LƯU
+            console.log('📍 Restoring position: Section', savedSectionIndex, 'Question', savedQuestionIndex, 'Time:', savedTimeLeft, 'Audio:', savedAudioPosition);
           }
         } catch (err) {
           console.error('Error parsing saved position:', err);
@@ -121,7 +123,8 @@ const ExamAttempt = () => {
         startedAt: new Date().toISOString(),
         currentSectionIndex: savedSectionIndex,
         currentQuestionIndex: savedQuestionIndex,
-        timeLeft: savedTimeLeft
+        timeLeft: savedTimeLeft,
+        audioPosition: savedAudioPosition  // ← SỬ DỤNG GIÁ TRỊ ĐÃ LƯU THAY VÌ 0
       }));
 
       if (attemptData.examId) {
@@ -565,7 +568,7 @@ const ExamAttempt = () => {
               {/* Audio Player (for Listening section) */}
               {currentSection.sectionType === 'LISTENING' && currentSection.audioUrl && (
                 <div className="mb-6 p-4 rounded-lg border-2" style={{ backgroundColor: '#E8F5E9', borderColor: '#4CAF50' }}>
-                 
+          
                   <style>{`
                     .audio-no-seek::-webkit-media-controls-timeline,
                     .audio-no-seek::-webkit-media-controls-current-time-display,
@@ -590,19 +593,97 @@ const ExamAttempt = () => {
                   <audio
                     ref={audioRef}
                     src={currentSection.audioUrl}
-                    onPlay={(e) => {
-                      if (!audioStarted) {
-                        const confirmed = confirm('Bắt đầu phát audio? Audio sẽ chạy liên tục và không thể tạm dừng.');
-                        if (confirmed) {
-                          setAudioStarted(true);
-                          setAudioPlaying(true);
-                          e.currentTarget.classList.add('audio-started');
-                        } else {
-                          e.currentTarget.pause();
+                    autoPlay
+                    onCanPlay={(e) => {
+                      // ═══════════════════════════════════════════════════
+                      // FALLBACK: onCanPlay fires sau onLoadedMetadata
+                      // Dùng để restore nếu onLoadedMetadata bỏ lỡ
+                      // ═══════════════════════════════════════════════════
+                      const audio = e.currentTarget;
+                      
+                      if (audio.currentTime === 0) {
+                        console.log('🔄 onCanPlay: Checking if need to restore...');
+                        
+                        const saved = localStorage.getItem('topik_in_progress');
+                        if (saved) {
+                          try {
+                            const data = JSON.parse(saved);
+                            if (data.audioPosition && data.audioPosition > 0) {
+                              console.log('⏩ Restoring from onCanPlay:', data.audioPosition);
+                              audio.currentTime = data.audioPosition;
+                            }
+                          } catch (err) {
+                            console.error('Error in onCanPlay restore:', err);
+                          }
                         }
-                      } else {
-                        setAudioPlaying(true);
                       }
+                    }}
+                    onLoadedMetadata={(e) => {
+                      const audio = e.currentTarget;
+                      
+                      // ═══════════════════════════════════════════════════
+                      // BƯỚC 1: RESTORE AUDIO POSITION từ localStorage
+                      // ═══════════════════════════════════════════════════
+                      const saved = localStorage.getItem('topik_in_progress');
+                      let resumedFromPosition = false;
+                      
+                      console.log('🎵 Audio metadata loaded');
+                      console.log('📦 localStorage data:', saved ? JSON.parse(saved) : 'EMPTY');
+                      console.log('📍 Current section index:', currentSectionIndex);
+                      
+                      if (saved) {
+                        try {
+                          const data = JSON.parse(saved);
+                          
+                          console.log('🔍 Checking restore conditions:');
+                          console.log('  - audioPosition:', data.audioPosition);
+                          console.log('  - audioPosition > 0:', data.audioPosition > 0);
+                          console.log('  - saved sectionIndex:', data.currentSectionIndex);
+                          console.log('  - current sectionIndex:', currentSectionIndex);
+                          console.log('  - sections match:', data.currentSectionIndex === currentSectionIndex);
+                          
+                          // Check nếu có saved audio position
+                          // Bỏ điều kiện check section vì có thể chưa khớp lúc đầu
+                          if (data.audioPosition && data.audioPosition > 0) {
+                            
+                            audio.currentTime = data.audioPosition;
+                            resumedFromPosition = true;
+                            console.log('⏩ Resuming audio from:', data.audioPosition, 'seconds');
+                            
+                            // Show notification cho user
+                            const mins = Math.floor(data.audioPosition / 60);
+                            const secs = Math.floor(data.audioPosition % 60);
+                            console.log(`✅ Audio resumed at ${mins}:${secs.toString().padStart(2, '0')}`);
+                          }
+                        } catch (err) {
+                          console.error('Error restoring audio position:', err);
+                        }
+                      }
+                      
+                      // ═══════════════════════════════════════════════════
+                      // BƯỚC 2: SET STATES và AUTO PLAY
+                      // ═══════════════════════════════════════════════════
+                      setAudioStarted(true);
+                      setAudioPlaying(true);
+                      audio.classList.add('audio-started');
+                      
+                      // Play audio (with error handling)
+                      audio.play()
+                        .then(() => {
+                          if (resumedFromPosition) {
+                            console.log('✅ Audio auto-playing from saved position');
+                          } else {
+                            console.log('✅ Audio auto-playing from start');
+                          }
+                        })
+                        .catch(err => {
+                          console.log('Autoplay blocked by browser:', err);
+                          alert('Trình duyệt chặn autoplay. Vui lòng nhấn Play để bắt đầu.');
+                        });
+                    }}
+                    onPlay={() => {
+                      setAudioStarted(true);
+                      setAudioPlaying(true);
                     }}
                     onPause={(e) => {
                       // Prevent pause after started
@@ -615,7 +696,25 @@ const ExamAttempt = () => {
                         setAudioPlaying(false);
                       }
                     }}
-                    onEnded={() => setAudioPlaying(false)}
+                    onEnded={() => {
+                      setAudioPlaying(false);
+                      setAudioStarted(false);
+                      
+                      // ═══════════════════════════════════════════════════
+                      // CLEAR AUDIO POSITION khi audio phát hết
+                      // ═══════════════════════════════════════════════════
+                      const saved = localStorage.getItem('topik_in_progress');
+                      if (saved) {
+                        try {
+                          const data = JSON.parse(saved);
+                          data.audioPosition = 0; // Reset về 0
+                          localStorage.setItem('topik_in_progress', JSON.stringify(data));
+                          console.log('✅ Audio finished - position cleared');
+                        } catch (err) {
+                          console.error('Error clearing audio position:', err);
+                        }
+                      }
+                    }}
                     onSeeking={(e) => {
                       // Prevent seeking - reset to stored position
                       e.preventDefault();
@@ -629,11 +728,41 @@ const ExamAttempt = () => {
                       }
                     }}
                     onTimeUpdate={(e) => {
-                      // Store current time to prevent seeking
                       const audio = e.currentTarget;
-                      audio.dataset.lastTime = audio.currentTime.toString();
+                      const currentTime = audio.currentTime;
+                      
+                      // ═══════════════════════════════════════════════════
+                      // BƯỚC 1: LƯU VỊ TRÍ HIỆN TẠI (cho chặn seeking)
+                      // ═══════════════════════════════════════════════════
+                      audio.dataset.lastTime = currentTime.toString();
+                      
+                      // ═══════════════════════════════════════════════════
+                      // BƯỚC 2: AUTO-SAVE AUDIO POSITION mỗi 3 giây
+                      // ═══════════════════════════════════════════════════
+                      // Check: Chỉ save khi đạt mốc giây chia hết cho 3
+                      // VD: 0s, 3s, 6s, 9s, 12s... (không save mỗi 250ms)
+                      const currentSecond = Math.floor(currentTime);
+                      
+                      if (currentSecond % 3 === 0 && currentSecond !== audio.dataset.lastSavedSecond) {
+                        audio.dataset.lastSavedSecond = currentSecond.toString();
+                        
+                        const saved = localStorage.getItem('topik_in_progress');
+                        if (saved) {
+                          try {
+                            const data = JSON.parse(saved);
+                            data.audioPosition = currentTime;
+                            data.currentSectionIndex = currentSectionIndex;
+                            localStorage.setItem('topik_in_progress', JSON.stringify(data));
+                            
+                            // Debug log
+                            console.log('💾 Audio saved at:', Math.floor(currentTime), 's');
+                          } catch (err) {
+                            console.error('Error saving audio position:', err);
+                          }
+                        }
+                      }
                     }}
-                    className={`w-full audio-no-seek ${audioStarted ? 'audio-started' : ''}`}
+                    className="w-full audio-no-seek audio-started"
                     controls
                     controlsList="nodownload noplaybackrate"
                     style={{ cursor: 'default' }}
