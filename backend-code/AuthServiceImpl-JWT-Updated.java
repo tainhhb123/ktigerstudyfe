@@ -150,8 +150,19 @@ public class AuthServiceImpl implements AuthService {
             resetLink = "http://localhost:5173/reset-password?token=" + token;
         }
 
-        String content = "Click vào link này để đặt lại mật khẩu (có hiệu lực 15 phút): " + resetLink;
-        emailService.sendSimpleEmail(email, "Yêu cầu đặt lại mật khẩu", content);
+        // ✅ IN RA CONSOLE - DÙNG LINK NÀY ĐỂ TEST
+        System.out.println("\n========== 📧 RESET PASSWORD LINK ==========");
+        System.out.println("📧 Email: " + email);
+        System.out.println("🔑 Token: " + token);
+        System.out.println("🔗 Link: " + resetLink);
+        System.out.println("⏰ Expiry: " + expiry + " (15 phút)");
+        System.out.println("⚠️  COPY LINK TRÊN VÀ PASTE VÀO BROWSER ĐỂ RESET PASSWORD");
+        System.out.println("============================================\n");
+        
+        // ❌ TẮT EMAIL VÌ JAVA KHÔNG RESOLVE ĐƯỢC smtp.gmail.com
+        // TODO: Fix Java DNS resolution issue
+        // String content = "Click vào link này để đặt lại mật khẩu (có hiệu lực 15 phút): " + resetLink;
+        // emailService.sendSimpleEmail(email, "Yêu cầu đặt lại mật khẩu", content);
     }
 
     @Override
