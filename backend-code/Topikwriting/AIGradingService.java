@@ -1,4 +1,7 @@
-package Topikwriting;
+package org.example.ktigerstudybe.service.aiGrading;
+
+import org.example.ktigerstudybe.dto.req.WritingGradingRequest;
+import org.example.ktigerstudybe.dto.resp.WritingGradingResult;
 
 /**
  * Service interface cho AI Grading

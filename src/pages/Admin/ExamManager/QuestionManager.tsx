@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit, Trash2, Copy, Eye, FileText, CheckCircle, AlertCircle, Image, Volume2, Download } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Copy, Eye, FileText, CheckCircle, Image, Volume2, Download } from 'lucide-react';
 import { ExamSectionResponse, QuestionResponse, QuestionType } from '../../../types/exam';
 import { examSectionApi, questionApi } from '../../../services/ExamApi';
 
@@ -47,9 +47,18 @@ const QuestionManager = () => {
       await questionApi.deleteQuestion(questionId);
       setQuestions(questions.filter(q => q.questionId !== questionId));
       alert('Xóa câu hỏi thành công!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting question:', error);
-      alert('Không thể xóa câu hỏi');
+      const status = error?.response?.status;
+      const message = error?.response?.data?.message || error?.message;
+      
+      if (status === 403) {
+        alert('Lỗi 403: Bạn không có quyền xóa câu hỏi này. Vui lòng đăng nhập lại với tài khoản ADMIN.');
+      } else if (status === 500) {
+        alert('Lỗi 500: Không thể xóa câu hỏi. Có thể do câu hỏi còn đáp án hoặc dữ liệu liên quan. Hãy restart backend sau khi sửa Entity.');
+      } else {
+        alert(`Không thể xóa câu hỏi: ${message || 'Unknown error'}`);
+      }
     } finally {
       setDeletingId(null);
     }
@@ -61,9 +70,16 @@ const QuestionManager = () => {
     try {
       const maxNumber = Math.max(...questions.map(q => q.questionNumber));
       const newQuestion = {
-        ...question,
+        sectionId: Number(sectionId),
+        groupId: question.groupId || null,
         questionNumber: maxNumber + 1,
-        questionId: undefined // Let backend generate new ID
+        questionType: question.questionType,
+        questionText: question.questionText || null,
+        passageText: question.passageText || null,
+        audioUrl: question.audioUrl || null,
+        imageUrl: question.imageUrl || null,
+        correctAnswer: question.correctAnswer || null,
+        points: question.points,
       };
       const created = await questionApi.createQuestion(newQuestion);
       setQuestions([...questions, created].sort((a, b) => a.questionNumber - b.questionNumber));
@@ -269,7 +285,7 @@ const QuestionManager = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {groupQuestions.map((question, index) => {
+                  {groupQuestions.map((question) => {
                     const typeColors = getQuestionTypeColor(question.questionType);
                     return (
                       <tr 

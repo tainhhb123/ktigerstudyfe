@@ -43,7 +43,7 @@ export default function DocumentItemTable({ listId, keyword = "" }: Props) {
   // fetch paged data
   useEffect(() => {
     setLoading(true);
-    axios
+    axiosInstance
       .get<Paged<Item>>(
         `/api/document-items/list/${listId}/paged?page=${data.number}&size=${pageSize}`
       )
@@ -86,136 +86,129 @@ export default function DocumentItemTable({ listId, keyword = "" }: Props) {
   return (
     <Fragment>
       {/* Container chính */}
-      <div className="rounded-lg bg-white shadow border border-gray-200 dark:bg-gray-800 dark:border-gray-700 overflow-x-auto">
+      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
 
         {/* Header + phân trang */}
-        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-          <span className="font-semibold text-gray-700 dark:text-gray-200">
-            Tổng số từ: {filtered.length}
+        <div className="flex justify-between items-center p-4" style={{ backgroundColor: '#FFF8F0', borderBottom: '1px solid #FFE8DC' }}>
+          <span className="font-semibold" style={{ color: '#333333' }}>
+            📝 Tổng số từ: <strong>{filtered.length}</strong>
           </span>
           <div className="flex items-center space-x-2">
-            <Button
-              size="sm"
-              variant="outline"
+            <button
+              className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+              style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
               disabled={currentPage === 0}
               onClick={() => goToPage(currentPage - 1)}
             >
               Trước
-            </Button>
+            </button>
             {pages.map((p, idx) =>
               p === "..." ? (
-                <span key={idx} className="px-2 text-gray-500 dark:text-gray-400">…</span>
+                <span key={idx} className="px-2" style={{ color: '#999999' }}>…</span>
               ) : (
-                <Button
+                <button
                   key={idx}
-                  size="sm"
-                  variant={p === currentPage + 1 ? "primary" : "outline"}
+                  className="px-3 py-1.5 rounded-lg font-medium transition-all"
+                  style={{
+                    backgroundColor: p === currentPage + 1 ? '#FF6B35' : '#FFFFFF',
+                    color: p === currentPage + 1 ? '#FFFFFF' : '#FF6B35',
+                    border: '1px solid #FF6B35'
+                  }}
                   onClick={() => goToPage((p as number) - 1)}
                 >
                   {p}
-                </Button>
+                </button>
               )
             )}
-            <Button
-              size="sm"
-              variant="outline"
+            <button
+              className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+              style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
               disabled={currentPage + 1 >= totalPages}
               onClick={() => goToPage(currentPage + 1)}
             >
               Sau
-            </Button>
+            </button>
           </div>
         </div>
 
         {/* Bảng từ vựng */}
-        <Table>
-          <TableHeader className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-            <TableRow>
-              <TableCell
-                isHeader
-                className="px-4 py-2 font-bold dark:text-gray-200 border-r border-gray-200 dark:border-gray-700"
-              >
-                Từ vựng
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-4 py-2 font-bold dark:text-gray-200 border-r border-gray-200 dark:border-gray-700"
-              >
-                Nghĩa
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-4 py-2 font-bold dark:text-gray-200 border-r border-gray-200 dark:border-gray-700"
-              >
-                Ví dụ
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-4 py-2 text-center font-bold dark:text-gray-200"
-              >
-                Ảnh
-              </TableCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                <td colSpan={4} className="py-6 text-center text-gray-500 dark:text-gray-400">
-                  Đang tải…
-                </td>
-              </TableRow>
-            ) : filtered.length > 0 ? (
-              filtered.map(i => (
-                <TableRow
-                  key={i.wordId}
-                  className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-                >
-                  <TableCell className="px-4 py-2 border-r dark:text-gray-200">{i.word}</TableCell>
-                  <TableCell className="px-4 py-2 border-r dark:text-gray-200">{i.meaning}</TableCell>
-                  <TableCell className="px-4 py-2 border-r dark:text-gray-200">{i.example || "-"}</TableCell>
-                  <TableCell className="px-4 py-2 text-center dark:text-gray-200">
-                    {i.vocabImage ? (
-                      <img
-                        src={i.vocabImage}
-                        alt={i.word}
-                        className="h-6 w-6 rounded cursor-pointer inline-block"
-                        onClick={() => setPreviewSrc(i.vocabImage!)}
-                      />
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                <td colSpan={4} className="py-6 text-center text-gray-500 dark:text-gray-400">
-                  Không có từ nào
-                </td>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead style={{ backgroundColor: '#FFE8DC' }}>
+              <tr>
+                <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35' }}>Từ vựng</th>
+                <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35' }}>Nghĩa</th>
+                <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35' }}>Ví dụ</th>
+                <th className="px-4 py-3 text-center font-bold" style={{ color: '#FF6B35' }}>Ảnh</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="py-12 text-center">
+                    <div className="flex flex-col items-center">
+                      <div className="w-10 h-10 border-4 rounded-full animate-spin mb-3" 
+                           style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}></div>
+                      <span style={{ color: '#666666' }}>Đang tải...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filtered.length > 0 ? (
+                filtered.map(i => (
+                  <tr 
+                    key={i.wordId}
+                    className="border-t transition-colors"
+                    style={{ borderColor: '#FFE8DC' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFF8F0'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <td className="px-4 py-4 font-semibold" style={{ color: '#333333' }}>{i.word}</td>
+                    <td className="px-4 py-4" style={{ color: '#333333' }}>{i.meaning}</td>
+                    <td className="px-4 py-4" style={{ color: '#666666' }}>{i.example || "-"}</td>
+                    <td className="px-4 py-4 text-center">
+                      {i.vocabImage ? (
+                        <img
+                          src={i.vocabImage}
+                          alt={i.word}
+                          className="h-8 w-8 rounded cursor-pointer inline-block border-2 hover:scale-110 transition-transform"
+                          style={{ borderColor: '#FFE8DC' }}
+                          onClick={() => setPreviewSrc(i.vocabImage!)}
+                        />
+                      ) : (
+                        <span style={{ color: '#999999' }}>-</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-16 text-center">
+                    <div className="text-6xl mb-4">📖</div>
+                    <h3 className="text-xl font-bold mb-2" style={{ color: '#333333' }}>Không có từ nào</h3>
+                    <p style={{ color: '#666666' }}>Tài liệu này chưa có từ vựng</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Modal preview ảnh */}
       {previewSrc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-
-          {/* Nội dung ảnh */}
-          <div className="relative bg-transparent rounded-lg p-4 max-w-2xl max-h-[80vh] overflow-hidden">
-            {/* nút đóng */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setPreviewSrc(null)}>
+          <div className="relative bg-white rounded-xl p-4 max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <button
-              className="absolute top-2 right-2 text-black hover:text-gray-300"
+              className="absolute top-2 right-2 p-2 rounded-full transition-all"
+              style={{ backgroundColor: '#FFEBEE', color: '#C62828' }}
               onClick={() => setPreviewSrc(null)}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none"
                 viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            {/* ảnh chính */}
             <img
               src={previewSrc}
               alt="Preview"

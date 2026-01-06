@@ -12,15 +12,18 @@ const axiosInstance = axios.create({
 // ✅ REQUEST INTERCEPTOR - Tự động thêm JWT token vào mọi request
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Lấy token từ localStorage (thử nhiều key để tương thích)
-    const token = localStorage.getItem('authToken') || localStorage.getItem('accessToken');
+    // Lấy token từ localStorage HOẶC sessionStorage (authService có thể lưu ở sessionStorage)
+    const token = localStorage.getItem('authToken') 
+      || sessionStorage.getItem('authToken')
+      || localStorage.getItem('accessToken')
+      || sessionStorage.getItem('accessToken');
     
     if (token) {
       // Thêm Authorization header với Bearer token
       config.headers.Authorization = `Bearer ${token}`;
       console.log('✅ Token attached to request:', config.url);
     } else {
-      console.warn('⚠️ No token found in localStorage');
+      console.warn('⚠️ No token found in localStorage/sessionStorage');
     }
     
     return config;

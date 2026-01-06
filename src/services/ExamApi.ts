@@ -1,9 +1,13 @@
 import axiosInstance from './axiosConfig';
 import {
   ExamResponse,
+  ExamRequest,
   ExamSectionResponse,
+  ExamSectionRequest,
   QuestionResponse,
+  QuestionRequest,
   AnswerChoiceResponse,
+  AnswerChoiceRequest,
   ExamAttemptResponse,
   ExamAttemptRequest,
   UserAnswerResponse,
@@ -31,6 +35,23 @@ export const examApi = {
     const response = await axiosInstance.get<ExamResponse>(`/api/exams/${id}`);
     return response.data;
   },
+
+  // Create new exam (admin)
+  createExam: async (request: ExamRequest): Promise<ExamResponse> => {
+    const response = await axiosInstance.post<ExamResponse>('/api/exams', request);
+    return response.data;
+  },
+
+  // Update exam (admin)
+  updateExam: async (id: number, request: Partial<ExamRequest>): Promise<ExamResponse> => {
+    const response = await axiosInstance.put<ExamResponse>(`/api/exams/${id}`, request);
+    return response.data;
+  },
+
+  // Delete exam (admin)
+  deleteExam: async (id: number): Promise<void> => {
+    await axiosInstance.delete(`/api/exams/${id}`);
+  },
 };
 
 // Exam Section APIs
@@ -45,6 +66,23 @@ export const examSectionApi = {
   getSectionById: async (id: number): Promise<ExamSectionResponse> => {
     const response = await axiosInstance.get<ExamSectionResponse>(`/api/exam-sections/${id}`);
     return response.data;
+  },
+
+  // Create new section (admin)
+  createSection: async (request: ExamSectionRequest): Promise<ExamSectionResponse> => {
+    const response = await axiosInstance.post<ExamSectionResponse>('/api/exam-sections', request);
+    return response.data;
+  },
+
+  // Update section (admin)
+  updateSection: async (id: number, request: Partial<ExamSectionRequest>): Promise<ExamSectionResponse> => {
+    const response = await axiosInstance.put<ExamSectionResponse>(`/api/exam-sections/${id}`, request);
+    return response.data;
+  },
+
+  // Delete section (admin)
+  deleteSection: async (id: number): Promise<void> => {
+    await axiosInstance.delete(`/api/exam-sections/${id}`);
   },
 };
 
@@ -68,9 +106,13 @@ export const examAttemptApi = {
     return response.data;
   },
 
-  // Submit exam
+  // Submit exam (with extended timeout for AI grading)
   submitExam: async (attemptId: number): Promise<ExamAttemptResponse> => {
-    const response = await axiosInstance.post<ExamAttemptResponse>(`/api/exam-attempts/${attemptId}/submit`);
+    const response = await axiosInstance.post<ExamAttemptResponse>(
+      `/api/exam-attempts/${attemptId}/submit`,
+      {},
+      { timeout: 120000 } // 2 minutes timeout for AI grading
+    );
     return response.data;
   },
 
@@ -94,6 +136,23 @@ export const questionApi = {
     const response = await axiosInstance.get<QuestionResponse>(`/api/questions/${id}`);
     return response.data;
   },
+
+  // Create new question (admin)
+  createQuestion: async (request: QuestionRequest): Promise<QuestionResponse> => {
+    const response = await axiosInstance.post<QuestionResponse>('/api/questions', request);
+    return response.data;
+  },
+
+  // Update question (admin)
+  updateQuestion: async (id: number, request: Partial<QuestionRequest>): Promise<QuestionResponse> => {
+    const response = await axiosInstance.put<QuestionResponse>(`/api/questions/${id}`, request);
+    return response.data;
+  },
+
+  // Delete question (admin)
+  deleteQuestion: async (id: number): Promise<void> => {
+    await axiosInstance.delete(`/api/questions/${id}`);
+  },
 };
 
 // Answer Choice APIs
@@ -108,6 +167,23 @@ export const answerChoiceApi = {
   getChoiceById: async (id: number): Promise<AnswerChoiceResponse> => {
     const response = await axiosInstance.get<AnswerChoiceResponse>(`/api/answer-choices/${id}`);
     return response.data;
+  },
+
+  // Create new answer choice (admin)
+  createChoice: async (request: AnswerChoiceRequest): Promise<AnswerChoiceResponse> => {
+    const response = await axiosInstance.post<AnswerChoiceResponse>('/api/answer-choices', request);
+    return response.data;
+  },
+
+  // Update answer choice (admin)
+  updateChoice: async (id: number, request: Partial<AnswerChoiceRequest>): Promise<AnswerChoiceResponse> => {
+    const response = await axiosInstance.put<AnswerChoiceResponse>(`/api/answer-choices/${id}`, request);
+    return response.data;
+  },
+
+  // Delete answer choice (admin)
+  deleteChoice: async (id: number): Promise<void> => {
+    await axiosInstance.delete(`/api/answer-choices/${id}`);
   },
 };
 

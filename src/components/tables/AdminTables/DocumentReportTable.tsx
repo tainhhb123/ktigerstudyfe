@@ -35,7 +35,7 @@ export default function DocumentReportTable({ keyword = "" }: DocumentReportTabl
 
   useEffect(() => {
     setLoading(true);
-    axios
+    axiosInstance
       .get<Paged<DocumentReport>>(`/api/document-reports/paged?page=${data.number}&size=${pageSize}`)
       .then((res) => {
         console.log('API document-reports data:', res.data);
@@ -84,13 +84,16 @@ export default function DocumentReportTable({ keyword = "" }: DocumentReportTabl
   };
 
   return (
-    <div className="rounded-xl bg-white dark:bg-gray-800 shadow border border-gray-200 dark:border-gray-700">
+    <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
       {/* Header & Pagination */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-        <span className="font-semibold text-gray-700 dark:text-gray-200">Tổng số báo cáo: {totalElements}</span>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between px-6 py-4" style={{ backgroundColor: '#FFF8F0', borderBottom: '1px solid #FFE8DC' }}>
+        <span className="font-semibold" style={{ color: '#333333' }}>
+          ⚠️ Tổng số báo cáo: <strong>{totalElements}</strong>
+        </span>
         <div className="flex items-center gap-2 mt-2 md:mt-0">
           <button
-            className="px-2 py-1 border rounded disabled:opacity-50 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+            className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+            style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
             disabled={currentPage === 0}
             onClick={() => goToPage(currentPage - 1)}
           >
@@ -98,11 +101,16 @@ export default function DocumentReportTable({ keyword = "" }: DocumentReportTabl
           </button>
           {pages.map((p, idx) =>
             p === "..." ? (
-              <span key={idx} className="px-2 text-gray-500 dark:text-gray-400">…</span>
+              <span key={idx} className="px-2" style={{ color: '#999999' }}>…</span>
             ) : (
               <button
                 key={idx}
-                className={`px-2 py-1 rounded ${p === currentPage + 1 ? 'bg-blue-500 dark:bg-blue-600 text-white' : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 border'}`}
+                className="px-3 py-1.5 rounded-lg font-medium transition-all"
+                style={{
+                  backgroundColor: p === currentPage + 1 ? '#FF6B35' : '#FFFFFF',
+                  color: p === currentPage + 1 ? '#FFFFFF' : '#FF6B35',
+                  border: '1px solid #FF6B35'
+                }}
                 onClick={() => goToPage((p as number) - 1)}
               >
                 {p}
@@ -110,7 +118,8 @@ export default function DocumentReportTable({ keyword = "" }: DocumentReportTabl
             )
           )}
           <button
-            className="px-2 py-1 border rounded disabled:opacity-50 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+            className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+            style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
             disabled={currentPage + 1 >= totalPages}
             onClick={() => goToPage(currentPage + 1)}
           >
@@ -121,45 +130,66 @@ export default function DocumentReportTable({ keyword = "" }: DocumentReportTabl
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <Table>
-          <TableHeader className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-            <TableRow>
-              <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-200">Người báo cáo</TableCell>
-              <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-200">Tài liệu</TableCell>
-              <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-200">Lý do</TableCell>
-              <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-gray-600 font-bold text-gray-700 dark:text-gray-200">Ngày báo cáo</TableCell>
-              <TableCell isHeader className="px-5 py-3 font-bold text-gray-700 dark:text-gray-200">Hành động</TableCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <table className="w-full">
+          <thead style={{ backgroundColor: '#FFE8DC' }}>
+            <tr>
+              <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35' }}>Người báo cáo</th>
+              <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35' }}>Tài liệu</th>
+              <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35' }}>Lý do</th>
+              <th className="px-4 py-3 text-center font-bold" style={{ color: '#FF6B35' }}>Ngày báo cáo</th>
+              <th className="px-4 py-3 text-center font-bold" style={{ color: '#FF6B35' }}>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
             {loading ? (
-              <TableRow>
-                <td colSpan={6} className="py-6 text-center text-gray-500 dark:text-gray-400">Đang tải…</td>
-              </TableRow>
+              <tr>
+                <td colSpan={5} className="py-12 text-center">
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 border-4 rounded-full animate-spin mb-3" 
+                         style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}></div>
+                    <span style={{ color: '#666666' }}>Đang tải...</span>
+                  </div>
+                </td>
+              </tr>
             ) : filteredReports.length > 0 ? (
               filteredReports.map((r) => (
-                <TableRow key={r.reportId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{r.fullName}</TableCell>
-                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{r.listTitle}</TableCell>
-                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{r.reason}</TableCell>
-                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">{new Date(r.reportDate).toLocaleString()}</TableCell>
-                  <TableCell className="px-5 py-4 text-center">
+                <tr 
+                  key={r.reportId}
+                  className="border-t transition-colors"
+                  style={{ borderColor: '#FFE8DC' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFF8F0'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <td className="px-4 py-4 font-medium" style={{ color: '#333333' }}>{r.fullName}</td>
+                  <td className="px-4 py-4" style={{ color: '#333333' }}>{r.listTitle}</td>
+                  <td className="px-4 py-4" style={{ color: '#666666' }}>{r.reason}</td>
+                  <td className="px-4 py-4 text-center" style={{ color: '#666666' }}>
+                    {new Date(r.reportDate).toLocaleString('vi-VN')}
+                  </td>
+                  <td className="px-4 py-4 text-center">
                     <button
-                      className="px-2 py-1 border rounded text-red-600 hover:bg-red-100 dark:hover:bg-red-600/20 border-gray-300 dark:border-gray-600"
                       onClick={() => handleDelete(r.reportId)}
+                      className="px-3 py-1.5 rounded-lg font-medium transition-all"
+                      style={{ backgroundColor: '#FFEBEE', color: '#C62828' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFCDD2'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FFEBEE'}
                     >
                       Xóa báo cáo
                     </button>
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ))
             ) : (
-              <TableRow>
-                <td colSpan={6} className="py-6 text-center text-gray-500 dark:text-gray-400">Không có báo cáo</td>
-              </TableRow>
+              <tr>
+                <td colSpan={5} className="py-16 text-center">
+                  <div className="text-6xl mb-4">✅</div>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: '#333333' }}>Không có báo cáo</h3>
+                  <p style={{ color: '#666666' }}>Chưa có báo cáo vi phạm nào</p>
+                </td>
+              </tr>
             )}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
     </div>
   );

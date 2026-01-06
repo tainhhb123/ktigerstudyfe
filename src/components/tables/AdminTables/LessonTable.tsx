@@ -95,7 +95,7 @@ export default function LessonTable({ levelId, keyword, onViewDetail }: LessonTa
   const fetchData = useCallback(() => {
     setLoading(true);
     const { number: page } = data; // Get current page from state
-    axios
+    axiosInstance
       .get<Paged<Lesson>>("/api/lessons/paged", {
         params: { page, size: pageSize, levelId, keyword: keyword.trim() || undefined },
       })
@@ -146,7 +146,7 @@ export default function LessonTable({ levelId, keyword, onViewDetail }: LessonTa
       return;
     }
     setLoading(true);
-    axios
+    axiosInstance
       .put(`/api/lessons/${id}`, {
         lessonName: editValues.lessonName,
         lessonDescription: editValues.lessonDescription,
@@ -175,121 +175,166 @@ export default function LessonTable({ levelId, keyword, onViewDetail }: LessonTa
   };
 
   return (
-    <div className="rounded-lg bg-white shadow border border-gray-200 dark:bg-white/[0.03] dark:border-white/10">
+    <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
       {/* Header & Pagination */}
-      <div className="flex flex-col md:flex-row items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-700"> {/* Adjusted dark mode border */}
-        <span className="font-semibold text-gray-700 dark:text-gray-100"> {/* Adjusted dark mode text color */}
-          Tổng số bài: {totalElements}
+      <div className="flex flex-col md:flex-row items-center justify-between px-6 py-4" style={{ backgroundColor: '#FFF8F0', borderBottom: '1px solid #FFE8DC' }}>
+        <span className="font-semibold" style={{ color: '#333333' }}>
+          📚 Tổng số bài: <strong>{totalElements}</strong>
         </span>
         <div className="flex items-center space-x-2 mt-2 md:mt-0">
-          <Button size="sm" variant="outline" disabled={currentPage === 0} onClick={() => goToPage(currentPage - 1)}>
+          <button 
+            className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+            style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
+            disabled={currentPage === 0} 
+            onClick={() => goToPage(currentPage - 1)}
+          >
             Trước
-          </Button>
+          </button>
           {paginationPages.map((p, i) =>
             p === "..." ? (
-              <span key={`ellipsis-${i}`} className="px-2 text-gray-500 dark:text-gray-400">…</span>
+              <span key={`ellipsis-${i}`} className="px-2" style={{ color: '#999999' }}>…</span>
             ) : (
-              <Button
-                key={`page-${p}`} // Use page number as key for uniqueness
-                size="sm"
-                variant={p === currentPage + 1 ? "primary" : "outline"}
+              <button
+                key={`page-${p}`}
+                className="px-3 py-1.5 rounded-lg font-medium transition-all"
+                style={{
+                  backgroundColor: p === currentPage + 1 ? '#FF6B35' : '#FFFFFF',
+                  color: p === currentPage + 1 ? '#FFFFFF' : '#FF6B35',
+                  border: '1px solid #FF6B35'
+                }}
                 onClick={() => goToPage((p as number) - 1)}
               >
                 {p}
-              </Button>
+              </button>
             )
           )}
-          <Button size="sm" variant="outline" disabled={currentPage + 1 >= totalPages} onClick={() => goToPage(currentPage + 1)}>
+          <button 
+            className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+            style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
+            disabled={currentPage + 1 >= totalPages} 
+            onClick={() => goToPage(currentPage + 1)}
+          >
             Sau
-          </Button>
+          </button>
         </div>
       </div>
 
-      <Table>
-        <TableHeader className="bg-gray-50 border-b border-gray-200 dark:bg-zinc-700 dark:border-zinc-600"> {/* Adjusted dark mode header background/border */}
-          <TableRow>
-            <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-zinc-600 font-bold text-gray-700 dark:text-gray-100"> {/* Adjusted dark mode text/border */}
-              Tên bài
-            </TableCell>
-            <TableCell isHeader className="px-5 py-3 border-r border-gray-200 dark:border-zinc-600 font-bold text-gray-700 dark:text-gray-100"> {/* Adjusted dark mode text/border */}
-              Mô tả
-            </TableCell>
-            <TableCell isHeader className="px-5 py-3 font-bold text-gray-700 dark:text-gray-100"> {/* Adjusted dark mode text */}
-              Hành động
-            </TableCell>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            <TableRow key="loading-lessons"> {/* Added a more specific key */}
-              <td colSpan={3} className="py-6 text-center text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-zinc-700"> {/* Adjusted dark mode border/text */}
-                Đang tải…
-              </td>
-            </TableRow>
-          ) : lessons.length > 0 ? (
-            lessons.map((l) => (
-              <TableRow key={l.lessonId} className="border-b border-gray-200 hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-700"> {/* Adjusted dark mode border/hover */}
-                {/* Inline edit or static view */}
-                <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-zinc-700 text-gray-800 dark:text-gray-200"> {/* Adjusted dark mode border/text */}
-                  {editingId === l.lessonId ? (
-                    <input
-                      name="lessonName"
-                      value={editValues.lessonName}
-                      onChange={handleInputChange}
-                      className="w-full border rounded shadow-sm focus:ring focus:border-blue-500
-                                 bg-white text-gray-900
-                                 dark:bg-zinc-700 dark:text-gray-100 dark:border-zinc-600" // Dark mode styles for input
-                    />
-                  ) : (
-                    l.lessonName
-                  )}
-                </TableCell>
-                <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300"> {/* Adjusted dark mode border/text */}
-                  {editingId === l.lessonId ? (
-                    <textarea
-                      name="lessonDescription"
-                      value={editValues.lessonDescription}
-                      onChange={handleInputChange}
-                      className="w-full border rounded shadow-sm focus:ring focus:border-blue-500 h-20 resize-y
-                                 bg-white text-gray-900
-                                 dark:bg-zinc-700 dark:text-gray-100 dark:border-zinc-600" // Dark mode styles for textarea
-                    />
-                  ) : (
-                    l.lessonDescription
-                  )}
-                </TableCell>
-                <TableCell className="px-5 py-4 text-center space-x-2">
-                  {editingId === l.lessonId ? (
-                    <>
-                      <Button size="sm" variant="primary" onClick={() => handleUpdate(l.lessonId)}>
-                        Cập nhật
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={handleCancel}>
-                        Hủy
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button size="sm" variant="outline" onClick={() => handleEditClick(l)}>
-                        Sửa
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleViewDetail(l.lessonId)}>
-                        Xem chi tiết
-                      </Button>
-                    </>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow key="no-lessons"> {/* Added a more specific key */}
-              <td colSpan={3} className="py-6 text-center text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-zinc-700"> {/* Adjusted dark mode border/text */}
-                Không có bài học
-              </td>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead style={{ backgroundColor: '#FFE8DC' }}>
+            <tr>
+              <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35' }}>Tên bài</th>
+              <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35' }}>Mô tả</th>
+              <th className="px-4 py-3 text-center font-bold" style={{ color: '#FF6B35' }}>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={3} className="py-12 text-center">
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 border-4 rounded-full animate-spin mb-3" 
+                         style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}></div>
+                    <span style={{ color: '#666666' }}>Đang tải...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : lessons.length > 0 ? (
+              lessons.map((l) => (
+                <tr 
+                  key={l.lessonId}
+                  className="border-t transition-colors"
+                  style={{ borderColor: '#FFE8DC' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFF8F0'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <td className="px-4 py-4" style={{ color: '#333333' }}>
+                    {editingId === l.lessonId ? (
+                      <input
+                        name="lessonName"
+                        value={editValues.lessonName}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none"
+                        style={{ borderColor: '#FF6B35', backgroundColor: '#FFF8F0' }}
+                      />
+                    ) : (
+                      <span className="font-semibold">{l.lessonName}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4" style={{ color: '#666666' }}>
+                    {editingId === l.lessonId ? (
+                      <textarea
+                        name="lessonDescription"
+                        value={editValues.lessonDescription}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none h-20 resize-y"
+                        style={{ borderColor: '#FF6B35', backgroundColor: '#FFF8F0' }}
+                      />
+                    ) : (
+                      l.lessonDescription
+                    )}
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex justify-center gap-2">
+                      {editingId === l.lessonId ? (
+                        <>
+                          <button
+                            onClick={() => handleUpdate(l.lessonId)}
+                            className="px-3 py-1.5 rounded-lg font-medium transition-all"
+                            style={{ backgroundColor: '#E8F5E9', color: '#2E7D32' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#C8E6C9'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#E8F5E9'}
+                          >
+                            Cập nhật
+                          </button>
+                          <button
+                            onClick={handleCancel}
+                            className="px-3 py-1.5 rounded-lg font-medium transition-all"
+                            style={{ backgroundColor: '#FFEBEE', color: '#C62828' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFCDD2'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FFEBEE'}
+                          >
+                            Hủy
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleEditClick(l)}
+                            className="px-3 py-1.5 rounded-lg font-medium transition-all"
+                            style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFDCC8'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FFE8DC'}
+                          >
+                            Sửa
+                          </button>
+                          <button
+                            onClick={() => handleViewDetail(l.lessonId)}
+                            className="px-3 py-1.5 rounded-lg font-medium transition-all"
+                            style={{ backgroundColor: '#E3F2FD', color: '#1976D2' }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#BBDEFB'}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#E3F2FD'}
+                          >
+                            Xem chi tiết
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={3} className="py-16 text-center">
+                  <div className="text-6xl mb-4">📚</div>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: '#333333' }}>Không có bài học</h3>
+                  <p style={{ color: '#666666' }}>Chưa có bài học nào trong cấp độ này</p>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

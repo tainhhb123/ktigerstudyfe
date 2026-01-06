@@ -235,21 +235,24 @@ export default function AddVocabularyModal({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
+      <div className="fixed inset-0 z-40" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onClick={onClose} />
       <div className="fixed inset-x-0 top-[64px] bottom-0 z-50 flex items-start justify-center overflow-y-auto">
         <div className="relative w-full max-w-2xl mx-auto my-6 p-4">
-          <div className="relative bg-white dark:bg-zinc-800 rounded-lg shadow-xl">
+          <div className="relative rounded-xl shadow-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF' }}>
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {editData ? "Chỉnh sửa từ vựng" : "Thêm từ vựng mới"}
+            <div className="flex items-center justify-between p-6" style={{ backgroundColor: '#FFE8DC', borderBottom: '1px solid #BDBDBD' }}>
+              <h3 className="text-lg font-semibold" style={{ color: '#FF6B35' }}>
+                📚 {editData ? "Chỉnh sửa từ vựng" : "Thêm từ vựng mới"}
               </h3>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                style={{ backgroundColor: '#FFFFFF', color: '#666666' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFEBEE'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FFFFFF'}
               >
                 <svg
-                  className="w-6 h-6"
+                  className="w-5 h-5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -268,40 +271,48 @@ export default function AddVocabularyModal({
               onSubmit={handleSubmit}
               className="max-h-[calc(100vh-200px)] overflow-y-auto"
             >
-              <div className="px-6 py-4 space-y-4">
+              <div className="px-6 py-4 space-y-4" style={{ backgroundColor: '#FFF8F0' }}>
                 {/* Từ vựng */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Từ vựng *
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#333333' }}>
+                    Từ vựng <span style={{ color: '#C62828' }}>*</span>
                   </label>
                   <input
                     type="text"
                     name="word"
                     value={vocabulary.word}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none transition-colors"
+                    style={{ borderColor: '#BDBDBD', backgroundColor: '#FFFFFF', color: '#333333' }}
+                    onFocus={(e) => e.target.style.borderColor = '#FF6B35'}
+                    onBlur={(e) => e.target.style.borderColor = '#BDBDBD'}
                     required
+                    placeholder="Nhập từ vựng"
                   />
                 </div>
 
                 {/* Nghĩa */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Nghĩa *
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#333333' }}>
+                    Nghĩa <span style={{ color: '#C62828' }}>*</span>
                   </label>
                   <textarea
                     name="meaning"
                     value={vocabulary.meaning}
                     onChange={handleChange}
                     rows={3}
-                    className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none transition-colors resize-none"
+                    style={{ borderColor: '#BDBDBD', backgroundColor: '#FFFFFF', color: '#333333' }}
+                    onFocus={(e) => e.target.style.borderColor = '#FF6B35'}
+                    onBlur={(e) => e.target.style.borderColor = '#BDBDBD'}
                     required
+                    placeholder="Nhập nghĩa của từ vựng"
                   />
                 </div>
 
                 {/* Ví dụ */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#333333' }}>
                     Ví dụ
                   </label>
                   <textarea
@@ -309,21 +320,25 @@ export default function AddVocabularyModal({
                     value={vocabulary.example}
                     onChange={handleChange}
                     rows={2}
-                    className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none transition-colors resize-none"
+                    style={{ borderColor: '#BDBDBD', backgroundColor: '#FFFFFF', color: '#333333' }}
+                    onFocus={(e) => e.target.style.borderColor = '#FF6B35'}
+                    onBlur={(e) => e.target.style.borderColor = '#BDBDBD'}
+                    placeholder="Nhập ví dụ (không bắt buộc)"
                   />
                 </div>
 
                 {/* Media Section */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Upload Media
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#333333' }}>
+                    📷 Upload Media
                   </label>
 
                   {/* Hiển thị media hiện có (nếu có) */}
                   {vocabulary.media && (
-                    <div className="mb-4 border p-4 rounded-md bg-green-50 dark:bg-green-900/20">
+                    <div className="mb-4 p-4 rounded-lg" style={{ backgroundColor: '#E8F5E9', border: '1px solid #81C784' }}>
                       <div className="flex items-center justify-between mb-3">
-                        <p className="font-medium text-green-600 flex items-center">
+                        <p className="font-medium flex items-center" style={{ color: '#2E7D32' }}>
                           <svg
                             className="w-5 h-5 mr-2"
                             fill="currentColor"
@@ -342,13 +357,13 @@ export default function AddVocabularyModal({
 
                         {/* Hiển thị trạng thái thay đổi */}
                         {editData && hasMediaChanged && (
-                          <span className="text-sm bg-orange-100 text-orange-700 px-2 py-1 rounded">
+                          <span className="text-sm px-2 py-1 rounded" style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}>
                             Đã thay đổi
                           </span>
                         )}
                       </div>
 
-                      <div className="bg-white dark:bg-gray-800 p-2 rounded border">
+                      <div className="p-2 rounded-lg" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
                         <MediaPreview mediaUrl={vocabulary.media} />
                       </div>
 
@@ -357,7 +372,10 @@ export default function AddVocabularyModal({
                           href={vocabulary.media}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline text-sm flex items-center"
+                          className="text-sm flex items-center transition-colors"
+                          style={{ color: '#FF6B35' }}
+                          onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                          onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
                         >
                           <svg
                             className="w-4 h-4 mr-1"
@@ -380,8 +398,11 @@ export default function AddVocabularyModal({
                           {editData && hasMediaChanged && originalMedia && (
                             <button
                               type="button"
-                              className="text-blue-500 hover:text-blue-700 text-sm flex items-center"
+                              className="text-sm flex items-center transition-colors"
+                              style={{ color: '#1976D2' }}
                               onClick={handleRestoreOriginalMedia}
+                              onMouseEnter={(e) => e.currentTarget.style.color = '#1565C0'}
+                              onMouseLeave={(e) => e.currentTarget.style.color = '#1976D2'}
                             >
                               <svg
                                 className="w-4 h-4 mr-1"
@@ -402,8 +423,11 @@ export default function AddVocabularyModal({
 
                           <button
                             type="button"
-                            className="text-red-500 hover:text-red-700 text-sm flex items-center"
+                            className="text-sm flex items-center transition-colors"
+                            style={{ color: '#C62828' }}
                             onClick={handleRemoveMedia}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#B71C1C'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#C62828'}
                           >
                             <svg
                               className="w-4 h-4 mr-1"
@@ -428,7 +452,7 @@ export default function AddVocabularyModal({
                   {/* Dropzone để upload media mới */}
                   <div className={vocabulary.media ? "mt-4" : ""}>
                     {vocabulary.media && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      <p className="text-sm mb-2" style={{ color: '#666666' }}>
                         {editData
                           ? "Tải lên media mới để thay thế:"
                           : "Hoặc tải lên media khác:"}
@@ -440,11 +464,14 @@ export default function AddVocabularyModal({
               </div>
 
               {/* Footer */}
-              <div className="flex items-center space-x-2 px-6 py-4 bg-gray-50 dark:bg-zinc-700/50 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-end gap-3 px-6 py-4" style={{ backgroundColor: '#FFE8DC', borderTop: '1px solid #BDBDBD' }}>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-zinc-700 dark:border-zinc-600 dark:text-gray-300 dark:hover:bg-zinc-600"
+                  className="px-4 py-2 rounded-lg font-medium transition-colors"
+                  style={{ backgroundColor: '#FFFFFF', color: '#666666', border: '1px solid #BDBDBD' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F5F5F5'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FFFFFF'}
                   disabled={isLoading}
                 >
                   Hủy
@@ -452,30 +479,14 @@ export default function AddVocabularyModal({
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="px-4 py-2 rounded-lg font-medium transition-colors flex items-center disabled:opacity-50"
+                  style={{ backgroundColor: '#FF6B35', color: '#FFFFFF' }}
+                  onMouseEnter={(e) => !isLoading && (e.currentTarget.style.backgroundColor = '#E85A2A')}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF6B35'}
                 >
                   {isLoading ? (
                     <>
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
+                      <div className="w-4 h-4 border-2 rounded-full animate-spin mr-2" style={{ borderColor: '#FFFFFF', borderTopColor: 'transparent' }}></div>
                       {editData ? "Đang cập nhật..." : "Đang thêm..."}
                     </>
                   ) : (

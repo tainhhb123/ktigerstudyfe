@@ -89,6 +89,29 @@ export interface ExamRequest {
   isActive: boolean;
 }
 
+export interface ExamSectionRequest {
+  examId: number;
+  sectionType: SectionType;
+  examType: ExamType;
+  sectionOrder: number;
+  totalQuestions: number;
+  durationMinutes: number;
+  audioUrl?: string | null;
+}
+
+export interface QuestionRequest {
+  sectionId: number;
+  groupId?: number | null;
+  questionNumber: number;
+  questionType: QuestionType;
+  questionText?: string | null;
+  passageText?: string | null;
+  audioUrl?: string | null;
+  imageUrl?: string | null;
+  correctAnswer?: string | null;
+  points: number;
+}
+
 export interface ExamAttemptRequest {
   examId: number;
   userId: number;
@@ -99,6 +122,13 @@ export interface UserAnswerRequest {
   questionId: number;
   choiceId?: number;
   answerText?: string;
+}
+
+export interface AnswerChoiceRequest {
+  questionId: number;
+  choiceLabel: string;
+  choiceText: string;
+  isCorrect: boolean;
 }
 
 // ===== Exam Result Types (matching Backend) =====
