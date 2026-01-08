@@ -4,10 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../../services/axiosConfig";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
-import ComponentCard from "../../../components/common/ComponentCard";
 import VocabularyTable from "../../../components/tables/AdminTables/VocabularyTable";
 import GrammarTable from "../../../components/tables/AdminTables/GrammarTable";
-import Button from "../../../components/ui/button/Button";
 import AddVocabularyModal from "../../../components/modals/AddVocabularyModal";
 import AddGrammarModal from "../../../components/modals/AddGrammarModal";
 import MultipleChoiceTable from "../../../components/tables/AdminTables/MultipleChoiceTable";
@@ -115,109 +113,123 @@ export default function LessonDetailPage() {
     <>
       <PageBreadcrumb pageTitle={`Chi tiết bài học ${lessonId}`} />
 
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6" style={{ backgroundColor: '#FFF8F0', minHeight: '100vh' }}>
         {/* Tab Navigation */}
-        <div className="border-b border-gray-200">
+        <div style={{ borderBottom: '2px solid #FFE8DC' }}>
           <nav className="-mb-px flex gap-4">
             <button
-              className={`py-2 px-4 border-b-2 font-medium transition-colors ${
-                activeTab === 'vocabulary'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              className="py-3 px-6 font-semibold transition-all duration-200 rounded-t-lg"
+              style={{
+                borderBottom: activeTab === 'vocabulary' ? '3px solid #FF6B35' : '3px solid transparent',
+                color: activeTab === 'vocabulary' ? '#FF6B35' : '#666666',
+                backgroundColor: activeTab === 'vocabulary' ? '#FFE8DC' : 'transparent',
+              }}
               onClick={() => setActiveTab('vocabulary')}
             >
-              Từ vựng
+              📚 Từ vựng
             </button>
             <button
-              className={`py-2 px-4 border-b-2 font-medium transition-colors ${
-                activeTab === 'grammar'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              className="py-3 px-6 font-semibold transition-all duration-200 rounded-t-lg"
+              style={{
+                borderBottom: activeTab === 'grammar' ? '3px solid #FF6B35' : '3px solid transparent',
+                color: activeTab === 'grammar' ? '#FF6B35' : '#666666',
+                backgroundColor: activeTab === 'grammar' ? '#FFE8DC' : 'transparent',
+              }}
               onClick={() => setActiveTab('grammar')}
             >
-              Ngữ pháp
+              📖 Ngữ pháp
             </button>
             <button
-              className={`py-2 px-4 border-b-2 font-medium transition-colors ${
-                activeTab === 'exercise'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
+              className="py-3 px-6 font-semibold transition-all duration-200 rounded-t-lg"
+              style={{
+                borderBottom: activeTab === 'exercise' ? '3px solid #FF6B35' : '3px solid transparent',
+                color: activeTab === 'exercise' ? '#FF6B35' : '#666666',
+                backgroundColor: activeTab === 'exercise' ? '#FFE8DC' : 'transparent',
+              }}
               onClick={() => setActiveTab('exercise')}
             >
-              Bài tập
+              ✏️ Bài tập
             </button>
           </nav>
         </div>
 
         {/* Tab Content */}
         {activeTab === 'vocabulary' && (
-          <ComponentCard
-            title="Từ vựng"
-            action={
-              <Button
-                variant="primary"
-                size="sm"
+          <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
+            <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#FFE8DC', borderBottom: '1px solid #BDBDBD' }}>
+              <h3 className="text-lg font-semibold" style={{ color: '#FF6B35' }}>📚 Từ vựng</h3>
+              <button
                 onClick={() => setIsVocabModalOpen(true)}
+                className="px-4 py-2 rounded-lg font-semibold transition-all hover:opacity-90"
+                style={{ backgroundColor: '#FF6B35', color: '#FFFFFF' }}
               >
-                Thêm từ vựng
-              </Button>
-            }
-          >
+                + Thêm từ vựng
+              </button>
+            </div>
             <VocabularyTable
               lessonId={Number(lessonId)}
               key={`vocab-${shouldRefetch}`}
             />
-          </ComponentCard>
+          </div>
         )}
 
         {activeTab === 'grammar' && (
-          <ComponentCard
-            title="Ngữ pháp"
-            action={
-              <Button
-                variant="primary"
-                size="sm"
+          <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
+            <div className="flex items-center justify-between p-4" style={{ backgroundColor: '#FFE8DC', borderBottom: '1px solid #BDBDBD' }}>
+              <h3 className="text-lg font-semibold" style={{ color: '#FF6B35' }}>📖 Ngữ pháp</h3>
+              <button
                 onClick={() => setIsGrammarModalOpen(true)}
+                className="px-4 py-2 rounded-lg font-semibold transition-all hover:opacity-90"
+                style={{ backgroundColor: '#FF6B35', color: '#FFFFFF' }}
               >
-                Thêm ngữ pháp
-              </Button>
-            }
-          >
+                + Thêm ngữ pháp
+              </button>
+            </div>
             <GrammarTable
               lessonId={Number(lessonId)}
               key={`grammar-${shouldRefetch}`}
             />
-          </ComponentCard>
+          </div>
         )}
 
         {activeTab === 'exercise' && (
-          <ComponentCard title="Bài tập">
+          <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
+            <div className="p-4" style={{ backgroundColor: '#FFE8DC', borderBottom: '1px solid #BDBDBD' }}>
+              <h3 className="text-lg font-semibold" style={{ color: '#FF6B35' }}>✏️ Bài tập</h3>
+            </div>
             {loadingExercise ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                <span className="ml-2">Đang tải bài tập...</span>
+              <div className="flex items-center justify-center py-8" style={{ backgroundColor: '#FFF8F0' }}>
+                <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}></div>
+                <span className="ml-2" style={{ color: '#666666' }}>Đang tải bài tập...</span>
               </div>
             ) : currentExercise ? (
-              <div className="space-y-4">
+              <div className="space-y-4 p-4">
                 
 
                 {/* Question Type Tabs */}
                 <div className="flex gap-2">
-                  <Button
-                    variant={questionTab === "multiple_choice" ? "primary" : "outline"}
+                  <button
                     onClick={() => setQuestionTab("multiple_choice")}
+                    className="px-4 py-2 rounded-lg font-medium transition-all"
+                    style={{
+                      backgroundColor: questionTab === "multiple_choice" ? '#FF6B35' : '#FFFFFF',
+                      color: questionTab === "multiple_choice" ? '#FFFFFF' : '#FF6B35',
+                      border: '1px solid #FF6B35'
+                    }}
                   >
                     Trắc nghiệm
-                  </Button>
-                  <Button
-                    variant={questionTab === "sentence_rewriting" ? "primary" : "outline"}
+                  </button>
+                  <button
                     onClick={() => setQuestionTab("sentence_rewriting")}
+                    className="px-4 py-2 rounded-lg font-medium transition-all"
+                    style={{
+                      backgroundColor: questionTab === "sentence_rewriting" ? '#FF6B35' : '#FFFFFF',
+                      color: questionTab === "sentence_rewriting" ? '#FFFFFF' : '#FF6B35',
+                      border: '1px solid #FF6B35'
+                    }}
                   >
                     Viết lại câu
-                  </Button>
+                  </button>
                 </div>
 
                 {/* Question Tables với exerciseId cố định */}
@@ -237,20 +249,21 @@ export default function LessonDetailPage() {
                 )}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500 dark:text-gray-400 mb-4">
+              <div className="text-center py-12" style={{ backgroundColor: '#FFF8F0' }}>
+                <div className="text-4xl mb-4">📝</div>
+                <p className="mb-4" style={{ color: '#666666' }}>
                   Không thể tải bài tập cho bài học này.
                 </p>
-                <Button
-                  variant="primary"
-                  size="sm"
+                <button
                   onClick={() => window.location.reload()}
+                  className="px-4 py-2 rounded-lg font-medium transition-all"
+                  style={{ backgroundColor: '#FF6B35', color: '#FFFFFF' }}
                 >
                   Thử lại
-                </Button>
+                </button>
               </div>
             )}
-          </ComponentCard>
+          </div>
         )}
 
         {/* Modals */}

@@ -92,6 +92,15 @@ const ExamAttempt = () => {
     try {
       setLoading(true);
       const attemptData = await examAttemptApi.getAttemptById(Number(attemptId));
+      
+      // Check if exam is already submitted/completed
+      if (attemptData.status === 'COMPLETED') {
+        console.log('📋 Exam already completed, redirecting to results...');
+        localStorage.removeItem('topik_in_progress');
+        navigate(`/learn/topik/result/${attemptId}`, { replace: true });
+        return;
+      }
+      
       setAttempt(attemptData);
 
       // Load saved position from localStorage
@@ -251,9 +260,18 @@ const ExamAttempt = () => {
       await examAttemptApi.submitExam(Number(attemptId));
       localStorage.removeItem('topik_in_progress'); // Clear saved attempt
       navigate(`/learn/topik/result/${attemptId}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error auto-submitting exam:', err);
-      alert('Hết giờ nhưng có lỗi khi tự động nộp bài');
+      const errorMessage = err?.response?.data?.message || err?.message || '';
+      
+      // If exam already submitted, redirect to results
+      if (errorMessage.toLowerCase().includes('already submitted') || 
+          errorMessage.toLowerCase().includes('đã nộp')) {
+        localStorage.removeItem('topik_in_progress');
+        navigate(`/learn/topik/result/${attemptId}`, { replace: true });
+      } else {
+        alert('Hết giờ nhưng có lỗi khi tự động nộp bài');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -426,7 +444,16 @@ const ExamAttempt = () => {
     } catch (err: any) {
       console.error('Error submitting exam:', err);
       const errorMessage = err?.response?.data?.message || err?.message || 'Không xác định';
-      alert(`Có lỗi khi nộp bài:\n${errorMessage}`);
+      
+      // If exam already submitted, redirect to results
+      if (errorMessage.toLowerCase().includes('already submitted') || 
+          errorMessage.toLowerCase().includes('đã nộp')) {
+        localStorage.removeItem('topik_in_progress');
+        alert('Bài thi đã được nộp trước đó. Đang chuyển đến trang kết quả...');
+        navigate(`/learn/topik/result/${attemptId}`, { replace: true });
+      } else {
+        alert(`Có lỗi khi nộp bài:\n${errorMessage}`);
+      }
     } finally {
       setSubmitting(false);
     }

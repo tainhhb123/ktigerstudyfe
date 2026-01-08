@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Eye, Plus, Trash2, CheckCircle, AlertCircle, Upload, X } from 'lucide-react';
-import { QuestionType, QuestionResponse, AnswerChoiceResponse } from '../../../types/exam';
+import { QuestionType, QuestionResponse } from '../../../types/exam';
 import { questionApi, answerChoiceApi } from '../../../services/ExamApi';
 
 // Cloudinary config
@@ -69,7 +69,7 @@ const QuestionForm = () => {
         imageUrl: questionData.imageUrl || '',
         correctAnswer: questionData.correctAnswer || '',
         points: questionData.points,
-        groupId: questionData.groupId,
+        groupId: questionData.groupId ?? null,
       });
 
       // Load answer choices if MCQ

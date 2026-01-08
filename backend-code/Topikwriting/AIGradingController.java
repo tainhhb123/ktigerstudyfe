@@ -1,6 +1,9 @@
-package Topikwriting;
+package org.example.ktigerstudybe.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.ktigerstudybe.service.aiGrading.AIGradingService;
+import org.example.ktigerstudybe.dto.req.WritingGradingRequest;
+import org.example.ktigerstudybe.dto.resp.WritingGradingResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

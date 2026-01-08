@@ -113,11 +113,11 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
 
   return (
     <Fragment>
-      <div className="rounded-lg bg-white shadow border border-gray-200 dark:bg-white/[0.03] dark:border-white/10 overflow-x-auto">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-transparent">
+      <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
+        <div className="p-4" style={{ backgroundColor: '#FFF8F0', borderBottom: '1px solid #FFE8DC' }}>
           <div className="relative w-full max-w-3xl mx-auto">
             <div className="relative flex items-center">
-              <FaSearch className="absolute left-3 text-gray-400 dark:text-gray-500" />
+              <FaSearch className="absolute left-3" style={{ color: '#999999' }} />
               <input
                 type="text"
                 placeholder="Tìm kiếm ngữ pháp..."
@@ -126,7 +126,10 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
                   setSearchTerm(e.target.value);
                   setPageNumber(0);
                 }}
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-gray-900 dark:bg-zinc-700 dark:border-zinc-600 dark:text-gray-100"
+                className="w-full pl-10 pr-10 py-2 rounded-lg border-2 focus:outline-none"
+                style={{ borderColor: '#BDBDBD', backgroundColor: '#FFFFFF' }}
+                onFocus={(e) => e.target.style.borderColor = '#FF6B35'}
+                onBlur={(e) => e.target.style.borderColor = '#BDBDBD'}
               />
               {searchTerm && (
                 <button
@@ -134,7 +137,10 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
                     setSearchTerm("");
                     setPageNumber(0);
                   }}
-                  className="absolute right-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400"
+                  className="absolute right-3 text-xl font-bold transition-colors"
+                  style={{ color: '#999999' }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#FF6B35'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#999999'}
                   aria-label="Xóa tìm kiếm"
                 >
                   ×
@@ -144,148 +150,130 @@ export default function GrammarTable({ lessonId }: GrammarTableProps) {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 border-b border-gray-200 dark:border-gray-700 gap-2">
-          <span className="font-semibold text-gray-700 dark:text-white">
-            Tổng số ngữ pháp: {items.length}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 gap-2" style={{ backgroundColor: '#FFF8F0', borderBottom: '1px solid #FFE8DC' }}>
+          <span className="font-semibold" style={{ color: '#333333' }}>
+            📖 Tổng số ngữ pháp: <strong>{items.length}</strong>
           </span>
           <div className="flex items-center space-x-2 md:justify-end mt-2 md:mt-0">
-            <Button
-              size="sm"
-              variant="outline"
+            <button
+              className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+              style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
               disabled={pageNumber === 0}
               onClick={() => setPageNumber((prev) => prev - 1)}
             >
               Trước
-            </Button>
+            </button>
             {paginationPages.map((p, index) =>
               p === "..." ? (
-                <span
-                  key={`ellipsis-${index}`}
-                  className="px-2 text-gray-500 dark:text-gray-400"
-                >
-                  …
-                </span>
+                <span key={`ellipsis-${index}`} className="px-2" style={{ color: '#999999' }}>…</span>
               ) : (
-                <Button
+                <button
                   key={`page-${p}`}
-                  size="sm"
-                  variant={(p as number) === pageNumber + 1 ? "primary" : "outline"}
+                  className="px-3 py-1.5 rounded-lg font-medium transition-all"
+                  style={{
+                    backgroundColor: (p as number) === pageNumber + 1 ? '#FF6B35' : '#FFFFFF',
+                    color: (p as number) === pageNumber + 1 ? '#FFFFFF' : '#FF6B35',
+                    border: '1px solid #FF6B35'
+                  }}
                   onClick={() => setPageNumber((p as number) - 1)}
                 >
                   {p}
-                </Button>
+                </button>
               )
             )}
-            <Button
-              size="sm"
-              variant="outline"
+            <button
+              className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+              style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
               disabled={pageNumber >= totalPages - 1}
               onClick={() => setPageNumber((prev) => prev + 1)}
             >
               Sau
-            </Button>
+            </button>
           </div>
         </div>
 
-        <Table>
-          <TableHeader className="bg-gray-50 border-b border-gray-200 dark:bg-white/5 dark:border-gray-700">
-            <TableRow>
-              <TableCell
-                isHeader
-                className="px-5 py-3 border-r border-gray-200 dark:border-gray-700 font-bold text-gray-700 dark:text-white"
-              >
-                Tiêu đề
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 border-r border-gray-200 dark:border-gray-700 font-bold text-gray-700 dark:text-white"
-              >
-                Nội dung
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 border-r border-gray-200 dark:border-gray-700 font-bold text-gray-700 dark:text-white"
-              >
-                Ví dụ
-              </TableCell>
-              <TableCell
-                isHeader
-                className="px-5 py-3 font-bold text-gray-700 dark:text-white"
-              >
-                Thao tác
-              </TableCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {error ? (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="text-center py-4 text-red-500 border border-gray-300 dark:border-zinc-700"
-                >
-                  {error}
-                </TableCell>
-              </TableRow>
-            ) : loading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="text-center py-4 border border-gray-300 dark:border-zinc-700 dark:text-gray-200"
-                >
-                  Đang tải...
-                </TableCell>
-              </TableRow>
-            ) : items.length > 0 ? (
-              items.map((grammar) => (
-                <TableRow
-                  key={grammar.grammarId}
-                  className="border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-white/10"
-                >
-                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white">
-                    <span className="block truncate">{grammar.grammarTitle}</span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">
-                    <span className="block truncate">{grammar.grammarContent}</span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">
-                    <span className="block truncate">{grammar.grammarExample || "—"}</span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4 text-center">
-                    <div className="flex justify-center space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEditClick(grammar)}
-                        className="text-xs px-2 py-1"
-                      >
-                        Sửa
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          handleDelete(grammar.grammarId, grammar.grammarTitle)
-                        }
-                        className="text-xs px-2 py-1 text-red-600 hover:text-red-800"
-                      >
-                        Xóa
-                      </Button>
+        <div className="overflow-x-auto">
+          <table className="w-full" style={{ tableLayout: 'fixed' }}>
+            <thead style={{ backgroundColor: '#FFE8DC' }}>
+              <tr>
+                <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35', width: '150px' }}>Tiêu đề</th>
+                <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35', width: '40%' }}>Nội dung</th>
+                <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35', width: '25%' }}>Ví dụ</th>
+                <th className="px-4 py-3 text-center font-bold" style={{ color: '#FF6B35', width: '120px' }}>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {error ? (
+                <tr>
+                  <td colSpan={4} className="text-center py-12" style={{ color: '#C62828' }}>
+                    <div className="text-4xl mb-2">⚠️</div>
+                    {error}
+                  </td>
+                </tr>
+              ) : loading ? (
+                <tr>
+                  <td colSpan={4} className="py-12 text-center">
+                    <div className="flex flex-col items-center">
+                      <div className="w-10 h-10 border-4 rounded-full animate-spin mb-3" 
+                           style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}></div>
+                      <span style={{ color: '#666666' }}>Đang tải...</span>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="text-center py-4 text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-zinc-700"
-                >
-                  Không có dữ liệu ngữ pháp
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                  </td>
+                </tr>
+              ) : items.length > 0 ? (
+                items.map((grammar) => (
+                  <tr
+                    key={grammar.grammarId}
+                    className="border-t transition-colors"
+                    style={{ borderColor: '#FFE8DC' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFF8F0'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <td className="px-4 py-4 font-semibold" style={{ color: '#333333', wordWrap: 'break-word', overflowWrap: 'break-word' }}>
+                      <span className="block">{grammar.grammarTitle}</span>
+                    </td>
+                    <td className="px-4 py-4" style={{ color: '#666666', wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                      <span className="block">{grammar.grammarContent}</span>
+                    </td>
+                    <td className="px-4 py-4" style={{ color: '#666666', wordWrap: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}>
+                      <span className="block">{grammar.grammarExample || "—"}</span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => handleEditClick(grammar)}
+                          className="px-3 py-1.5 rounded-lg font-medium transition-all text-sm"
+                          style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFDCC8'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FFE8DC'}
+                        >
+                          Sửa
+                        </button>
+                        <button
+                          onClick={() => handleDelete(grammar.grammarId, grammar.grammarTitle)}
+                          className="px-3 py-1.5 rounded-lg font-medium transition-all text-sm"
+                          style={{ backgroundColor: '#FFEBEE', color: '#C62828' }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFCDD2'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FFEBEE'}
+                        >
+                          Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-16 text-center">
+                    <div className="text-6xl mb-4">📖</div>
+                    <h3 className="text-xl font-bold mb-2" style={{ color: '#333333' }}>Không có dữ liệu</h3>
+                    <p style={{ color: '#666666' }}>Chưa có ngữ pháp nào trong bài học này</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <AddGrammarModal

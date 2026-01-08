@@ -1,4 +1,4 @@
-package Topikwriting;
+package org.example.ktigerstudybe.dto.resp;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

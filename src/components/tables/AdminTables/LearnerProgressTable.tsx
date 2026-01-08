@@ -44,7 +44,7 @@ export default function StudentProgressTable({ keyword }: StudentProgressTablePr
   // Fetch paged data
   useEffect(() => {
     setLoading(true);
-    axios
+    axiosInstance
       .get<Paged<UserProgress>>(`/api/user-progress`, {
         params: {
           keyword,
@@ -84,108 +84,118 @@ export default function StudentProgressTable({ keyword }: StudentProgressTablePr
   const goToPage = (idx: number) => setData((d) => ({ ...d, number: idx }));
 
   return (
-    <div className="rounded-xl bg-white shadow border border-gray-200 dark:bg-white/[0.03] dark:border-white/10">
+    <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
       {/* Header & Pagination */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between px-6 py-4 border-b border-gray-100 dark:border-white/10">
-        <span className="font-semibold text-gray-700 dark:text-white">
-          Tổng số tiến trình học viên: {totalElements}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between px-6 py-4" style={{ backgroundColor: '#FFF8F0', borderBottom: '1px solid #FFE8DC' }}>
+        <span className="font-semibold" style={{ color: '#333333' }}>
+          📊 Tổng số tiến trình học viên: <strong>{totalElements}</strong>
         </span>
         <div className="flex items-center gap-2 mt-2 md:mt-0">
-          <Button
-            size="sm"
-            variant="outline"
+          <button
+            className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+            style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
             disabled={currentPage === 0}
             onClick={() => goToPage(Math.max(0, currentPage - 1))}
           >
             Trước
-          </Button>
+          </button>
           {pages.map((p, idx) =>
             p === "..." ? (
-              <span key={idx} className="px-2 text-gray-500 dark:text-gray-400">…</span>
+              <span key={idx} className="px-2" style={{ color: '#999999' }}>…</span>
             ) : (
-              <Button
+              <button
                 key={idx}
-                size="sm"
-                variant={p === currentPage + 1 ? "primary" : "outline"}
+                className="px-3 py-1.5 rounded-lg font-medium transition-all"
+                style={{
+                  backgroundColor: p === currentPage + 1 ? '#FF6B35' : '#FFFFFF',
+                  color: p === currentPage + 1 ? '#FFFFFF' : '#FF6B35',
+                  border: '1px solid #FF6B35'
+                }}
                 onClick={() => goToPage((p as number) - 1)}
               >
                 {p}
-              </Button>
+              </button>
             )
           )}
-          <Button
-            size="sm"
-            variant="outline"
+          <button
+            className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+            style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
             disabled={currentPage + 1 >= totalPages}
             onClick={() => goToPage(Math.min(totalPages - 1, currentPage + 1))}
           >
             Sau
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <Table>
-          <TableHeader className="bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-gray-700">
-            <TableRow>
-              <TableCell isHeader className="px-5 py-3 text-center font-bold border-r border-gray-200 dark:border-gray-700 dark:text-white">
-                Ảnh
-              </TableCell>
-              <TableCell isHeader className="px-5 py-3 text-left font-bold border-r border-gray-200 dark:border-gray-700 dark:text-white">
-                Họ tên
-              </TableCell>
-              <TableCell isHeader className="px-5 py-3 text-center font-bold border-r border-gray-200 dark:border-gray-700 dark:text-white">
-                Ngày tham gia
-              </TableCell>
-              <TableCell isHeader className="px-5 py-3 text-center font-bold border-r border-gray-200 dark:border-gray-700 dark:text-white">
-                Cấp độ
-              </TableCell>
-              <TableCell isHeader className="px-5 py-3 text-center font-bold dark:text-white">
-                Bài học hiện tại
-              </TableCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <table className="w-full">
+          <thead style={{ backgroundColor: '#FFE8DC' }}>
+            <tr>
+              <th className="px-4 py-3 text-center font-bold" style={{ color: '#FF6B35' }}>Ảnh</th>
+              <th className="px-4 py-3 text-left font-bold" style={{ color: '#FF6B35' }}>Họ tên</th>
+              <th className="px-4 py-3 text-center font-bold" style={{ color: '#FF6B35' }}>Ngày tham gia</th>
+              <th className="px-4 py-3 text-center font-bold" style={{ color: '#FF6B35' }}>Cấp độ</th>
+              <th className="px-4 py-3 text-center font-bold" style={{ color: '#FF6B35' }}>Bài học hiện tại</th>
+            </tr>
+          </thead>
+          <tbody>
             {loading ? (
-              <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                <td colSpan={5} className="py-6 text-center text-gray-500 dark:text-gray-400">
-                  Đang tải…
+              <tr>
+                <td colSpan={5} className="py-12 text-center">
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 border-4 rounded-full animate-spin mb-3" 
+                         style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}></div>
+                    <span style={{ color: '#666666' }}>Đang tải dữ liệu...</span>
+                  </div>
                 </td>
-              </TableRow>
+              </tr>
             ) : filtered.length > 0 ? (
               filtered.map((u) => (
-                <TableRow key={u.userId} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/10">
-                  <TableCell className="px-5 py-4 text-center border-r border-gray-200 dark:border-gray-700">
+                <tr 
+                  key={u.userId}
+                  className="border-t transition-colors cursor-pointer"
+                  style={{ borderColor: '#FFE8DC' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFF8F0'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <td className="px-4 py-4 text-center">
                     <img
                       src={u.avatarImage}
                       alt={u.fullName}
-                      className="h-10 w-10 rounded-full object-cover mx-auto"
+                      className="h-10 w-10 rounded-full object-cover mx-auto border-2"
+                      style={{ borderColor: '#FFE8DC' }}
                     />
-                  </TableCell>
-                  <TableCell className="px-5 py-4 border-r border-gray-200 dark:border-gray-700 font-medium text-gray-800 dark:text-white">
+                  </td>
+                  <td className="px-4 py-4 font-semibold" style={{ color: '#333333' }}>
                     {u.fullName}
-                  </TableCell>
-                  <TableCell className="px-5 py-4 text-center border-r border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">
+                  </td>
+                  <td className="px-4 py-4 text-center" style={{ color: '#666666' }}>
                     {u.joinDate}
-                  </TableCell>
-                  <TableCell className="px-5 py-4 text-center border-r border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">
-                    {u.currentLevel}
-                  </TableCell>
-                  <TableCell className="px-5 py-4 text-center text-gray-600 dark:text-gray-400">
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <span className="px-3 py-1 rounded-full text-sm font-medium" 
+                          style={{ backgroundColor: '#E3F2FD', color: '#1976D2' }}>
+                      {u.currentLevel}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-center" style={{ color: '#666666' }}>
                     {u.currentLesson}
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ))
             ) : (
-              <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                <td colSpan={5} className="py-6 text-center text-gray-500 dark:text-gray-400">
-                  Không có dữ liệu
+              <tr>
+                <td colSpan={5} className="py-16 text-center">
+                  <div className="text-6xl mb-4">📭</div>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: '#333333' }}>Không có dữ liệu</h3>
+                  <p style={{ color: '#666666' }}>Chưa có tiến trình học viên nào được ghi nhận</p>
                 </td>
-              </TableRow>
+              </tr>
             )}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
     </div>
   );

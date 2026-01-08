@@ -143,38 +143,44 @@ export default function AddGrammarModal({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
+      <div className="fixed inset-0 z-40" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onClick={onClose} />
       <div className="fixed inset-x-0 top-[64px] bottom-0 z-50 flex items-start justify-center overflow-y-auto">
         <div className="relative w-full max-w-2xl mx-auto my-6 p-4">
-          <div className="relative bg-white dark:bg-zinc-800 rounded-lg shadow-xl">
+          <div className="relative rounded-xl shadow-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF' }}>
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {editData ? "Chỉnh sửa ngữ pháp" : "Thêm ngữ pháp mới"}
+            <div className="flex items-center justify-between p-6" style={{ backgroundColor: '#FFE8DC', borderBottom: '1px solid #BDBDBD' }}>
+              <h3 className="text-lg font-semibold" style={{ color: '#FF6B35' }}>
+                📖 {editData ? "Chỉnh sửa ngữ pháp" : "Thêm ngữ pháp mới"}
               </h3>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+                style={{ backgroundColor: '#FFFFFF', color: '#666666' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFEBEE'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FFFFFF'}
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="max-h-[calc(100vh-200px)] overflow-y-auto">
-              <div className="px-6 py-4 space-y-4">
+              <div className="px-6 py-4 space-y-4" style={{ backgroundColor: '#FFF8F0' }}>
                 {/* Tiêu đề */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Tiêu đề *
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#333333' }}>
+                    Tiêu đề <span style={{ color: '#C62828' }}>*</span>
                   </label>
                   <input
                     type="text"
                     name="grammarTitle"
                     value={grammar.grammarTitle}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none transition-colors"
+                    style={{ borderColor: '#BDBDBD', backgroundColor: '#FFFFFF', color: '#333333' }}
+                    onFocus={(e) => e.target.style.borderColor = '#FF6B35'}
+                    onBlur={(e) => e.target.style.borderColor = '#BDBDBD'}
                     required
                     placeholder="Nhập tiêu đề ngữ pháp"
                   />
@@ -182,15 +188,18 @@ export default function AddGrammarModal({
 
                 {/* Nội dung */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Nội dung *
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#333333' }}>
+                    Nội dung <span style={{ color: '#C62828' }}>*</span>
                   </label>
                   <textarea
                     name="grammarContent"
                     value={grammar.grammarContent}
                     onChange={handleChange}
                     rows={4}
-                    className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none transition-colors resize-none"
+                    style={{ borderColor: '#BDBDBD', backgroundColor: '#FFFFFF', color: '#333333' }}
+                    onFocus={(e) => e.target.style.borderColor = '#FF6B35'}
+                    onBlur={(e) => e.target.style.borderColor = '#BDBDBD'}
                     required
                     placeholder="Nhập nội dung ngữ pháp"
                   />
@@ -198,7 +207,7 @@ export default function AddGrammarModal({
 
                 {/* Ví dụ */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#333333' }}>
                     Ví dụ
                   </label>
                   <textarea
@@ -206,18 +215,24 @@ export default function AddGrammarModal({
                     value={grammar.grammarExample}
                     onChange={handleChange}
                     rows={2}
-                    className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white"
+                    className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none transition-colors resize-none"
+                    style={{ borderColor: '#BDBDBD', backgroundColor: '#FFFFFF', color: '#333333' }}
+                    onFocus={(e) => e.target.style.borderColor = '#FF6B35'}
+                    onBlur={(e) => e.target.style.borderColor = '#BDBDBD'}
                     placeholder="Nhập ví dụ (không bắt buộc)"
                   />
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="flex items-center space-x-2 px-6 py-4 bg-gray-50 dark:bg-zinc-700/50 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-end gap-3 px-6 py-4" style={{ backgroundColor: '#FFE8DC', borderTop: '1px solid #BDBDBD' }}>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-zinc-700 dark:border-zinc-600 dark:text-gray-300 dark:hover:bg-zinc-600"
+                  className="px-4 py-2 rounded-lg font-medium transition-colors"
+                  style={{ backgroundColor: '#FFFFFF', color: '#666666', border: '1px solid #BDBDBD' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F5F5F5'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FFFFFF'}
                   disabled={isLoading}
                 >
                   Hủy
@@ -225,14 +240,14 @@ export default function AddGrammarModal({
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="px-4 py-2 rounded-lg font-medium transition-colors flex items-center disabled:opacity-50"
+                  style={{ backgroundColor: '#FF6B35', color: '#FFFFFF' }}
+                  onMouseEnter={(e) => !isLoading && (e.currentTarget.style.backgroundColor = '#E85A2A')}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF6B35'}
                 >
                   {isLoading ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
+                      <div className="w-4 h-4 border-2 rounded-full animate-spin mr-2" style={{ borderColor: '#FFFFFF', borderTopColor: 'transparent' }}></div>
                       {editData ? "Đang cập nhật..." : "Đang thêm..."}
                     </>
                   ) : (

@@ -88,7 +88,7 @@ export default function LearnerInfoTable({ keyword }: UserInfoTableProps) {
       ? `/api/users/learners/search?keyword=${encodeURIComponent(keyword)}&page=${currentPage}&size=${pageSize}`
       : `/api/users/learners?page=${currentPage}&size=${pageSize}`;
 
-    axios
+    axiosInstance
       .get<Paged<User>>(url)
       .then((res) => {
         setData(res.data);
@@ -174,35 +174,32 @@ export default function LearnerInfoTable({ keyword }: UserInfoTableProps) {
   const goToPage = (pageIndex: number) => setCurrentPage(pageIndex);
 
   return (
-    <div className="rounded-xl bg-white shadow-sm border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-      {/* ✅ Clean notification - NO ICONS */}
+    <div className="rounded-xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', border: '1px solid #BDBDBD' }}>
+      {/* Notification */}
       {notification && (
-        <div className={`mx-6 mt-4 p-4 rounded-lg border ${
-          notification.type === 'success' 
-            ? 'bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' 
-            : 'bg-red-50 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800'
-        }`}>
-          <div className="flex items-start">
-            <div className="flex-1">
-              <p className="font-medium text-sm">
-                <span className="font-bold">
-                  {notification.type === 'success' ? 'Thành công: ' : 'Lỗi: '}
-                </span>
-                {notification.message}
-              </p>
-            </div>
-          </div>
+        <div className="mx-6 mt-4 p-4 rounded-lg" style={{
+          backgroundColor: notification.type === 'success' ? '#E8F5E9' : '#FFEBEE',
+          color: notification.type === 'success' ? '#2E7D32' : '#C62828',
+          border: `1px solid ${notification.type === 'success' ? '#A5D6A7' : '#FFCDD2'}`
+        }}>
+          <p className="font-medium text-sm">
+            <span className="font-bold">
+              {notification.type === 'success' ? '✅ Thành công: ' : '❌ Lỗi: '}
+            </span>
+            {notification.message}
+          </p>
         </div>
       )}
 
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between px-6 py-5" style={{ backgroundColor: '#FFF8F0', borderBottom: '1px solid #FFE8DC' }}>
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex items-center">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mr-4">
-              Quản lý học viên
+            <h3 className="text-lg font-semibold mr-4" style={{ color: '#333333' }}>
+              👥 Quản lý học viên
             </h3>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium" 
+                  style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}>
               {totalElements.toLocaleString()} học viên
             </span>
           </div>
@@ -211,84 +208,86 @@ export default function LearnerInfoTable({ keyword }: UserInfoTableProps) {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center gap-2 mt-4 lg:mt-0">
-            <span className="text-sm text-gray-600 dark:text-gray-400 mr-2">
+            <span className="text-sm mr-2" style={{ color: '#666666' }}>
               Trang {currentPage + 1} / {totalPages}
             </span>
-            <Button
-              size="sm"
-              variant="outline"
+            <button
+              className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+              style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
               disabled={currentPage === 0 || loading}
               onClick={() => goToPage(Math.max(0, currentPage - 1))}
             >
               Trước
-            </Button>
+            </button>
             {pages.map((p, idx) =>
               p === "..." ? (
-                <span key={idx} className="px-2 text-gray-500">…</span>
+                <span key={idx} className="px-2" style={{ color: '#999999' }}>…</span>
               ) : (
-                <Button
+                <button
                   key={idx}
-                  size="sm"
-                  variant={p === currentPage + 1 ? "primary" : "outline"}
+                  className="px-3 py-1.5 rounded-lg font-medium transition-all"
+                  style={{
+                    backgroundColor: p === currentPage + 1 ? '#FF6B35' : '#FFFFFF',
+                    color: p === currentPage + 1 ? '#FFFFFF' : '#FF6B35',
+                    border: '1px solid #FF6B35'
+                  }}
                   onClick={() => goToPage((p as number) - 1)}
                   disabled={loading}
                 >
                   {p}
-                </Button>
+                </button>
               )
             )}
-            <Button
-              size="sm"
-              variant="outline"
+            <button
+              className="px-3 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50"
+              style={{ backgroundColor: '#FFE8DC', color: '#FF6B35', border: '1px solid #FF6B35' }}
               disabled={currentPage + 1 >= totalPages || loading}
               onClick={() => goToPage(Math.min(totalPages - 1, currentPage + 1))}
             >
               Sau
-            </Button>
+            </button>
           </div>
         )}
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <Table>
-          <TableHeader className="bg-gray-50 dark:bg-gray-700/50">
-            <TableRow>
-              <TableCell isHeader className="font-semibold px-6 py-4 text-left text-gray-900 dark:text-gray-200 w-16">
-                Avatar
-              </TableCell>
-              <TableCell isHeader className="font-semibold px-6 py-4 text-left text-gray-900 dark:text-gray-200 min-w-[200px]">
-                Thông tin cá nhân
-              </TableCell>
-              <TableCell isHeader className="font-semibold px-6 py-4 text-left text-gray-900 dark:text-gray-200 min-w-[250px]">
-                Liên hệ
-              </TableCell>
-              <TableCell isHeader className="font-semibold px-6 py-4 text-center text-gray-900 dark:text-gray-200 w-32">
-                Trạng thái
-              </TableCell>
-              <TableCell isHeader className="font-semibold px-6 py-4 text-center text-gray-900 dark:text-gray-200 w-36">
-                Hành động
-              </TableCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <table className="w-full">
+          <thead style={{ backgroundColor: '#FFE8DC' }}>
+            <tr>
+              <th className="px-6 py-3 text-center font-bold w-16" style={{ color: '#FF6B35' }}>Avatar</th>
+              <th className="px-6 py-3 text-left font-bold min-w-[200px]" style={{ color: '#FF6B35' }}>Thông tin cá nhân</th>
+              <th className="px-6 py-3 text-left font-bold min-w-[250px]" style={{ color: '#FF6B35' }}>Liên hệ</th>
+              <th className="px-6 py-3 text-center font-bold w-32" style={{ color: '#FF6B35' }}>Trạng thái</th>
+              <th className="px-6 py-3 text-center font-bold w-36" style={{ color: '#FF6B35' }}>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
             {loading ? (
-              <TableRow>
+              <tr>
                 <td colSpan={5} className="py-12 text-center">
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                    <span className="text-gray-500 dark:text-gray-400">Đang tải dữ liệu...</span>
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 border-4 rounded-full animate-spin mb-3" 
+                         style={{ borderColor: '#FF6B35', borderTopColor: 'transparent' }}></div>
+                    <span style={{ color: '#666666' }}>Đang tải dữ liệu...</span>
                   </div>
                 </td>
-              </TableRow>
+              </tr>
             ) : users.length > 0 ? (
               users.map((u) => (
-                <TableRow key={u.userId} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                <tr 
+                  key={u.userId}
+                  className="border-t transition-colors"
+                  style={{ borderColor: '#FFE8DC' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFF8F0'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
                   {/* Avatar column */}
-                  <TableCell className="px-6 py-4">
+                  <td className="px-6 py-4">
                     <div className="flex justify-center">
                       {imageErrors.has(u.userId) ? (
-                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-sm">
+                        <div className="h-12 w-12 rounded-full flex items-center justify-center" 
+                             style={{ background: 'linear-gradient(135deg, #FF6B35, #FF8F65)' }}>
                           <span className="text-white text-sm font-semibold">
                             {u.fullName.charAt(0).toUpperCase()}
                           </span>
@@ -297,21 +296,22 @@ export default function LearnerInfoTable({ keyword }: UserInfoTableProps) {
                         <img
                           src={u.avatarImage || "/default-avatar.png"}
                           alt={u.fullName}
-                          className="h-12 w-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 shadow-sm"
+                          className="h-12 w-12 rounded-full object-cover border-2"
+                          style={{ borderColor: '#FFE8DC' }}
                           onError={() => handleImageError(u.userId)}
                           loading="lazy"
                         />
                       )}
                     </div>
-                  </TableCell>
+                  </td>
                   
-                  {/* ✅ Personal info column - NO ICONS */}
-                  <TableCell className="px-6 py-4">
+                  {/* Personal info column */}
+                  <td className="px-6 py-4">
                     <div>
-                      <div className="font-semibold text-gray-900 dark:text-white text-sm">
+                      <div className="font-semibold text-sm" style={{ color: '#333333' }}>
                         {u.fullName}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <div className="text-xs mt-1" style={{ color: '#666666' }}>
                         {u.gender === "male" ? "Nam" : 
                          u.gender === "female" ? "Nữ" : 
                          u.gender === "MALE" ? "Nam" :
@@ -320,87 +320,87 @@ export default function LearnerInfoTable({ keyword }: UserInfoTableProps) {
                         {u.dateOfBirth ? new Date(u.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa cập nhật ngày sinh'}
                       </div>
                     </div>
-                  </TableCell>
+                  </td>
                   
                   {/* Contact column */}
-                  <TableCell className="px-6 py-4">
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <td className="px-6 py-4">
+                    <div className="text-sm" style={{ color: '#666666' }}>
                       {u.email}
                     </div>
-                  </TableCell>
+                  </td>
                   
-                  {/* ✅ Status column - NO DOTS */}
-                  <TableCell className="px-6 py-4 text-center">
+                  {/* Status column */}
+                  <td className="px-6 py-4 text-center">
                     {u.userStatus === 1 ? (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                            style={{ backgroundColor: '#E8F5E9', color: '#2E7D32', border: '1px solid #A5D6A7' }}>
                         Hoạt động
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                            style={{ backgroundColor: '#FFEBEE', color: '#C62828', border: '1px solid #FFCDD2' }}>
                         Đóng băng
                       </span>
                     )}
-                  </TableCell>
+                  </td>
                   
                   {/* Action column */}
-                  <TableCell className="px-6 py-4 text-center">
+                  <td className="px-6 py-4 text-center">
                     {u.userStatus === 1 ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
+                      <button
                         onClick={() => handleUserAction(u.userId, u.fullName, 'freeze')}
                         disabled={actionLoading === u.userId}
-                        className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400 hover:bg-red-50 dark:text-red-400 dark:border-red-600 dark:hover:bg-red-900/20 min-w-[100px]"
+                        className="px-4 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50 min-w-[100px]"
+                        style={{ backgroundColor: '#FFEBEE', color: '#C62828' }}
+                        onMouseEnter={(e) => !actionLoading && (e.currentTarget.style.backgroundColor = '#FFCDD2')}
+                        onMouseLeave={(e) => !actionLoading && (e.currentTarget.style.backgroundColor = '#FFEBEE')}
                       >
                         {actionLoading === u.userId ? (
-                          <div className="flex items-center space-x-2">
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600"></div>
+                          <div className="flex items-center justify-center space-x-2">
+                            <div className="w-3 h-3 border-2 rounded-full animate-spin" style={{ borderColor: '#C62828', borderTopColor: 'transparent' }}></div>
                             <span>Đang xử lý...</span>
                           </div>
                         ) : (
                           'Đóng băng'
                         )}
-                      </Button>
+                      </button>
                     ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
+                      <button
                         onClick={() => handleUserAction(u.userId, u.fullName, 'unfreeze')}
                         disabled={actionLoading === u.userId}
-                        className="text-green-600 hover:text-green-700 border-green-300 hover:border-green-400 hover:bg-green-50 dark:text-green-400 dark:border-green-600 dark:hover:bg-green-900/20 min-w-[100px]"
+                        className="px-4 py-1.5 rounded-lg font-medium transition-all disabled:opacity-50 min-w-[100px]"
+                        style={{ backgroundColor: '#E8F5E9', color: '#2E7D32' }}
+                        onMouseEnter={(e) => !actionLoading && (e.currentTarget.style.backgroundColor = '#C8E6C9')}
+                        onMouseLeave={(e) => !actionLoading && (e.currentTarget.style.backgroundColor = '#E8F5E9')}
                       >
                         {actionLoading === u.userId ? (
-                          <div className="flex items-center space-x-2">
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-green-600"></div>
+                          <div className="flex items-center justify-center space-x-2">
+                            <div className="w-3 h-3 border-2 rounded-full animate-spin" style={{ borderColor: '#2E7D32', borderTopColor: 'transparent' }}></div>
                             <span>Đang xử lý...</span>
                           </div>
                         ) : (
                           'Mở băng'
                         )}
-                      </Button>
+                      </button>
                     )}
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ))
             ) : (
-              // ✅ Empty state - NO ICONS
-              <TableRow>
+              <tr>
                 <td colSpan={5} className="py-16 text-center">
-                  <div className="flex flex-col items-center space-y-4">
-                    <div className="text-center">
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                        {keyword ? 'Không tìm thấy học viên' : 'Chưa có học viên nào'}
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        {keyword ? `Không có học viên nào khớp với từ khóa "${keyword}"` : 'Hệ thống chưa có học viên nào được đăng ký'}
-                      </p>
-                    </div>
-                  </div>
+                  <div className="text-6xl mb-4">👥</div>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: '#333333' }}>
+                    {keyword ? 'Không tìm thấy học viên' : 'Chưa có học viên nào'}
+                  </h3>
+                  <p style={{ color: '#666666' }}>
+                    {keyword ? `Không có học viên nào khớp với từ khóa "${keyword}"` : 'Hệ thống chưa có học viên nào được đăng ký'}
+                  </p>
                 </td>
-              </TableRow>
+              </tr>
             )}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
     </div>
   );
