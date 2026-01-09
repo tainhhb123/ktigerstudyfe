@@ -221,8 +221,8 @@ const QuestionForm = () => {
       newErrors.questionText = 'Phải có ít nhất nội dung câu hỏi hoặc đoạn văn';
     }
 
-    if (formData.points < 0.5 || formData.points > 10) {
-      newErrors.points = 'Điểm phải từ 0.5 đến 10';
+    if (formData.points < 0.5 || formData.points > 100) {
+      newErrors.points = 'Điểm phải từ 0.5 đến 100';
     }
 
     // MCQ specific validation

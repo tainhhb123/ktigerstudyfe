@@ -839,7 +839,7 @@ const ExamAttempt = () => {
                         )}
 
                         {/* Individual Question Image (for single questions) */}
-                        {!isGrouped && currentQuestion.imageUrl && (
+                        {/* {!isGrouped && currentQuestion.imageUrl && (
                           <div className="mb-6">
                             <img 
                               src={currentQuestion.imageUrl} 
@@ -848,7 +848,7 @@ const ExamAttempt = () => {
                               style={{ borderColor: '#BDBDBD' }}
                             />
                           </div>
-                        )}
+                        )} */}
 
                         {/* Individual Passage Text (for single questions) */}
                         {!isGrouped && currentQuestion.passageText && (
@@ -876,7 +876,8 @@ const ExamAttempt = () => {
                             ) : (
                               <>
                                 {/* Individual Question Image - Show for EACH question if it has imageUrl */}
-                                {q.imageUrl && (
+                                {/* Skip image display for questions 53 & 54 as TopikWritingGrid handles it */}
+                                {q.imageUrl && !(currentSection.sectionType === 'WRITING' && (q.questionNumber === 53 || q.questionNumber === 54)) && (
                                   <div className="mb-6">
                                     <img 
                                       src={q.imageUrl} 

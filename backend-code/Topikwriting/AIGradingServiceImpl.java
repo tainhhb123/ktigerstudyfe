@@ -17,25 +17,25 @@ import java.util.Map;
 
 /**
  * AI Grading Service Implementation
- * 
+ *
  * Sử dụng OpenRouter API (Gemini 2.0 Flash) để chấm điểm Writing TOPIK II
  * OpenRouter hỗ trợ nhiều free models với rate limit cao hơn Groq
- * 
+ *
  * LOGIC CHẤM ĐIỂM:
  * ================
- * 
+ *
  * 1. SHORT (Q51, Q52) - Điền từ vào chỗ trống:
  *    - Input: questionText (đề bài có chỗ trống), referenceAnswer (đáp án đúng), studentAnswer
  *    - Logic: So sánh studentAnswer với referenceAnswer
  *    - Output: Điểm 0-100 dựa trên mức độ đúng
  *    - Quy đổi: (score/100) × 5 điểm
- * 
+ *
  * 2. ESSAY (Q53, Q54) - Viết văn:
  *    - Input: questionText (ĐỀ BÀI), referenceAnswer (bài mẫu tham khảo), studentAnswer
  *    - Logic: AI đánh giá bài viết DỰA TRÊN ĐỀ BÀI (không phải so sánh với bài mẫu)
  *    - Output: Điểm 0-100 theo 4 tiêu chí: Content/Grammar/Vocabulary/Organization
  *    - Quy đổi: Q53: (score/100) × 30đ, Q54: (score/100) × 50đ
- * 
+ *
  * Lưu ý khi copy vào BE:
  * - Đổi package thành: org.example.ktigerstudybe.service.aiGrading
  * - Import WritingGradingRequest, WritingGradingResult từ package dto tương ứng
@@ -48,16 +48,16 @@ public class AIGradingServiceImpl implements AIGradingService {
     private String openRouterApiKey;
 
     private static final String OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-    
+
     // Danh sách models fallback - nếu model chính bị rate limit, tự động chuyển sang model tiếp theo
     private static final String[] FALLBACK_MODELS = {
-        "meta-llama/llama-3.3-70b-instruct:free",      // Llama 3.3 70B - multilingual tốt
-        "deepseek/deepseek-r1-0528:free",              // DeepSeek R1 - reasoning mạnh
-        "mistralai/mistral-small-3.1-24b-instruct:free", // Mistral 24B
-        "qwen/qwen3-4b:free",                          // Qwen 3 4B - backup nhẹ
-        "google/gemma-3-27b-it:free"                   // Gemma 3 27B
+            "meta-llama/llama-3.3-70b-instruct:free",      // Llama 3.3 70B - multilingual tốt
+            "deepseek/deepseek-r1-0528:free",              // DeepSeek R1 - reasoning mạnh
+            "mistralai/mistral-small-3.1-24b-instruct:free", // Mistral 24B
+            "qwen/qwen3-4b:free",                          // Qwen 3 4B - backup nhẹ
+            "google/gemma-3-27b-it:free"                   // Gemma 3 27B
     };
-    
+
     @Value("${openrouter.model:meta-llama/llama-3.3-70b-instruct:free}")
     private String primaryModel;
 
@@ -72,10 +72,10 @@ public class AIGradingServiceImpl implements AIGradingService {
         }
 
         int charCount = request.getStudentAnswer().length();
-        
+
         // 2. Xác định loại câu hỏi
         boolean isShort = "SHORT".equalsIgnoreCase(request.getQuestionType());
-        
+
         // 3. Với SHORT: Thử exact match trước
         if (isShort && request.getReferenceAnswer() != null) {
             WritingGradingResult exactMatch = tryExactMatch(request);
@@ -103,13 +103,13 @@ public class AIGradingServiceImpl implements AIGradingService {
     private WritingGradingResult tryExactMatch(WritingGradingRequest request) {
         String studentAnswer = request.getStudentAnswer().trim();
         String[] possibleAnswers = request.getReferenceAnswer().split("\\|");
-        
+
         for (String possible : possibleAnswers) {
             String trimmed = possible.trim();
             // So sánh không phân biệt dấu cách thừa
-            if (studentAnswer.equalsIgnoreCase(trimmed) || 
-                studentAnswer.replace(" ", "").equalsIgnoreCase(trimmed.replace(" ", ""))) {
-                
+            if (studentAnswer.equalsIgnoreCase(trimmed) ||
+                    studentAnswer.replace(" ", "").equalsIgnoreCase(trimmed.replace(" ", ""))) {
+
                 return WritingGradingResult.builder()
                         .score(100)
                         .feedback("✅ Đúng hoàn toàn!")
@@ -139,32 +139,32 @@ public class AIGradingServiceImpl implements AIGradingService {
                 modelsToTry.add(fallback);
             }
         }
-        
+
         Exception lastException = null;
-        
+
         for (String currentModel : modelsToTry) {
             try {
                 System.out.println("🤖 Trying model: " + currentModel);
                 String result = callWithModel(prompt, currentModel);
                 System.out.println("✅ Success with model: " + currentModel);
                 return result;
-                
+
             } catch (org.springframework.web.client.HttpClientErrorException.TooManyRequests e) {
                 System.out.println("⚠️ Rate limited on " + currentModel + ", trying next model...");
                 lastException = e;
                 // Đợi 1 giây trước khi thử model tiếp theo
                 try { Thread.sleep(1000); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
-                
+
             } catch (Exception e) {
                 System.out.println("❌ Error with " + currentModel + ": " + e.getMessage());
                 lastException = e;
             }
         }
-        
-        throw new RuntimeException("All models failed. Last error: " + 
+
+        throw new RuntimeException("All models failed. Last error: " +
                 (lastException != null ? lastException.getMessage() : "Unknown"), lastException);
     }
-    
+
     /**
      * Gọi API với model cụ thể
      */
@@ -175,7 +175,7 @@ public class AIGradingServiceImpl implements AIGradingService {
         requestBody.put("max_tokens", 2000);
 
         List<Map<String, String>> messages = new ArrayList<>();
-        
+
         // System message
         Map<String, String> systemMsg = new HashMap<>();
         systemMsg.put("role", "system");
@@ -244,29 +244,29 @@ public class AIGradingServiceImpl implements AIGradingService {
     }
 
     // ==================== PROMPT CHO SHORT ====================
-    
+
     /**
      * Build prompt cho SHORT answer (Q51, Q52)
      * Logic: So sánh studentAnswer với referenceAnswer (đáp án đúng)
      */
     private String buildShortPrompt(WritingGradingRequest request) {
         StringBuilder prompt = new StringBuilder();
-        
+
         prompt.append("=== CHẤM ĐIỂM CÂU ").append(request.getQuestionNumber())
-              .append(" - ĐIỀN TỪ (5 điểm/chỗ trống) ===\n\n");
-        
+                .append(" - ĐIỀN TỪ (5 điểm/chỗ trống) ===\n\n");
+
         // Đề bài (passage_text)
         if (request.getQuestionText() != null && !request.getQuestionText().isEmpty()) {
             prompt.append("📝 **ĐỀ BÀI:**\n").append(request.getQuestionText()).append("\n\n");
         }
-        
+
         // Đáp án đúng (correct_answer)
         prompt.append("✅ **ĐÁP ÁN ĐÚNG:** ").append(request.getReferenceAnswer()).append("\n");
         prompt.append("(Nếu có nhiều đáp án, phân cách bằng '|')\n\n");
-        
+
         // Câu trả lời học sinh
         prompt.append("📝 **CÂU TRẢ LỜI CỦA HỌC SINH:** ").append(request.getStudentAnswer()).append("\n\n");
-        
+
         prompt.append("""
                 === HƯỚNG DẪN CHẤM ĐIỂM ===
                 
@@ -298,12 +298,12 @@ public class AIGradingServiceImpl implements AIGradingService {
                 
                 Chỉ trả về JSON, không giải thích thêm.
                 """);
-        
+
         return prompt.toString();
     }
 
     // ==================== PROMPT CHO ESSAY ====================
-    
+
     /**
      * Build prompt cho ESSAY (Q53, Q54)
      * Logic: Đánh giá bài viết DỰA TRÊN ĐỀ BÀI, tham khảo bài mẫu (nếu có)
@@ -312,43 +312,43 @@ public class AIGradingServiceImpl implements AIGradingService {
         int charCount = request.getStudentAnswer().length();
         int minChars = request.getMinChars() != null ? request.getMinChars() : 200;
         int maxChars = request.getMaxChars() != null ? request.getMaxChars() : 700;
-        
+
         // Xác định câu 53 hay 54
         boolean isQ53 = request.getQuestionNumber() != null && request.getQuestionNumber() == 53;
-        
+
         StringBuilder prompt = new StringBuilder();
-        
+
         prompt.append("=== CHẤM ĐIỂM CÂU ").append(request.getQuestionNumber())
-              .append(" - TOPIK II WRITING (").append(isQ53 ? "30" : "50").append(" điểm) ===\n\n");
-        
-        prompt.append("**Loại câu hỏi:** ").append(isQ53 ? 
-                "Viết đoạn văn mô tả biểu đồ/bảng số liệu" : 
+                .append(" - TOPIK II WRITING (").append(isQ53 ? "30" : "50").append(" điểm) ===\n\n");
+
+        prompt.append("**Loại câu hỏi:** ").append(isQ53 ?
+                "Viết đoạn văn mô tả biểu đồ/bảng số liệu" :
                 "Viết bài luận nghị luận").append("\n");
         prompt.append("**Yêu cầu số ký tự:** ").append(minChars).append("-").append(maxChars).append(" ký tự\n");
         prompt.append("**Số ký tự học sinh viết:** ").append(charCount).append(" ký tự\n\n");
-        
+
         // ĐỀ BÀI (passage_text) - QUAN TRỌNG NHẤT
         prompt.append("📋 **ĐỀ BÀI:**\n").append(request.getQuestionText()).append("\n\n");
-        
+
         // Bài mẫu tham khảo (correct_answer) - Chỉ để tham khảo mức độ kỳ vọng
         if (request.getReferenceAnswer() != null && !request.getReferenceAnswer().isEmpty()) {
             prompt.append("📖 **BÀI MẪU THAM KHẢO** (để hiểu mức độ kỳ vọng, KHÔNG phải để so sánh trực tiếp):\n");
             prompt.append(request.getReferenceAnswer()).append("\n\n");
         }
-        
+
         // Bài viết của học sinh
         prompt.append("✏️ **BÀI VIẾT CỦA HỌC SINH:**\n").append(request.getStudentAnswer()).append("\n\n");
-        
+
         // Tiêu chí chấm
         if (isQ53) {
             prompt.append(buildEssay53Criteria(charCount, minChars, maxChars));
         } else {
             prompt.append(buildEssay54Criteria(charCount, minChars, maxChars));
         }
-        
+
         return prompt.toString();
     }
-    
+
     /**
      * Tiêu chí chấm câu 53 (Mô tả biểu đồ/bảng)
      */
@@ -399,13 +399,13 @@ public class AIGradingServiceImpl implements AIGradingService {
                 Chỉ trả về JSON.
                 """;
     }
-    
+
     /**
      * Tiêu chí chấm câu 54 (Viết luận)
      */
     private String buildEssay54Criteria(int charCount, int minChars, int maxChars) {
         int completionPercent = minChars > 0 ? (charCount * 100) / minChars : 0;
-        
+
         return String.format("""
                 === TIÊU CHÍ CHẤM CÂU 54 (Tổng 100 điểm → quy đổi 50 điểm) ===
                 
@@ -465,7 +465,7 @@ public class AIGradingServiceImpl implements AIGradingService {
     }
 
     // ==================== PARSE RESPONSE ====================
-    
+
     /**
      * Parse JSON response từ AI
      */
@@ -495,7 +495,7 @@ public class AIGradingServiceImpl implements AIGradingService {
                 totalScore = breakdown.getContent();
             } else {
                 // ESSAY: Tổng 4 tiêu chí
-                totalScore = breakdown.getContent() + breakdown.getGrammar() 
+                totalScore = breakdown.getContent() + breakdown.getGrammar()
                         + breakdown.getVocabulary() + breakdown.getOrganization();
             }
 
@@ -518,7 +518,7 @@ public class AIGradingServiceImpl implements AIGradingService {
     }
 
     // ==================== FALLBACK RESULTS ====================
-    
+
     /**
      * Kết quả khi câu trả lời trống
      */

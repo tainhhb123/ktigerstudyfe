@@ -31,10 +31,13 @@ export default function TopikWritingGrid({
   const totalRows = Math.ceil(maxCharacters / CHARS_PER_ROW);
   const charCount = value.length;
 
-  // Handle text change - đơn giản, không can thiệp cursor
+  // Handle text change - cho phép paste và tự động cắt nếu vượt quá
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
-    if (newValue.length <= maxCharacters) {
+    // Nếu vượt quá giới hạn, cắt bớt thay vì chặn hoàn toàn
+    if (newValue.length > maxCharacters) {
+      onChange(newValue.substring(0, maxCharacters));
+    } else {
       onChange(newValue);
     }
   };

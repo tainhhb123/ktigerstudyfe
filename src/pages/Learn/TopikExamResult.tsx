@@ -267,12 +267,15 @@ const TopikExamResult = () => {
                 >
                   {getSectionIcon(sectionType)}
                   <span>{sectionType}</span>
-                  <span className="ml-2 px-2 py-0.5 rounded-full text-xs" style={{ 
-                    backgroundColor: isActive ? colors.border : '#E0E0E0',
-                    color: isActive ? '#FFFFFF' : '#666666'
-                  }}>
-                    {section.correctCount}/{section.totalCount}
-                  </span>
+                  {/* Bỏ hiển thị điểm ở tab WRITING vì AI grading không phù hợp với format correctCount/totalCount */}
+                  {sectionType !== 'WRITING' && (
+                    <span className="ml-2 px-2 py-0.5 rounded-full text-xs" style={{ 
+                      backgroundColor: isActive ? colors.border : '#E0E0E0',
+                      color: isActive ? '#FFFFFF' : '#666666'
+                    }}>
+                      {section.correctCount}/{section.totalCount}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -749,40 +752,115 @@ const renderAnswer = (answer: string | null | undefined) => {
   return answer;
 };
 
-// AI Grading Result Card Component
+// AI Grading Result Card Component - Enhanced UI
 const AIGradingResultCard = ({ question }: { question: QuestionResultResponse }) => {
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(true); // Mặc định mở để hiển thị feedback ngay
+  
+  // Debug log
+  console.log('🔍 AIGradingResultCard data:', {
+    aiScore: question.aiScore,
+    hasFeedback: !!question.aiFeedback,
+    feedbackLength: question.aiFeedback?.length,
+    hasBreakdown: !!question.aiBreakdown,
+    hasSuggestions: !!question.aiSuggestions,
+    suggestionsCount: question.aiSuggestions?.length
+  });
+  
+  // Parse improvements from suggestions array
+  const parseImprovements = () => {
+    if (!question.aiSuggestions || question.aiSuggestions.length === 0) return [];
+    
+    return question.aiSuggestions.map((suggestion, index) => {
+      // Format: 📝 [TYPE]\n❌ Câu gốc: ...\n✅ Cải thiện: ...\n💡 Giải thích: ...
+      const lines = suggestion.split('\n').filter(line => line.trim());
+      
+      const type = lines[0]?.match(/\[(.*?)\]/)?.[1] || 'GENERAL';
+      const original = lines.find(l => l.includes('❌'))?.replace(/^.*?❌\s*Câu gốc:\s*/, '') || '';
+      const improved = lines.find(l => l.includes('✅'))?.replace(/^.*?✅\s*(Cải thiện|Đúng):\s*/, '') || '';
+      const explanation = lines.find(l => l.includes('💡'))?.replace(/^.*?💡\s*Giải thích:\s*/, '') || '';
+      
+      return { type, original, improved, explanation, index };
+    }).filter(item => item.original && item.improved);
+  };
+  
+  const improvements = parseImprovements();
+  
+  // Parse feedback sections
+  const parseFeedbackSections = () => {
+    if (!question.aiFeedback) return {};
+    
+    const sections: Record<string, string> = {};
+    const sectionMatches = [
+      { key: 'length', emoji: '📏', title: 'Phân tích độ dài' },
+      { key: 'content', emoji: '📊', title: 'Phân tích nội dung' },
+      { key: 'grammar', emoji: '📝', title: 'Phân tích ngữ pháp' },
+      { key: 'vocabulary', emoji: '📚', title: 'Phân tích từ vựng' },
+      { key: 'organization', emoji: '🏗️', title: 'Phân tích tổ chức' }
+    ];
+    
+    sectionMatches.forEach(({ key, emoji, title }) => {
+      const regex = new RegExp(`${emoji}[\\s]*${title}[:\\s]*([\\s\\S]*?)(?=${sectionMatches.map(s => s.emoji).join('|')}|$)`, 'i');
+      const match = question.aiFeedback?.match(regex);
+      if (match && match[1]) {
+        sections[key] = match[1].trim();
+      }
+    });
+    
+    return sections;
+  };
+  
+  const feedbackSections = parseFeedbackSections();
+  
+  const getTypeIcon = (type: string) => {
+    const typeMap: Record<string, { icon: string; color: string; bg: string; label: string }> = {
+      'GRAMMAR': { icon: '📝', color: '#FF5252', bg: '#FFEBEE', label: 'Ngữ pháp' },
+      'VOCABULARY': { icon: '📚', color: '#2196F3', bg: '#E3F2FD', label: 'Từ vựng' },
+      'CONTENT': { icon: '📊', color: '#4CAF50', bg: '#E8F5E9', label: 'Nội dung' },
+      'ORGANIZATION': { icon: '🏗️', color: '#FF9800', bg: '#FFF3E0', label: 'Tổ chức' },
+      'GENERAL': { icon: '💡', color: '#9C27B0', bg: '#F3E5F5', label: 'Chung' }
+    };
+    return typeMap[type] || typeMap['GENERAL'];
+  };
   
   return (
-    <div className="rounded-lg overflow-hidden" style={{ border: '2px solid #9C27B0' }}>
+    <div className="rounded-lg overflow-hidden shadow-md" style={{ border: '2px solid #9C27B0' }}>
       {/* Header - Always visible */}
       <div 
-        className="p-4 cursor-pointer"
-        style={{ backgroundColor: '#F3E5F5' }}
+        className="p-4 cursor-pointer hover:opacity-90 transition"
+        style={{ background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)' }}
         onClick={() => setShowDetails(!showDetails)}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Brain className="w-6 h-6" style={{ color: '#9C27B0' }} />
-            <span className="font-bold text-lg" style={{ color: '#9C27B0' }}>
-              Kết quả chấm AI
-            </span>
+            <div className="p-2 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}>
+              <Brain className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <span className="font-bold text-lg text-white block">
+                Kết quả chấm AI
+              </span>
+              <span className="text-xs text-white opacity-80">
+                Click để {showDetails ? 'thu gọn' : 'xem chi tiết'}
+              </span>
+            </div>
           </div>
           
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <span className="text-3xl font-bold" style={{ color: '#9C27B0' }}>
-                {question.aiScore}
-              </span>
-              <span className="text-lg" style={{ color: '#999999' }}>/100</span>
-              <div className="text-xs" style={{ color: '#666666' }}>
-                → {question.score}/{question.maxScore} điểm
+              <div>
+                <span className="text-4xl font-bold text-white">
+                  {question.aiScore}
+                </span>
+                <span className="text-xl text-white opacity-70">/100</span>
+              </div>
+              <div className="text-xs text-white opacity-80 mt-1">
+                → {question.score}/{question.maxScore} điểm TOPIK
               </div>
             </div>
             {showDetails ? (
-              <ChevronUp className="w-5 h-5" style={{ color: '#9C27B0' }} />
+              <ChevronUp className="w-6 h-6 text-white" />
             ) : (
-              <ChevronDown className="w-5 h-5" style={{ color: '#9C27B0' }} />
+              <ChevronDown className="w-6 h-6 text-white" />
             )}
           </div>
         </div>
@@ -790,45 +868,48 @@ const AIGradingResultCard = ({ question }: { question: QuestionResultResponse })
       
       {/* Details - Expandable */}
       {showDetails && (
-        <div className="p-4 space-y-4" style={{ backgroundColor: '#FFFFFF' }}>
-          {/* Score Breakdown */}
-          {question.aiBreakdown && (
-            <div>
-              <div className="text-sm font-semibold mb-3" style={{ color: '#666666' }}>
-                📊 Chi tiết điểm:
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <ScoreBox label="Nội dung" score={question.aiBreakdown.content} max={40} />
-                <ScoreBox label="Ngữ pháp" score={question.aiBreakdown.grammar} max={30} />
-                <ScoreBox label="Từ vựng" score={question.aiBreakdown.vocabulary} max={20} />
-                <ScoreBox label="Tổ chức" score={question.aiBreakdown.organization} max={10} />
-              </div>
-            </div>
-          )}
-
-          {/* Feedback */}
+        <div className="p-5 space-y-4" style={{ backgroundColor: '#FAFAFA' }}>
+          
+          {/* Feedback Sections - ƯU TIÊN HIỂN THỊ TRƯỚC */}
           {question.aiFeedback && (
-            <div className="p-3 rounded-lg" style={{ backgroundColor: '#F5F5F5' }}>
-              <div className="text-sm font-semibold mb-2" style={{ color: '#666666' }}>
-                💬 Nhận xét:
+            <div className="space-y-3">
+              <div className="text-base font-bold mb-3 flex items-center gap-2" style={{ color: '#333333' }}>
+                <span>💬</span>
+                <span>Nhận xét chi tiết từ AI</span>
               </div>
-              <div style={{ color: '#333333' }} className="whitespace-pre-wrap text-sm">
-                {question.aiFeedback}
+              
+              <div className="p-4 rounded-lg" style={{ backgroundColor: '#FFFFFF', border: '1px solid #9C27B0' }}>
+                <div className="whitespace-pre-wrap text-sm" style={{ color: '#333333', lineHeight: '1.7' }}>
+                  {question.aiFeedback}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Suggestions */}
-          {question.aiSuggestions && question.aiSuggestions.length > 0 && (
-            <div className="p-3 rounded-lg" style={{ backgroundColor: '#FFF8E1' }}>
-              <div className="text-sm font-semibold mb-2" style={{ color: '#F57C00' }}>
-                💡 Gợi ý cải thiện:
+          {/* Score Breakdown - THU NHỎ LẠI */}
+          {question.aiBreakdown && (
+            <details className="rounded-lg" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E0E0E0' }}>
+              <summary className="p-3 cursor-pointer hover:bg-gray-50 flex items-center gap-2 font-semibold" style={{ color: '#666666' }}>
+                <span>📊</span>
+                <span>Chi tiết điểm số (click để xem)</span>
+              </summary>
+              <div className="p-4 pt-2 space-y-3">
+                <DetailedScoreBar label="📊 Nội dung" score={question.aiBreakdown.content} max={40} color="#4CAF50" />
+                <DetailedScoreBar label="📝 Ngữ pháp" score={question.aiBreakdown.grammar} max={30} color="#FF5252" />
+                <DetailedScoreBar label="📚 Từ vựng" score={question.aiBreakdown.vocabulary} max={20} color="#2196F3" />
+                <DetailedScoreBar label="🏗️ Tổ chức" score={question.aiBreakdown.organization} max={10} color="#FF9800" />
               </div>
-              <ul className="list-disc list-inside space-y-1 text-sm" style={{ color: '#333333' }}>
-                {question.aiSuggestions.map((suggestion, idx) => (
-                  <li key={idx}>{suggestion}</li>
-                ))}
-              </ul>
+            </details>
+          )}
+
+
+
+          {/* Note: Suggestions tạm thời disabled do constraint issues */}
+          {question.aiSuggestions && question.aiSuggestions.length > 0 && (
+            <div className="p-3 rounded-lg" style={{ backgroundColor: '#E3F2FD', border: '1px solid #2196F3' }}>
+              <div className="text-xs font-semibold" style={{ color: '#1976D2' }}>
+                ℹ️ Gợi ý cải thiện chi tiết đang được cập nhật
+              </div>
             </div>
           )}
         </div>
@@ -837,27 +918,158 @@ const AIGradingResultCard = ({ question }: { question: QuestionResultResponse })
   );
 };
 
-// Score Box Component
-const ScoreBox = ({ label, score, max }: { label: string; score?: number; max: number }) => {
+// Detailed Score Bar Component - Enhanced với progress bar lớn hơn
+const DetailedScoreBar = ({ label, score, max, color }: { label: string; score?: number; max: number; color: string }) => {
   const actualScore = score ?? 0;
   const percentage = max > 0 ? (actualScore / max) * 100 : 0;
-  const getColor = () => {
-    if (percentage >= 80) return '#4CAF50';
-    if (percentage >= 60) return '#2196F3';
-    if (percentage >= 40) return '#FF9800';
-    return '#FF5252';
-  };
   
   return (
-    <div className="p-3 rounded-lg text-center" style={{ backgroundColor: '#F5F5F5' }}>
-      <div className="text-xs mb-1" style={{ color: '#666666' }}>{label}</div>
-      <div className="text-xl font-bold" style={{ color: getColor() }}>
-        {actualScore}
-        <span className="text-sm" style={{ color: '#999999' }}>/{max}</span>
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-medium" style={{ color: '#666666' }}>{label}</span>
+        <span className="text-lg font-bold" style={{ color }}>
+          {actualScore}<span className="text-sm font-normal" style={{ color: '#999999' }}>/{max}</span>
+        </span>
       </div>
-      <div className="w-full rounded-full h-1.5 mt-2" style={{ backgroundColor: '#E0E0E0' }}>
-        <div className="h-1.5 rounded-full" style={{ backgroundColor: getColor(), width: `${percentage}%` }} />
+      <div className="w-full rounded-full h-3" style={{ backgroundColor: '#F0F0F0' }}>
+        <div 
+          className="h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
+          style={{ backgroundColor: color, width: `${percentage}%` }}
+        >
+          {/* Shimmer effect */}
+          <div 
+            className="absolute inset-0 opacity-30"
+            style={{
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
+              animation: percentage > 0 ? 'shimmer 2s infinite' : 'none'
+            }}
+          />
+        </div>
       </div>
+      <div className="text-right mt-1">
+        <span className="text-xs" style={{ color: '#999999' }}>{percentage.toFixed(0)}%</span>
+      </div>
+    </div>
+  );
+};
+
+// Feedback Section Component
+const FeedbackSection = ({ title, content, color }: { title: string; content: string; color: string }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const previewLength = 120;
+  const needsExpansion = content.length > previewLength;
+  
+  return (
+    <div className="p-4 rounded-lg" style={{ backgroundColor: '#FFFFFF', border: `1px solid ${color}30` }}>
+      <div className="flex items-start justify-between mb-2">
+        <div className="font-semibold text-sm" style={{ color }}>{title}</div>
+        {needsExpansion && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-xs px-2 py-1 rounded hover:opacity-80 transition"
+            style={{ backgroundColor: `${color}15`, color }}
+          >
+            {isExpanded ? 'Thu gọn' : 'Xem thêm'}
+          </button>
+        )}
+      </div>
+      <div 
+        className="text-sm whitespace-pre-wrap" 
+        style={{ 
+          color: '#333333', 
+          lineHeight: '1.6',
+          maxHeight: isExpanded ? 'none' : '4.8em',
+          overflow: 'hidden',
+          position: 'relative'
+        }}
+      >
+        {isExpanded ? content : (needsExpansion ? content.substring(0, previewLength) + '...' : content)}
+      </div>
+    </div>
+  );
+};
+
+// Improvement Card Component - Trước/Sau/Giải thích
+const ImprovementCard = ({ 
+  index, 
+  typeInfo, 
+  original, 
+  improved, 
+  explanation 
+}: { 
+  index: number; 
+  typeInfo: { icon: string; color: string; bg: string; label: string };
+  original: string;
+  improved: string;
+  explanation: string;
+}) => {
+  return (
+    <div 
+      className="p-4 rounded-lg border-l-4 transition hover:shadow-md"
+      style={{ 
+        backgroundColor: typeInfo.bg, 
+        borderColor: typeInfo.color
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{typeInfo.icon}</span>
+          <span className="text-xs font-bold px-2 py-1 rounded" style={{ backgroundColor: typeInfo.color, color: '#FFFFFF' }}>
+            {typeInfo.label}
+          </span>
+          <span className="text-xs" style={{ color: '#999999' }}>#{index}</span>
+        </div>
+      </div>
+      
+      {/* Original */}
+      <div className="mb-3">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-sm">❌</span>
+          <span className="text-xs font-semibold" style={{ color: '#FF5252' }}>Câu gốc:</span>
+        </div>
+        <div 
+          className="text-sm p-2 rounded" 
+          style={{ 
+            backgroundColor: '#FFFFFF', 
+            color: '#333333',
+            borderLeft: '3px solid #FF5252'
+          }}
+        >
+          {original}
+        </div>
+      </div>
+      
+      {/* Improved */}
+      <div className="mb-3">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-sm">✅</span>
+          <span className="text-xs font-semibold" style={{ color: '#4CAF50' }}>Cải thiện:</span>
+        </div>
+        <div 
+          className="text-sm p-2 rounded" 
+          style={{ 
+            backgroundColor: '#FFFFFF', 
+            color: '#333333',
+            borderLeft: '3px solid #4CAF50'
+          }}
+        >
+          {improved}
+        </div>
+      </div>
+      
+      {/* Explanation */}
+      {explanation && (
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm">💡</span>
+            <span className="text-xs font-semibold" style={{ color: '#2196F3' }}>Giải thích:</span>
+          </div>
+          <div className="text-xs p-2 rounded" style={{ backgroundColor: '#E3F2FD', color: '#1565C0' }}>
+            {explanation}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

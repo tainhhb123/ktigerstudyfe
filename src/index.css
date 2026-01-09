@@ -813,3 +813,17 @@ span.flatpickr-weekday,
 .tab-base {
   @apply py-2 px-4 border-b-2 font-medium transition-colors;
 }
+
+/* Shimmer animation for AI grading progress bars */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}

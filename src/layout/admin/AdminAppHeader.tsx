@@ -164,7 +164,7 @@ const AppHeader: React.FC = () => {
               <ChatBot className="w-5 h-5 text-gray-700" />
             </Link> */}
             {/* <!-- Dark Mode Toggler --> */}
-            <ThemeToggleButton />
+            {/* <ThemeToggleButton /> */}
             {/* <!-- Dark Mode Toggler --> */}
             {/* <NotificationDropdown /> */}
             {/* <!-- Notification Menu Area --> */}

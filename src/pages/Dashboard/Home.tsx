@@ -167,16 +167,16 @@ export default function Home() {
 
   // Welcome Card Component
   const WelcomeCard = () => (
-    <div className="rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 p-8 text-white shadow-lg">
+    <div className="rounded-xl bg-gradient-to-r from-orange-500 via-orange-400 to-amber-400 p-8 text-white shadow-lg">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold mb-2">
             Xin chào, {adminName}! 👋
           </h1>
-          <p className="text-blue-100 text-lg">
+          <p className="text-orange-100 text-lg">
             Chào mừng bạn đến với KTiger Study Admin Dashboard
           </p>
-          <p className="text-blue-200 text-sm mt-2">
+          <p className="text-orange-200 text-sm mt-2">
             {new Date().toLocaleDateString('vi-VN', { 
               weekday: 'long', 
               year: 'numeric', 

@@ -299,7 +299,7 @@ const AppSidebar: React.FC = () => {
                     >
                       <span className="text-[14px]">{subItem.name}</span>
                       <span className="flex items-center gap-1 ml-auto">
-                        {subItem.new && (
+                        {/* {subItem.new && (
                           <span
                             className="ml-auto px-2 py-0.5 rounded text-xs font-medium uppercase"
                             style={{ 
@@ -320,7 +320,7 @@ const AppSidebar: React.FC = () => {
                           >
                             pro
                           </span>
-                        )}
+                        )} */}
                       </span>
                     </Link>
                   </li>

@@ -324,28 +324,6 @@ const SectionManager = () => {
                       <List className="w-5 h-5" />
                     </button>
 
-                    {/* Move Up */}
-                    <button
-                      onClick={() => handleReorder(section.sectionId, 'up')}
-                      disabled={index === 0}
-                      className="p-2 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                      style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}
-                      title="Di chuyển lên"
-                    >
-                      <ChevronUp className="w-5 h-5" />
-                    </button>
-
-                    {/* Move Down */}
-                    <button
-                      onClick={() => handleReorder(section.sectionId, 'down')}
-                      disabled={index === sections.length - 1}
-                      className="p-2 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                      style={{ backgroundColor: '#FFE8DC', color: '#FF6B35' }}
-                      title="Di chuyển xuống"
-                    >
-                      <ChevronDown className="w-5 h-5" />
-                    </button>
-
                     {/* Edit */}
                     <button
                       onClick={() => openEditModal(section)}
@@ -380,8 +358,8 @@ const SectionManager = () => {
 
       {/* Modal Add/Edit Section */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="max-w-2xl w-full rounded-xl p-8" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="fixed inset-0 flex items-center justify-center z-40 p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)' }}>
+          <div className="max-w-2xl w-full rounded-xl p-8 shadow-2xl" style={{ backgroundColor: '#FFFFFF' }}>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold" style={{ color: '#333333' }}>
                 {editingSection ? '✏️ Chỉnh sửa Section' : '➕ Thêm Section mới'}
