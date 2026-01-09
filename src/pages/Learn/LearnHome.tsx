@@ -85,7 +85,7 @@ const faqs = [
   },
   {
     question: "Học phí trên K-Tiger Study như thế nào?",
-    answer: "Chúng tôi cung cấp nhiều gói học khác nhau phù hợp với nhu cầu của từng học viên. Vui lòng liên hệ để biết thêm chi tiết về học phí."
+    answer: "Hiện tại K-Tiger Study đang cung cấp các nội dung học hoàn toàn miễn phí để học viên có thể trải nghiệm và xây dựng nền tảng tiếng Hàn."
   },
   {
     question: "Tôi có thể đạt được mục tiêu nào khi dùng K-Tiger Study?",

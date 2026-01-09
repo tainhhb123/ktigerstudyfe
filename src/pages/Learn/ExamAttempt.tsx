@@ -47,45 +47,83 @@ const ExamAttempt = () => {
 
   useEffect(() => {
     if (sections.length > 0 && currentSectionIndex < sections.length) {
+      // ✅ DỪNG timer cũ TRƯỚC KHI xử lý
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+        console.log('🛑 Stopped old timer');
+      }
+      
       fetchQuestionsForSection(sections[currentSectionIndex].sectionId);
       
-      // Load saved time or reset timer for new section
+      // ✅ FIX: Reset thời gian cho mỗi section mới
       const saved = localStorage.getItem('topik_in_progress');
-      let shouldLoadSavedTime = false;
+      let initialTime = 0;
+      const section = sections[currentSectionIndex];
+      const sectionDuration = section.durationMinutes * 60;
+      
+      console.log('📦 localStorage data:', saved);
       
       if (saved) {
         try {
           const data = JSON.parse(saved);
+          console.log('📊 Parsed data:', data);
+          console.log('📍 Current section:', currentSectionIndex, 'Saved section:', data.currentSectionIndex);
+          console.log('🕐 Saved timeLeft:', data.timeLeft, 'timeLeftForSection:', data.timeLeftForSection);
           
-          // If resuming the same section, restore the saved time
-          if (data.attemptId === attemptId && data.currentSectionIndex === currentSectionIndex && data.timeLeft) {
-            setTimeLeft(data.timeLeft);
-            shouldLoadSavedTime = true;
-            console.log('⏱️ Restoring timer:', data.timeLeft, 'seconds');
+          // ✅✅ QUAN TRỌNG: Kiểm tra xem timeLeft có THỰC SỰ thuộc về section hiện tại không
+          // Nếu timeLeftForSection === undefined (localStorage cũ) → assume là hợp lệ (backward compatibility)
+          const isSameSectionTimer = data.attemptId === attemptId && 
+                                     data.currentSectionIndex === currentSectionIndex &&
+                                     (data.timeLeftForSection === undefined || data.timeLeftForSection === currentSectionIndex);
+          
+          console.log('🔍 Is same section timer?', isSameSectionTimer);
+          
+          if (isSameSectionTimer && data.timeLeft && data.timeLeft > 0) {
+            // Resume cùng section → giữ nguyên time
+            initialTime = data.timeLeft;
+            console.log('⏱️ Restoring timer for section', currentSectionIndex, ':', data.timeLeft, 'seconds');
+          } else {
+            // ✅ Section MỚI hoặc timeLeft từ section KHÁC → RESET
+            initialTime = sectionDuration;
+            console.log('🔄 NEW section detected! Resetting to', sectionDuration, 'seconds (', section.durationMinutes, 'mins)');
           }
           
-          // Update position
+          // ✅ Lưu thông tin section hiện tại
           data.currentSectionIndex = currentSectionIndex;
           data.currentQuestionIndex = currentQuestionIndex;
-          if (!shouldLoadSavedTime) {
-            const section = sections[currentSectionIndex];
-            const newTime = section.durationMinutes * 60;
-            setTimeLeft(newTime);
-            data.timeLeft = newTime;
-          }
+          data.timeLeftForSection = currentSectionIndex; // ✅ Đánh dấu timeLeft thuộc về section nào
+          data.timeLeft = initialTime;
           localStorage.setItem('topik_in_progress', JSON.stringify(data));
+          console.log('💾 Saved to localStorage:', data);
         } catch (err) {
           console.error('Error updating section position:', err);
-          const section = sections[currentSectionIndex];
-          setTimeLeft(section.durationMinutes * 60);
+          initialTime = sectionDuration;
         }
       } else {
-        const section = sections[currentSectionIndex];
-        setTimeLeft(section.durationMinutes * 60);
+        // Không có saved data → dùng duration của section
+        initialTime = sectionDuration;
+        console.log('🆕 No saved data, using section duration:', initialTime, 'seconds');
       }
       
-      startTimer();
+      // ✅ Set time TRƯỚC khi start timer
+      console.log('⏰ Setting timeLeft to:', initialTime);
+      setTimeLeft(initialTime);
+      
+      // ✅ Delay start timer để đảm bảo state đã update
+      setTimeout(() => {
+        console.log('▶️ Starting new timer...');
+        startTimer();
+      }, 100);
     }
+    
+    // ✅ Cleanup: Dừng timer khi unmount hoặc section thay đổi
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        console.log('🧹 Cleanup: Timer stopped');
+      }
+    };
   }, [currentSectionIndex, sections]);
 
   const fetchAttemptData = async () => {
@@ -235,14 +273,17 @@ const ExamAttempt = () => {
         
         const newTime = prev - 1;
         
-        // Save time to localStorage every 5 seconds to avoid too many writes
+        // ✅ CHỈ lưu time nếu ĐANG Ở section đó (không lưu khi đang chuyển section)
         if (newTime % 5 === 0) {
           const saved = localStorage.getItem('topik_in_progress');
           if (saved) {
             try {
               const data = JSON.parse(saved);
-              data.timeLeft = newTime;
-              localStorage.setItem('topik_in_progress', JSON.stringify(data));
+              // ✅ CHỈ update time nếu vẫn đang ở section hiện tại
+              if (data.currentSectionIndex === currentSectionIndex) {
+                data.timeLeft = newTime;
+                localStorage.setItem('topik_in_progress', JSON.stringify(data));
+              }
             } catch (err) {
               console.error('Error saving timer:', err);
             }
