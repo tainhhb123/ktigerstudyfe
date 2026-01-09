@@ -9,8 +9,10 @@ import org.example.ktigerstudybe.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize; // ← THÊM IMPORT
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -240,14 +242,46 @@ public class UserController {
 
   /**
    * Get user by email
-   * ✅ AUTHENTICATED - User có thể search by email
+   * 🛡️ AUTHENTICATED - User xem email của mình HOẶC ADMIN xem bất kỳ email nào
+   * 
+   * ✅ Logic bảo mật:
+   * - Chính user đó (email trong JWT == email trong path) → ✅ OK
+   * - ADMIN role → ✅ OK (xem tất cả)
+   * - User khác (không phải email của mình) → ❌ 403 Forbidden
+   * 
+   * Request: GET /api/users/email/user@example.com
+   * Authorization: Bearer {jwt_token}
+   * 
+   * Response 200: Thông tin user
+   * Response 403: User cố xem email người khác (không phải ADMIN)
+   * Response 404: Email không tồn tại
    */
   @GetMapping("/email/{email}")
   @PreAuthorize("isAuthenticated()") // ← Phải đăng nhập
-  public ResponseEntity<UserResponse> getByEmail(@PathVariable String email) {
+  public ResponseEntity<UserResponse> getByEmail(
+          @PathVariable String email,
+          Authentication authentication) {
     try {
-      UserResponse resp = userService.getUserByEmail(email);
-      return ResponseEntity.ok(resp);
+      // Lấy userId từ JWT (SecurityContextHolder)
+      Long currentUserId = Long.parseLong(authentication.getName());
+      
+      // Lấy thông tin user đang request
+      UserResponse currentUser = userService.getUserById(currentUserId);
+      
+      // Lấy thông tin user được yêu cầu
+      UserResponse requestedUser = userService.getUserByEmail(email);
+      
+      // Check quyền: Chính user đó HOẶC ADMIN
+      boolean isAdmin = authentication.getAuthorities().stream()
+              .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+      boolean isOwnEmail = currentUser.getEmail().equalsIgnoreCase(email);
+      
+      if (!isOwnEmail && !isAdmin) {
+        // User cố xem email người khác → 403 Forbidden
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+      }
+      
+      return ResponseEntity.ok(requestedUser);
     } catch (NoSuchElementException e) {
       return ResponseEntity.notFound().build();
     }
