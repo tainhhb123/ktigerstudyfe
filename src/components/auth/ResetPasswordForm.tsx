@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { resetPassword } from "../../services/ResetPasswordApi";
 
 const ResetPasswordForm: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -31,11 +31,9 @@ const ResetPasswordForm: React.FC = () => {
 
     setLoading(true);
     try {
-      await axios.post("http://localhost:8080/api/auth/reset-password", {
-        token,
-        newPassword,
-      });
-      setSuccess("Đặt lại mật khẩu thành công! Bạn có thể đăng nhập lại.");
+      // ✅ Sử dụng service thay vì gọi axios trực tiếp
+      const message = await resetPassword({ token, newPassword });
+      setSuccess(message || "Đặt lại mật khẩu thành công! Bạn có thể đăng nhập lại.");
       setTimeout(() => navigate("/signin"), 2000);
     } catch (err: any) {
       setError(
