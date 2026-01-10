@@ -84,6 +84,7 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
   const isInitializedRef = useRef(false);
   const hasSpeechDetectedRef = useRef(false);
   const finalTranscriptRef = useRef('');
+  const isAutoRestartingRef = useRef(false);
 
   // Check microphone permission with better handling
   useEffect(() => {
@@ -146,16 +147,23 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
     recognition.lang = 'ko-KR';
     recognition.continuous = true; // Changed to true for longer speech
     recognition.interimResults = true;
-    recognition.maxAlternatives = 3; // More alternatives for better accuracy
+    recognition.maxAlternatives = 5; // Increased for better accuracy
 
     recognition.onstart = () => {
       console.log('Speech recognition started');
       setIsListening(true);
       setIsProcessing(false);
       setError(null);
-      setInterimTranscript('');
-      hasSpeechDetectedRef.current = false;
-      finalTranscriptRef.current = '';
+      
+      // ⚠️ CHỈ reset khi KHÔNG phải auto-restart
+      if (!isAutoRestartingRef.current) {
+        console.log('🆕 Fresh start - clearing transcript');
+        setInterimTranscript('');
+        hasSpeechDetectedRef.current = false;
+        finalTranscriptRef.current = '';
+      } else {
+        console.log('🔄 Auto-restart - keeping existing transcript:', finalTranscriptRef.current);
+      }
       
       // Extended timeout for longer speech
       timeoutRef.current = setTimeout(() => {
@@ -223,7 +231,7 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
         silenceTimeoutRef.current = setTimeout(() => {
           console.log('Silence detected - stopping recognition');
           recognition.stop();
-        }, 2000); // Stop after 2 seconds of silence
+        }, 5000); // Stop after 5 seconds of silence (cho phép user nghĩ lâu)
       }
     };
 
@@ -239,7 +247,7 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
       silenceTimeoutRef.current = setTimeout(() => {
         console.log('Speech end timeout - stopping');
         recognition.stop();
-      }, 1500);
+      }, 2000); // Chờ 2s sau khi phát hiện speech end
     };
 
     recognition.onaudioend = () => {
@@ -261,9 +269,25 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
           if (!hasSpeechDetectedRef.current) {
             errorMessage = 'Không nghe thấy giọng nói. Vui lòng nói to hơn hoặc kiểm tra microphone.';
           } else {
-            // Don't show error if we already detected some speech
-            setIsListening(false);
-            setIsProcessing(false);
+            // ✅ Đã có speech trước đó → Tự động restart để tiếp tục lắng nghe
+            console.log('🔄 Auto-restarting recognition after no-speech...');
+            isAutoRestartingRef.current = true;
+            // ⚠️ KHÔNG set isListening = false để giữ nguyên UI và text
+            
+            // Restart ngay lập tức
+            setTimeout(() => {
+              if (recognitionRef.current) {
+                try {
+                  recognitionRef.current.start();
+                  console.log('✅ Recognition restarted - continuing from:', finalTranscriptRef.current);
+                  isAutoRestartingRef.current = false;
+                } catch (err) {
+                  console.warn('Failed to restart:', err);
+                  isAutoRestartingRef.current = false;
+                  setIsListening(false);
+                }
+              }
+            }, 300);
             return;
           }
           break;

@@ -75,15 +75,6 @@ const AppHeader: React.FC = () => {
 
         {/* Right side icons */}
         <div className="flex items-center gap-2 lg:gap-3">
-          <Link
-            to="/documents"
-            className="w-9 h-9 flex items-center justify-center rounded-full transition-all"
-            style={{ backgroundColor: '#FFE8DC' }}
-            title="Tài liệu"
-          >
-            <FileText className="w-5 h-5" style={{ color: '#FF6B35' }} />
-          </Link>
-          <ThemeToggleButton />
           <NotificationDropdown />
           <UserDropdown />
           

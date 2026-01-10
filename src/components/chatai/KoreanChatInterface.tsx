@@ -7,6 +7,7 @@ import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import { KaraokeText } from './KaraokeText';
 import Button from '../ui/button/Button';
+import { Send, Mic, Square } from 'lucide-react';
 
 interface KoreanChatInterfaceProps {
   conversationId: number;
@@ -61,6 +62,7 @@ export default function KoreanChatInterface({
     isListening,
     transcript,
     interimTranscript,
+    confidence,
     startListening,
     stopListening,
     resetTranscript,
@@ -102,13 +104,20 @@ export default function KoreanChatInterface({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, interimTranscript]);
 
-  // Speech recognition -> input
+  // Speech recognition -> input (Real-time update với smooth transition)
   useEffect(() => {
-    if (!isListening && transcript.trim()) {
+    if (isListening) {
+      // Cập nhật real-time trong khi đang nói
+      if (interimTranscript.trim()) {
+        setInputMessage(interimTranscript.trim());
+      }
+    } else if (transcript.trim() && !isListening) {
+      // ✅ Giữ nguyên text khi dừng (không reset đột ngột)
       setInputMessage(transcript.trim());
-      resetTranscript();
+      // Reset sau khi đã update để tránh giật lag
+      setTimeout(() => resetTranscript(), 100);
     }
-  }, [transcript, isListening, resetTranscript]);
+  }, [transcript, interimTranscript, isListening, resetTranscript]);
 
   // Tự động đọc tin nhắn AI mới
   useEffect(() => {
@@ -136,7 +145,8 @@ export default function KoreanChatInterface({
     }
   }, [isSpeaking]);
 
-  const displayInput = isListening ? interimTranscript || '' : inputMessage;
+  // ✅ Ưu tiên inputMessage để tránh text nhấp nháy
+  const displayInput = inputMessage || (isListening ? interimTranscript : '');
 
   const sendMessage = async (content: string) => {
     const clean = content.trim();
@@ -409,11 +419,36 @@ export default function KoreanChatInterface({
         </div>
       )}
 
-      {/* Input */}
-      <div style={{ backgroundColor: '#FFFFFF', borderTop: '1px solid #BDBDBD' }}>
-        <div className="max-w-4xl mx-auto p-4">
-          <div className="flex space-x-3">
-            <div className="flex-1 relative">
+      {/* Input - Redesigned với icons chuyên nghiệp */}
+      <div style={{ backgroundColor: '#FFFFFF', borderTop: '2px solid #E0E0E0' }}>
+        <div className="max-w-4xl mx-auto p-5">
+          <div className="flex items-center space-x-3">
+            {/* Voice Button - Bên trái */}
+            {speechRecognitionSupported && (
+              <button
+                onClick={handleMicroClick}
+                disabled={isLoading}
+                className="p-3.5 rounded-2xl transition-all flex-shrink-0 shadow-md hover:shadow-lg"
+                style={{
+                  backgroundColor: isListening ? '#FF6B35' : '#FFE8DC',
+                  color: isListening ? '#FFFFFF' : '#FF6B35',
+                  border: isListening ? '2px solid #FF6B35' : '2px solid transparent',
+                  transform: isListening ? 'scale(1.08)' : 'scale(1)',
+                  minWidth: '56px',
+                  minHeight: '56px'
+                }}
+                title={isListening ? '⏹ Dừng ghi âm (Ctrl+D)' : '🎤 Bắt đầu nói (Ctrl+M)'}
+              >
+                {isListening ? (
+                  <Square className="w-6 h-6" fill="currentColor" />
+                ) : (
+                  <Mic className="w-6 h-6" />
+                )}
+              </button>
+            )}
+
+            {/* Text Input - Giữa (PHÓNG TO) */}
+            <div className="flex-1">
               <textarea
                 value={displayInput}
                 onChange={e => {
@@ -425,65 +460,50 @@ export default function KoreanChatInterface({
                     handleSendButtonClick();
                   }
                 }}
-                placeholder={isListening ? '🎤 Đang ghi âm...' : 'Nhập tin nhắn tiếng Hàn...'}
-                className="w-full resize-none rounded-xl px-4 py-3 focus:outline-none focus:ring-2"
+                placeholder={isListening ? '🎤 Đang lắng nghe... (nói tự nhiên, không cần vội)' : 'Nhập tin nhắn tiếng Hàn... (hoặc nhấn 🎤)'}
+                className="w-full resize-none rounded-2xl px-5 py-4 focus:outline-none transition-all text-base"
                 style={{
-                  backgroundColor: isListening ? '#FFE8DC' : '#FFF8F0',
-                  border: isListening ? '2px solid #FF6B35' : '1px solid #BDBDBD',
-                  color: '#333333'
+                  backgroundColor: isListening ? '#FFF4E6' : '#F8F9FA',
+                  border: isListening ? '2px solid #FF6B35' : '2px solid #E0E0E0',
+                  color: '#333333',
+                  minHeight: '72px',
+                  maxHeight: '180px',
+                  fontSize: '16px',
+                  lineHeight: '1.6',
+                  boxShadow: isListening ? '0 0 0 4px rgba(255, 107, 53, 0.15)' : '0 2px 4px rgba(0,0,0,0.05)'
                 }}
                 rows={2}
                 disabled={isLoading}
                 readOnly={isListening}
               />
-
-              {speechRecognitionSupported && (
-                <button
-                  onClick={handleMicroClick}
-                  disabled={isLoading}
-                  className="absolute right-3 top-3 p-2 rounded-full text-lg transition-all"
-                  style={{
-                    backgroundColor: isListening ? '#FF6B35' : '#FFE8DC',
-                    color: isListening ? '#FFFFFF' : '#FF6B35'
-                  }}
-                >
-                  {isListening ? '🛑' : '🎤'}
-                </button>
-              )}
             </div>
 
+            {/* Send Button - Bên phải (ICON CHUYÊN NGHIỆP) */}
             <button
               onClick={handleSendButtonClick}
               disabled={!displayInput.trim() || isLoading}
-              className="px-6 py-3 rounded-xl font-medium transition-all"
+              className="p-3.5 rounded-2xl font-medium transition-all flex-shrink-0 shadow-md hover:shadow-lg group"
               style={{
                 backgroundColor: !displayInput.trim() || isLoading ? '#E0E0E0' : '#FF6B35',
                 color: !displayInput.trim() || isLoading ? '#999999' : '#FFFFFF',
-                cursor: !displayInput.trim() || isLoading ? 'not-allowed' : 'pointer'
+                cursor: !displayInput.trim() || isLoading ? 'not-allowed' : 'pointer',
+                minWidth: '56px',
+                minHeight: '56px',
+                transform: displayInput.trim() && !isLoading ? 'scale(1)' : 'scale(0.95)'
               }}
+              title="Gửi tin nhắn (Enter)"
             >
-              {isLoading ? 'Đang gửi...' : 'Gửi'}
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : (
+                <Send className="w-6 h-6 transition-transform group-hover:translate-x-0.5" />
+              )}
             </button>
           </div>
 
-          {/* Error status */}
-          {isListening && (
-            <div className="mt-2 text-sm" style={{ color: '#4CAF50' }}>
-              🎤 Đang lắng nghe...
-            </div>
-          )}
-
-          {speechError && !isListening && (
-            <div className="mt-2 text-sm" style={{ color: '#FF5252' }}>
-              ⚠️ {speechError}
-            </div>
-          )}
-
-          {ttsError && (
-            <div className="mt-2 text-sm" style={{ color: '#FF5252' }}>
-              ⚠️ {ttsError}
-            </div>
-          )}
+          {/* ✅ LOẠI BỎ tất cả status indicators phía dưới để giao diện gọn gàng */}
         </div>
       </div>
     </div>
