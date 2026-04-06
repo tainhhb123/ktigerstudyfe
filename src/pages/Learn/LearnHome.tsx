@@ -204,7 +204,7 @@ export default function LearnHome() {
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-8" style={{ color: '#333' }}>
-            <span style={{ color: '#FF6B35' }}>K-Tiger Study</span>: Lộ trình nhanh 3 tháng để học ngôn ngữ mastery!
+            <span style={{ color: '#FF6B35' }}>K-Tiger Study</span>: Lộ trình nhanh 3 tháng để học ngôn ngữ mastery! ha
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
