@@ -1,11 +1,13 @@
 // src/components/ui/button/Button.tsx
-import React, { ReactNode, ButtonHTMLAttributes } from "react";
+import { ReactNode, ButtonHTMLAttributes } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   variant?: "primary" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
   loading?: boolean; // Thêm prop loading
+  startIcon?: ReactNode;
+  endIcon?: ReactNode;
 }
 
 export default function Button({
@@ -13,6 +15,8 @@ export default function Button({
   variant = "primary",
   size = "md",
   loading = false,
+  startIcon,
+  endIcon,
   className = "",
   disabled,
   ...props
@@ -33,6 +37,14 @@ export default function Button({
     md: "px-4 py-2 text-base",
     lg: "px-6 py-3 text-lg",
   };
+
+  const content = (
+    <>
+      {startIcon && <span className="mr-2 inline-flex">{startIcon}</span>}
+      {children}
+      {endIcon && <span className="ml-2 inline-flex">{endIcon}</span>}
+    </>
+  );
 
   return (
     <button
@@ -68,10 +80,10 @@ export default function Button({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          {children}
+          {content}
         </span>
       ) : (
-        children
+        content
       )}
     </button>
   );

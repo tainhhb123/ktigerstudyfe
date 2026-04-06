@@ -166,7 +166,7 @@ const ExamAttempt = () => {
       // Save to localStorage for resume functionality
       localStorage.setItem('topik_in_progress', JSON.stringify({
         attemptId: attemptId,
-        examTitle: attemptData.examTitle || 'Bài thi TOPIK',
+        examTitle: attemptData.exam?.title || 'Bài thi TOPIK',
         startedAt: new Date().toISOString(),
         currentSectionIndex: savedSectionIndex,
         currentQuestionIndex: savedQuestionIndex,
@@ -811,7 +811,7 @@ const ExamAttempt = () => {
                       // VD: 0s, 3s, 6s, 9s, 12s... (không save mỗi 250ms)
                       const currentSecond = Math.floor(currentTime);
                       
-                      if (currentSecond % 3 === 0 && currentSecond !== audio.dataset.lastSavedSecond) {
+                      if (currentSecond % 3 === 0 && audio.dataset.lastSavedSecond !== currentSecond.toString()) {
                         audio.dataset.lastSavedSecond = currentSecond.toString();
                         
                         const saved = localStorage.getItem('topik_in_progress');

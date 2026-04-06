@@ -32,7 +32,7 @@ export default function FormElements() {
           <CheckboxComponents />
           <RadioButtons />
           <ToggleSwitch />
-          <DropzoneComponent />
+          <DropzoneComponent onUploaded={() => {}} />
         </div>
       </div>
     </div>

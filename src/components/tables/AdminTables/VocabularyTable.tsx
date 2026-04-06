@@ -1,5 +1,6 @@
 // src/components/tables/AdminTables/VocabularyTable.tsx
 import { useEffect, useState, useMemo, Fragment } from "react";
+import axios from "axios";
 import axiosInstance from "../../../services/axiosConfig";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../../ui/table";
 import Button from "../../ui/button/Button";
@@ -58,7 +59,7 @@ export default function VocabularyTable({ lessonId }: VocabularyTableProps) {
       
     } catch (error: unknown) {
       console.error('Error details:', error);
-      if (axiosInstance.isAxiosError(error)) {
+      if (axios.isAxiosError(error)) {
         console.error('Response status:', error.response?.status);
         console.error('Response data:', error.response?.data);
       }
@@ -92,7 +93,7 @@ export default function VocabularyTable({ lessonId }: VocabularyTableProps) {
         fetchVocabulary(); // Refresh data
       } catch (error) {
         console.error('Error deleting vocabulary:', error);
-        if (axiosInstance.isAxiosError(error)) {
+        if (axios.isAxiosError(error)) {
           const errorMessage = error.response?.data?.message || error.message;
           alert(`Lỗi xóa từ vựng: ${errorMessage}`);
         } else {

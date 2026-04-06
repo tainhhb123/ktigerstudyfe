@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import axiosInstance from "../../services/axiosConfig";
 
 // 🔍 Interface khớp với database fields
@@ -120,7 +121,7 @@ export default function AddGrammarModal({
     } catch (error: unknown) {
       console.error("API Error:", error);
       
-      if (axiosInstance.isAxiosError(error)) {
+      if (axios.isAxiosError(error)) {
         console.error("Response status:", error.response?.status);
         console.error("Response data:", error.response?.data);
         console.error("Request URL:", error.config?.url);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import axios from "axios";
 import axiosInstance from "../../../services/axiosConfig";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import VocabularyTable from "../../../components/tables/AdminTables/VocabularyTable";
@@ -89,7 +90,7 @@ export default function LessonDetailPage() {
         
       } catch (createError) {
         console.error('Error creating exercise:', createError);
-        if (axiosInstance.isAxiosError(createError)) {
+        if (axios.isAxiosError(createError)) {
           console.error("Create error details:", createError.response?.data);
         }
         

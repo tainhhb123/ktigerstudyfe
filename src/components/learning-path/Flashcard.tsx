@@ -1,9 +1,7 @@
 //src/components/learning-path/Flashcard.tsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import FlashcardPlayer from "../../components/flashcard/FlashcardPlayer";
 import VocabularyList from "../../components/flashcard/VocabularyList";
-import AuthorCard from "../../components/flashcard/AuthorCard";
-import FunctionBar from "../../components/flashcard/FunctionBar";
 import { getVocabularyByLessonId } from "../../services/VocabularyApi";
 
 interface Vocabulary {
@@ -63,12 +61,7 @@ export default function FlashCard({ lessonId }: Props) {
     }, [lessonId]);
 
 
-  const author: AuthorInfo = {
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-    name: "Maiminh2010",
-    role: "선생님",
-    createdAt: "11달 전 생성함",
-  };
+  
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center px-2 py-4">

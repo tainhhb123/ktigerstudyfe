@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from '../../../services/axiosConfig';
 import {
   Table,
@@ -26,10 +26,10 @@ export default function UserInfoTable() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get("/api/users")
+    axiosInstance
+      .get<User[]>("/api/users")
       .then((res) => setUsers(res.data))
-      .catch((err) => alert("Không load được users: " + err))
+      .catch((err: unknown) => alert("Không load được users: " + String(err)))
       .finally(() => setLoading(false));
   }, []);
 

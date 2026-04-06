@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import axiosInstance from "../../services/axiosConfig";
 import DropzoneComponent from "../../components/form/form-elements/DropZone";
 
@@ -142,7 +143,7 @@ export default function AddVocabularyModal({
     } catch (error: unknown) {
       console.error("API Error:", error);
 
-      if (axiosInstance.isAxiosError(error)) {
+      if (axios.isAxiosError(error)) {
         console.error("Response status:", error.response?.status);
         console.error("Response data:", error.response?.data);
         console.error("Request URL:", error.config?.url);

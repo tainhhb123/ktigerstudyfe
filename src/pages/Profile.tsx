@@ -12,6 +12,7 @@ interface UserProfile {
   fullName: string;
   email: string;
   role?: string;
+  userName?: string;
   avatarImage?: string;
   phoneNumber?: string;
   dateOfBirth?: string;

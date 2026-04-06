@@ -120,7 +120,7 @@ export interface ExamAttemptRequest {
 export interface UserAnswerRequest {
   attemptId: number;
   questionId: number;
-  choiceId?: number;
+  choiceId?: number | null;
   answerText?: string;
 }
 
