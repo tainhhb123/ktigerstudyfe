@@ -75,7 +75,7 @@ export default function FlashCard({ lessonId }: Props) {
             totalCards={vocabularies.length}
           />
         ) : (
-          <p className="text-gray-700 text-center text-lg">Đang tải từ vựng...</p>
+          <p className="text-gray-700 text-center text-lg">Đang tải từ vựng... hâha</p>
         )}
       </div>
 

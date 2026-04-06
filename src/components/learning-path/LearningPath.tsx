@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import AvatarImg from "../../assets/avatar_campfire.png";
-import HoHan from "../../assets/hohan.png";
+import HoHan from "../../assets/hoHan.png";
 import HoVietNam from "../../assets/hoVietNam.png";
 import { Lock, CheckCircle } from "lucide-react";
 
